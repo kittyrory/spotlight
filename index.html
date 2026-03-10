@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- font links -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spotlight - Where Fame Lives</title>
+  
+  <style>
+    * { 
+      margin: 0; 
+      padding: 0; 
+      box-sizing: border-box; 
+    }
+
+    body {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #000000;
+      font-family: Arial;
+    }
+
+    /* ticket thingies */
+    .ticker-wrap {
+      position: fixed;
+      width: 100%;
+      overflow: hidden;
+      padding: 10px 0;
+    }
+    .ticker-wrap.top { top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .ticker-wrap.bottom { bottom: 0; border-top: 1px solid rgba(255,255,255,0.1); }
+
+    .ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: scroll-left 30s linear infinite;
+    }
+    .ticker.reverse { animation: scroll-right 35s linear infinite; }
+
+    .ticker-item {
+      font-family: 'Lilita One', Arial;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      padding: 0 1.2rem;
+      color: rgba(255,255,255,0.4);
+    }
+    .ticker-item.gold { color: #e2bb00; opacity: 0.9; }
+
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes scroll-right {
+      0%   { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 80px;
+      font-family: 'Lilita One', Arial;
+    }
+    
+    h1 span { 
+      color: #e2bb00; 
+    }
+
+    p {
+      color: #777777;
+      margin-top: -10px;
+      font-family: 'Open Sans', Arial;
+      font-size: 14px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+    }
+
+    button {
+      padding: 12px 30px;
+      cursor: pointer;
+      border-radius: 999px;
+      background-color: #e2bb00;
+      border: 0px;
+      font-family: 'Source Code Pro', Arial;
+      font-size: 0.8rem;
+      margin-top: 20px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(226,187,0,0.35);
+    }
+    
+    button:active { 
+      transform: translateY(0); 
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }   
+  </style>
+</head>
+<body>
+
+  <div class="ticker-wrap top">
+    <div class="ticker" id="t1"></div>
+  </div>
+
+  <h1>SPOT<span>LIGHT</span></h1>
+  <p>Where Fame Lives</p>
+  <button><a href="login.html">Enter the Spotlight</a></button>
+
+  <div class="ticker-wrap bottom">
+    <div class="ticker reverse" id="t2"></div>
+  </div>
+
+  <script>
+    const names = [
+      "BEYONCÉ", "TAYLOR SWIFT", "BAD BUNNY", "PEDRO PASCAL", "NICKI MINAJ",
+      "GOJO", "NARUTO", "SABRINA CARPENTER", "LIZZO", "BILLIE EILISH",
+      "CHAEWON", "JENNIE", "JUNGKOOK", "ARIANA GRANDE", "KENDRICK LAMAR"
+    ];
+    const tags = [
+      "#SPOTLIGHT", "#NOCONTEXT", "#ARMY", "#CRAZY", "#PROBLEMATIC",
+      "#SCANDAL", "#DRAMA", "#TRENDING", "#FANWAR", "#CANCELLED", "#VIRAL",
+      "#CHAOS", "#FEUDS", "#ICONS", "#FANDOMS", "#LOVE", "#SHIP", "#TEA"
+    ];
+
+    function buildTicker(el, items, goldEvery = 3) {
+      const all = [...items, ...items, ...items, ...items];
+      all.forEach((txt, i) => {
+        const span = document.createElement('span');
+        span.className = 'ticker-item' + (i % goldEvery === 1 ? ' gold' : '');
+        span.textContent = txt + ' · ';
+        el.appendChild(span);
+      });
+    }
+
+    buildTicker(document.getElementById('t1'), names, 2);
+    buildTicker(document.getElementById('t2'), tags, 2);
+  </script>
+
+</body>
+</html>
