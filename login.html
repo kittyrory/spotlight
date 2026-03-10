@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+  
+  <title>Spotlight | Log In</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <style>
+    body {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: black;
+      font-family: Arial;
+      color: white;
+    }
+
+    h1 {
+      color: white;
+      font-size: 50px;
+      font-family: 'Lilita One', Arial;
+    }
+
+    h1 span { 
+      color: #e2bb00; 
+    }
+    
+    a {
+      color: white;
+    }
+
+    button {
+      padding: 12px 30px;
+      cursor: pointer;
+      border-radius: 999px;
+      background-color: #e2bb00;
+      border: 0px;
+      font-family: 'Source Code Pro', Arial;
+      font-size: 0.8rem;
+      margin-top: 20px;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(226,187,0,0.35);
+    }
+    
+    button:active { 
+      transform: translateY(0); 
+    }
+
+
+
+.form-group input {
+  width: 100%;
+  max-width: 260px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: white;
+  font-family: 'Source Code Pro', Arial;
+  outline: none;
+  transition: border 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group input::placeholder {
+  color: #888;
+}
+
+.form-group input:focus {
+  border-color: #e2bb00;
+  box-shadow: 0 0 0 2px rgba(226,187,0,0.25);
+}
+
+.form-options {
+  margin-top: 15px;
+  font-size: 0.85rem;
+}  </style>
+</head>
+
+<body>
+<!-- note: use javascript to check for valid credentials later -->
+    <div class="login-container">
+        <h1>Log <span>In</span></h1>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label for="username"></label>
+                <input type="text" placeholder="Username" id="username" name="username" required><br>
+            </div>
+          
+            <div class="form-group">
+                <label for="password"></label>
+                <input type="password" placeholder="Password" id="password" name="password" required><br>
+            </div>
+
+            <button type="submit">Login</button>
+            <div class="form-options">
+                <a href="signup.html"><br>I don't have an account</a>
+            </div>
+        </form>
+    </div>
