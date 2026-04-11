@@ -57,7 +57,7 @@
 
   .headline {
     font-family: 'Lilita One', Arial;
-    font-size: 42px;
+    font-size: 40px;
     line-height: 1.1;
     margin: 0 0 6px 0;
   }
@@ -100,7 +100,7 @@
     padding: 13px 0;
     border-radius: 999px;
     border: none;
-    font-family: 'Source Code Pro', monospace;
+    font-family: Arial;
     font-weight: 700;
     font-size: 0.875rem;
     cursor: pointer;
@@ -149,17 +149,26 @@
 
   .join-now a {
     color: #e2bb00;
-    cursor: pointer;
-    text-decoration: none;
   }
 
   .join-now a:hover {
     text-decoration: underline;
   }
+  
+  a:link {
+    text-decoration: none;
+    color: inherit;
+    
+  }
 
   a:visited {
-    text-decoration none {
+    text-decoration: none;
+      color: inherit;
   }
+    
+  span {
+    color: #e2bb00;
+   }
 </style>
 </head>
 <body>
@@ -179,12 +188,12 @@
       <input type="password" placeholder="Password" />
     </div>
 
-    <button class="btn btn-primary"><a href="identity.html">Sign In</button>
+    <button class="btn btn-primary"><a href="identity.html">Sign In</a></button>
 
     <div class="divider">or</div>
 
     <p class="join-now">
-      Don't have an account? <a href="signin.html">Join now</a>
+      Don't have an account? <a href="signin.html"><span>Join now</span></a>
     </p>
   </div>
 </body>
