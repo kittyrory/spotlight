@@ -1,0 +1,154 @@
+* { 
+  margin: 0; 
+  padding: 0; 
+  box-sizing: border-box; 
+}
+
+    body {
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #000000;
+      font-family: Arial;
+    }
+
+    /* ticket thingies */
+    .ticker-wrap {
+      position: fixed;
+      width: 100%;
+      overflow: hidden;
+      padding: 10px 0;
+    }
+    .ticker-wrap.top { top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .ticker-wrap.bottom { bottom: 0; border-top: 1px solid rgba(255,255,255,0.1); }
+
+    .ticker {
+      display: flex;
+      white-space: nowrap;
+      animation: scroll-left 30s linear infinite;
+    }
+    .ticker.reverse { animation: scroll-right 35s linear infinite; }
+
+    .ticker-item {
+      font-family: 'Lilita One', Arial;
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      padding: 0 1.2rem;
+      color: rgba(255,255,255,0.4);
+      
+    }
+    .ticker-item.gold { color: #ffd500; opacity: 0.9; }
+
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    @keyframes scroll-right {
+      0%   { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    h1 {
+      color: #ffffff;
+      font-size: 120px;
+      font-family: 'Lilita One', Arial;
+    }
+    
+    h1 span { 
+      color: #ffd500; 
+    }
+     .glow-text {
+      text-shadow: 0 0 5px #ffd500, 
+      0 0 10px #ffd500,
+       0 0 20px #ffd500;
+    }
+    h2 {
+      color: #ffd725;
+      font-family: monospace;
+      transform: translateY(-280px);
+      font-size: 12PX;
+      letter-spacing: 0.6em;
+      font-weight: lighter;
+    }
+
+    p {
+      color: #d8cece;
+      margin-top: -2px;
+      font-family: 'DM Mono', Arial;
+      font-size: 11px;
+      font-weight: unset;
+      letter-spacing: 0.3em;
+      opacity: 0.5;
+      text-transform: uppercase;
+      animation: glow 10s linear infinite
+    }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 5px #ffff0b, 
+        0 0 10px #ffffff, 
+        0 0 20px #777777; }
+      50% { text-shadow: 0 0 10px #ffffff, 
+        0 0 20px #ffffff, 
+        0 0 30px #ffd500; }
+    }
+    p1 {
+      color: #ffffff;
+      margin-top: -2px;
+      font-family: 'DM Sans', Arial;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      animation: glow 5s linear infinite
+    }
+    @keyframes glow {
+      0%, 100% { text-shadow: 0 0 5px #ffffff, 0 0 10px #ffffff, 0 0 20px #777777; }
+      50% { text-shadow: 0 0 10px #ffffff, 0 0 20px #ffffff, 0 0 30px #ffd500; }
+    }
+    
+    
+    .glow-button {
+      padding: 20px 20px;
+      cursor: pointer;
+      border-radius: 100px;
+      background-color: transparent;
+      border: 2px solid #fff6ca;
+      font-family: 'Source Code Pro', Arial;
+      font-weight: bold;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      text-decoration: none;
+      margin-top: 40px;
+      transition: transform 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .glow-button::before {
+      content: '';
+      position:absolute;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      border-radius:10px;
+      background:radial-gradient(circle, #ffd500, transparent);
+      opacity:0;
+      transition: opacity 0.3s;
+    }
+   .glow-button:hover{
+    background-color: #ffd500;
+    color: #000000;
+    text-shadow:none;
+    box-shadow: 0 0 15px #ffd500, 
+    0 0 30px #ffd500, 
+    0 0 45px #ffd500;
+  }
+  .glow-button:hover::before{
+    opacity:1;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }

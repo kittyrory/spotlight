@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- font links -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&display=swap" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="Head Icon.png">
+  <link rel="stylesheet" href="style.css">
+  <title>Spotlight - Where Fame Lives</title>
+  
+
+</head>
+<body>
+
+  <div class="ticker-wrap top">
+    <div class="ticker" id="t1"></div>
+  </div>
+
+  <h1>SPOT<span class="glow-text">LIGHT</span></h1>
+  <p><span> Where Fame Lives</span></p>
+  <button class="glow-button"><a href="login.html">
+    <p1>Enter the Spotlight</p1></a></button>
+    <h2>A NEW ERA BEGINS</h2>
+  <div class="ticker-wrap bottom">
+    <div class="ticker reverse" id="t2"></div>
+  </div>*
+
+  <script>
+    const names = [
+      "BEYONCÉ", "TAYLOR SWIFT", "BAD BUNNY", "PEDRO PASCAL", "NICKI MINAJ",
+      "GOJO", "NARUTO", "SABRINA CARPENTER", "LIZZO", "BILLIE EILISH",
+      "CHAEWON", "BLACKPINK", "BTS", "ARIANA GRANDE", "KENDRICK LAMAR"
+    ];
+    const tags = [
+      "#SPOTLIGHT", "#NOCONTEXT", "#ARMY", "#CRAZY", "#PROBLEMATIC",
+      "#SCANDAL", "#DRAMA", "#TRENDING", "#FANWAR", "#CANCELLED", "#VIRAL",
+      "#CHAOS", "#FEUDS", "#ICONS", "#FANDOMS", "#LOVE", "#SHIP", "#TEA"
+    ];
+
+    function buildTicker(el, items, goldEvery = 3) {
+      const all = [...items, ...items, ...items, ...items];
+      all.forEach((txt, i) => {
+        const span = document.createElement('span');
+        span.className = 'ticker-item' + (i % goldEvery === 1 ? ' gold' : '');
+        span.textContent = txt + ' · ';
+        el.appendChild(span);
+      });
+    }
+
+    buildTicker(document.getElementById('t1'), names, 2);
+    buildTicker(document.getElementById('t2'), tags, 2);
+  </script>
+
+</body>
+</html>
