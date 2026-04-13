@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spotlight | Log In</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- font links -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+  
+<style>
+  * { 
+    box-sizing: border-box; 
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Open Sans', sans-serif;
+    background-color: black;
+    color: white;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 380px;
+    padding: 40px;
+    background: #111;
+    border-radius: 20px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    background: #e2bb00;
+    border-radius: 50%;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    font-family: 'Lilita One', Arial;
+    font-size: 16px;
+    letter-spacing: 2px;
+    color: #666;
+  }
+
+  .headline {
+    font-family: 'Lilita One', Arial;
+    font-size: 40px;
+    line-height: 1.1;
+    margin: 0 0 6px 0;
+  }
+
+  .sub {
+    font-size: 0.85rem;
+    margin: 0 0 28px 0;
+    color: #666;
+  }
+
+  .field {
+    margin-bottom: 12px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid #2a2a2a;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .field input::placeholder {
+    color: #666;
+  }
+
+  .field input:focus {
+    border-color: #e2bb00;
+    box-shadow: 0 0 0 3px #e2bb0033;
+  }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 13px 0;
+    border-radius: 999px;
+    border: none;
+    font-family: Arial;
+    font-weight: 700;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    text-align: center;
+  }
+
+  .btn-primary {
+    background-color: #e2bb00;
+    color: black;
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(226,187,0,0.3);
+  }
+
+  .btn-primary:active { 
+    transform: scale(0.98); 
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+    font-size: 0.75rem;
+    color: #666;
+  }
+
+  .divider::before,
+  .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #2a2a2a;
+  }
+
+  .join-now {
+    text-align: center;
+    font-size: 0.82rem;
+    color: #666;
+    margin-top: 20px;
+  }
+
+  .join-now a {
+    color: #e2bb00;
+  }
+
+  .join-now a:hover {
+    text-decoration: underline;
+  }
+  
+  a:link {
+    text-decoration: none;
+    color: inherit;
+  }
+
+  a:visited {
+    text-decoration: none;
+    color: inherit;
+  }
+    
+  span {
+    color: #e2bb00;
+   }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <span class="logo-text">SPOTLIGHT</span>
+    </div>
+
+    <h1 class="headline">Welcome<br>back.</h1>
+    <p class="sub">Sign in to your Spotlight account.</p>
+
+    <div class="field">
+      <input type="text" placeholder="Username" />
+    </div>
+    <div class="field">
+      <input type="password" placeholder="Password" />
+    </div>
+
+    <a href="identity.html"><button class="btn btn-primary">Sign In</button></a>
+
+    <div class="divider">or</div>
+
+    <p class="join-now">
+      Don't have an account? <a href="signin.html"><span>Join now</span></a>
+    </p>
+  </div>
+</body>
+</html>
