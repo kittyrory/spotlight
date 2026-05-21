@@ -1,112 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- font links -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotlight - Where Fame Lives</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap" rel="stylesheet">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Spotlight - Where Fame Lives</title>
-  
   <style>
-    * { 
-      margin: 0; 
-      padding: 0; 
-      box-sizing: border-box; 
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --gold: #ffd500;
+      --white: #ffffff;
+      --bg: #000000;
+      --muted: rgba(255, 255, 255, 0.35);
     }
 
     body {
+      display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      display: flex;
-      height: 100vh;
+      min-height: 100vh;
       overflow: hidden;
-      background-color: #000000;
-      font-family: Arial;
+      background-color: var(--bg);
+      font-family: 'Anek Latin', Arial, sans-serif;
     }
 
-    /* ticket thingies */
     .ticker-wrap {
       position: fixed;
       width: 100%;
       overflow: hidden;
-      padding: 10px 0;
+      padding: 8px 0;
+      z-index: 10;
     }
-    .ticker-wrap.top { top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .ticker-wrap.bottom { bottom: 0; border-top: 1px solid rgba(255,255,255,0.1); }
+
+    .ticker-wrap.top {
+      top: 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .ticker-wrap.bottom {
+      bottom: 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
 
     .ticker {
       display: flex;
       white-space: nowrap;
       animation: scroll-left 30s linear infinite;
     }
-    .ticker.reverse { animation: scroll-right 35s linear infinite; }
+
+    .ticker.reverse {
+      animation: scroll-right 35s linear infinite;
+    }
 
     .ticker-item {
-      font-family: 'Lilita One', Arial;
-      font-size: 0.85rem;
+      font-family: 'Anek Latin', Arial, sans-serif;
+      font-size: clamp(0.65rem, 1.2vw, 0.85rem);
       letter-spacing: 0.1em;
       padding: 0 1.2rem;
-      color: rgba(255,255,255,0.4);
+      color: var(--muted);
     }
-    .ticker-item.gold { color: #e2bb00; opacity: 0.9; }
+
+    .ticker-item.gold {
+      color: var(--gold);
+      opacity: 0.85;
+    }
 
     @keyframes scroll-left {
       0%   { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
+
     @keyframes scroll-right {
       0%   { transform: translateX(-50%); }
       100% { transform: translateX(0); }
     }
-
-    h1 {
-      color: #ffffff;
-      font-size: 80px;
-      font-family: 'Lilita One', Arial;
-    }
     
-    h1 span { 
-      color: #e2bb00; 
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: clamp(6px, 1.5vw, 14px);
+      text-align: center;
+      padding: 0 1rem;
     }
 
-    p {
-      color: #777777;
-      margin-top: -10px;
-      font-family: 'Open Sans', Arial;
-      font-size: 14px;
-      letter-spacing: 0.3em;
+    h2 {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(0.55rem, 1vw, 0.72rem);
+      font-weight: 300;
+      letter-spacing: 0.6em;
+      color: var(--gold);
+      opacity: 0.85;
       text-transform: uppercase;
     }
 
-    button {
-      padding: 12px 30px;
+    h1 {
+      font-family: 'Anek Latin', Arial, sans-serif;
+      font-size: clamp(3.5rem, 14vw, 9rem);
+      color: var(--white);
+      line-height: 1;
+    }
+
+    h1 span {
+      color: var(--gold);
+      text-shadow:
+        0 0 8px rgba(255, 213, 0, 0.7),
+        0 0 22px rgba(255, 213, 0, 0.4),
+        0 0 40px rgba(255, 213, 0, 0.15);
+    }
+
+    p {
+      font-family: 'DM Mono', monospace;
+      font-size: clamp(0.6rem, 1.1vw, 0.75rem);
+      font-weight: 300;
+      letter-spacing: 0.35em;
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+      animation: pulse-glow 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        text-shadow:
+          0 0 4px rgba(255, 255, 255, 0.2);
+      }
+      50% {
+        text-shadow:
+          0 0 8px rgba(255, 213, 0, 0.45),
+          0 0 18px rgba(255, 255, 255, 0.15);
+      }
+    }
+
+    .glow-button {
+      display: inline-block;
+      margin-top: clamp(16px, 3vw, 32px);
+      padding: clamp(12px, 2vw, 18px) clamp(24px, 4vw, 36px);
       cursor: pointer;
-      border-radius: 999px;
-      background-color: #e2bb00;
-      border: 0px;
-      font-family: 'Source Code Pro', Arial;
-      font-size: 0.8rem;
-      margin-top: 20px;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      border-radius: 100px;
+      background-color: transparent;
+      border: 1.5px solid rgba(255, 246, 202, 0.6);
+      font-family: 'Source Code Pro', monospace;
+      font-weight: 700;
+      font-size: clamp(0.65rem, 1.1vw, 0.8rem);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--white);
+      text-decoration: none;
+      transition:
+        background-color 0.25s ease,
+        color 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
     }
-    
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(226,187,0,0.35);
-    }
-    
-    button:active { 
-      transform: translateY(0); 
+
+    .glow-button:hover {
+      background-color: var(--gold);
+      color: var(--bg);
+      border-color: var(--gold);
+      box-shadow:
+        0 0 10px rgba(255, 213, 0, 0.55),
+        0 0 28px rgba(255, 213, 0, 0.3);
     }
 
     a {
       color: inherit;
       text-decoration: none;
-    }   
+    }
   </style>
 </head>
 <body>
@@ -115,9 +185,12 @@
     <div class="ticker" id="t1"></div>
   </div>
 
-  <h1>SPOT<span>LIGHT</span></h1>
-  <p>Where Fame Lives</p>
-  <button><a href="login.html">Enter the Spotlight</a></button>
+  <div class="hero">
+    <h2>A New Era Begins</h2>
+    <h1>SPOT<span>LIGHT</span></h1>
+    <p><span>Where Fame Lives</span></p>
+    <a href="login.html" class="glow-button">Enter the Spotlight</a>
+  </div>
 
   <div class="ticker-wrap bottom">
     <div class="ticker reverse" id="t2"></div>
@@ -127,7 +200,7 @@
     const names = [
       "BEYONCÉ", "TAYLOR SWIFT", "BAD BUNNY", "PEDRO PASCAL", "NICKI MINAJ",
       "GOJO", "NARUTO", "SABRINA CARPENTER", "LIZZO", "BILLIE EILISH",
-      "CHAEWON", "JENNIE", "JUNGKOOK", "ARIANA GRANDE", "KENDRICK LAMAR"
+      "CHAEWON", "BLACKPINK", "BTS", "ARIANA GRANDE", "KENDRICK LAMAR"
     ];
     const tags = [
       "#SPOTLIGHT", "#NOCONTEXT", "#ARMY", "#CRAZY", "#PROBLEMATIC",
@@ -136,8 +209,8 @@
     ];
 
     function buildTicker(el, items, goldEvery = 3) {
-      const all = [...items, ...items, ...items, ...items];
-      all.forEach((txt, i) => {
+      const repeated = [...items, ...items, ...items, ...items];
+      repeated.forEach((txt, i) => {
         const span = document.createElement('span');
         span.className = 'ticker-item' + (i % goldEvery === 1 ? ' gold' : '');
         span.textContent = txt + ' · ';
