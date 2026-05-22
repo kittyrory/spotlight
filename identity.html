@@ -28,6 +28,47 @@
       margin-top: -10px;
     }
 
+    .card-grid {   
+      display: grid;
+      grid-template-columns: 1fr 1fr;   
+      gap: 10px;
+      margin-top: 25px;
+    font-family: 'Open Sans', sans-serif;
+    }
+  
+    .category-card {
+      display: grid;
+      flex-direction: column;
+      gap: 2px; 
+      padding: 4px 6px; 
+      border: 1px solid #444; 
+      border-radius: 10px; 
+      background: #1a1a1a; 
+      cursor: pointer; 
+      text-align: left;
+      margin-bottom: 6px; 
+      min-height: auto;
+    overflow: visible !important;
+  max-height: none !important;
+  }
+
+    .category-card h1 {
+    font-size: 25px;
+    margin: 7px;}
+    .category-card p{
+      font size: 6px
+      margin: 2px
+      line-height: 10px;
+      color: gray;
+    }
+
+.category-card .icon {
+   display: block;
+    font-size: 35px;
+    height: 32px;
+    margin-bottom: 10px;
+}
+
     .div1 {
      text-align: center;
     }
@@ -35,6 +76,16 @@
     .div2 {
       display: inline-block;
       text-align: left;
+      .div2 p1 {
+        margin: 0 0 5px 0;
+         color:orange 
+      }
+      .div2 h1 {
+        margin: 5px 0;
+      }
+      .div2 p2 {
+        color: gray;
+      }
     }
 
     h1 {
@@ -116,9 +167,60 @@
 
      <div class="div2">
      	 <p class="p1">Step 1 of 3 · Identity</p>
-       <h1>Placeholder :)</h1>
+       <h1>What do you do?</h1>
+       <p2>Pick your category. This shapes your events and opportunities.</p2>
        <p class="p2"></p>
      </div>
+
+<div class="card-grid"> 
+  <div class = "category-card">
+  <span class="icon">🎤</span>
+  <h1>Singer/Rapper</h1>
+  <p>Music is your weapon</p>
+  </div> 
+
+  <div class = "category-card">
+  <span class="icon">💿</span>
+  <h1>K-Pop Idol</h1>
+  <p>The stans are ready</p>
+  </div> 
+
+  <div class = "category-card">
+  <span class = "icon">✨</span>
+  <h1>Model</h1>
+  <p>The camera loves you</p>
+  </div> 
+
+  <div class = "category-card">
+  <span class = "icon">🏆</span>
+  <h1>Athlete</h1>
+  <p>Champion energy</p>
+  </div> 
+
+<div class = "category-card">
+  <span class = "icon">🎬</span>
+  <h1>Actor/Actress</h1>
+  <p>Every scene is yours</p>
+  </div> 
+
+  <div class = "category-card">
+  <span class = "icon">👥</span>
+  <h1>Group Member</h1>
+  <p>Unit over everything</p>
+  </div> 
+
+<div class = "category-card">
+  <span class = "icon">📱</span>
+  <h1>Content Creator</h1>
+  <p>Always filming</p>
+  </div> 
+
+  <div class = "category-card">
+  <span class = "icon">🥂</span>
+  <h1>Socialite</h1>
+  <p>You just exist and trend</p>
+  </div> 
+</div>
 
      <div>
        <a href="famepath.html"><button class="cont">Continue →</button></a>
