@@ -1,112 +1,41 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-  <html lang="en">
-  <meta charset="UTF-8">
-  <title>Spotlight | Log In</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- font links -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Spotlight | Identity</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
+    *, *::before, *::after { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+
     body {
       background-color: black;
       color: white;
-    }
-
-    .p1 {
-      color: #e2bb00;
       font-family: 'Open Sans', sans-serif;
+      min-height: 100vh;
+      padding: 32px 16px 48px;
     }
 
-    .p2 {
-      font-family: 'Open Sans', sans-serif;
-      color: #666;
-      font-size: 14px;
-      margin-top: -10px;
+    .wrap {
+      display: block;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
     }
 
-    .card-grid {   
-      display: grid;
-      grid-template-columns: 1fr 1fr;   
-      gap: 10px;
-      margin-top: 25px;
-    font-family: 'Open Sans', sans-serif;
-    }
-  
-    .category-card {
-      display: grid;
-      flex-direction: column;
-      gap: 2px; 
-      padding: 4px 6px; 
-      border: 1px solid #444; 
-      border-radius: 10px; 
-      background: #1a1a1a; 
-      cursor: pointer; 
-      text-align: left;
-      margin-bottom: 6px; 
-      min-height: auto;
-    overflow: visible !important;
-  max-height: none !important;
-  }
-
-    .category-card h1 {
-    font-size: 25px;
-    margin: 7px;}
-    .category-card p{
-      font size: 6px
-      margin: 2px
-      line-height: 10px;
-      color: gray;
-    }
-
-.category-card .icon {
-   display: block;
-    font-size: 35px;
-    height: 32px;
-    margin-bottom: 10px;
-}
-
-    .div1 {
-     text-align: center;
-    }
-
-    .div2 {
-      display: inline-block;
-      text-align: left;
-      .div2 p1 {
-        margin: 0 0 5px 0;
-         color:orange 
-      }
-      .div2 h1 {
-        margin: 5px 0;
-      }
-      .div2 p2 {
-        color: gray;
-      }
-    }
-
-    h1 {
-      font-family: 'Open Sans', Arial;
-      font-size: 32px;
-    }
-    
-    a:link {
-      text-decoration: none;
-      color: inherit;
-    }
-    
-    a:visited {
-      text-decoration: none;
-      color: inherit;
-    }
-    
     .progress-bar {
       display: flex;
       gap: 6px;
-      width: 500px;
+      width: 100%;
+      margin-bottom: 28px;
     }
 
     .progress-step {
@@ -114,117 +43,198 @@
       height: 3px;
       border-radius: 9999px;
     }
-    
-  .cont {
-    background-color: #e2bb00;
-    border: none;
-    width: 500px;
-    height: 50px;
-    border-radius: 10px;
-    margin-top: 10px;
-    font-family: 'Urbanist', 'Open Sans', Arial;
-    font-size: 18px;
-    cursor: pointer;
-  }
-    
-  .cont:hover {
-    background: #FFD500;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(201,149,42,0.3);
-  }
-    
-  .back {
-    width: 500px;
-    border: 1px solid #555;
-    border-radius: 10px;
-    background-color: black;
-    color: #555;
-    margin-top: 10px;
-    height: 50px;
-    align-items: center;
-    text-align: center;
-    display: flex;
-   	justify-content: center;
-    cursor: pointer;
-    font-size: 15px;
-  }
-   
-  .back:hover {
-    color: #808080;
-    border: 1px solid #808080;
-  }
- </style>
+
+    .p1 {
+      color: #e2bb00;
+      font-family: 'Open Sans', sans-serif;
+      margin-bottom: 6px;
+    }
+
+    h1 {
+      font-family: 'Open Sans', Arial;
+      font-size: 32px;
+      margin-bottom: 6px;
+    }
+
+    .p2 {
+      font-family: 'Open Sans', sans-serif;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .category-card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 14px 14px 12px;
+      border: 1px solid #444;
+      border-radius: 10px;
+      background: #1a1a1a;
+      cursor: pointer;
+      text-align: left;
+      transition: border-color 0.18s, background 0.18s, transform 0.15s;
+      user-select: none;
+    }
+
+    .category-card:hover {
+      border-color: #A38800;
+      background: #242424;
+      transform: translateY(-1px);
+    }
+
+    .category-card.selected {
+      background: #0D0D0D;
+      border-color: #e2bb00;
+    }
+
+    .icon {
+      font-size: 22px;
+      line-height: 1;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      line-height: 1.2;
+    }
+
+    .card-sub {
+      font-size: 12px;
+      color: #888;
+      line-height: 1.3;
+    }
+
+    .cont {
+      background-color: #e2bb00;
+      border: none;
+      width: 100%;
+      height: 50px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-family: 'Urbanist', 'Open Sans', Arial;
+      font-size: 18px;
+      cursor: pointer;
+      display: block;
+    }
+
+    .cont:hover {
+      background: #FFD500;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(201,149,42,0.3);
+    }
+
+    .back {
+      width: 100%;
+      border: 1px solid #555;
+      border-radius: 10px;
+      background-color: black;
+      color: #555;
+      margin-top: 10px;
+      height: 50px;
+      align-items: center;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .back:hover {
+      color: #808080;
+      border: 1px solid #808080;
+    }
+
+    a:link, a:visited {
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
 </head>
 
-  <body>
-    <div class="div1">
-      <div class="div2">
-        <div class="progress-bar">
-          <div class="progress-step" style="background: #e2bb00;"></div>
-          <div class="progress-step" style="background: #555;"></div>
-          <div class="progress-step" style="background: #555;"></div>
-        </div>
+<body>
+  <div class="wrap">
 
-     <div class="div2">
-     	 <p class="p1">Step 1 of 3 · Identity</p>
-       <h1>What do you do?</h1>
-       <p2>Pick your category. This shapes your events and opportunities.</p2>
-       <p class="p2"></p>
-     </div>
+    <div class="progress-bar">
+      <div class="progress-step" style="background: #e2bb00;"></div>
+      <div class="progress-step" style="background: #555;"></div>
+      <div class="progress-step" style="background: #555;"></div>
+    </div>
 
-<div class="card-grid"> 
-  <div class = "category-card">
-  <span class="icon">🎤</span>
-  <h1>Singer/Rapper</h1>
-  <p>Music is your weapon</p>
-  </div> 
+    <p class="p1">Step 1 of 3 · Identity</p>
+    <h1>What do you do?</h1>
+    <p class="p2">Pick your category. This shapes your events and opportunities.</p>
 
-  <div class = "category-card">
-  <span class="icon">💿</span>
-  <h1>K-Pop Idol</h1>
-  <p>The stans are ready</p>
-  </div> 
+    <div class="card-grid">
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">🎤</span>
+        <span class="card-title">Singer / Rapper</span>
+        <span class="card-sub">Music is your weapon</span>
+      </div>
 
-  <div class = "category-card">
-  <span class = "icon">✨</span>
-  <h1>Model</h1>
-  <p>The camera loves you</p>
-  </div> 
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">💿</span>
+        <span class="card-title">K-Pop Idol</span>
+        <span class="card-sub">The stans are ready</span>
+      </div>
 
-  <div class = "category-card">
-  <span class = "icon">🏆</span>
-  <h1>Athlete</h1>
-  <p>Champion energy</p>
-  </div> 
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">✨</span>
+        <span class="card-title">Model</span>
+        <span class="card-sub">The camera loves you</span>
+      </div>
 
-<div class = "category-card">
-  <span class = "icon">🎬</span>
-  <h1>Actor/Actress</h1>
-  <p>Every scene is yours</p>
-  </div> 
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">🏆</span>
+        <span class="card-title">Athlete</span>
+        <span class="card-sub">Champion energy</span>
+      </div>
 
-  <div class = "category-card">
-  <span class = "icon">👥</span>
-  <h1>Group Member</h1>
-  <p>Unit over everything</p>
-  </div> 
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">🎬</span>
+        <span class="card-title">Actor / Actress</span>
+        <span class="card-sub">Every scene is yours</span>
+      </div>
 
-<div class = "category-card">
-  <span class = "icon">📱</span>
-  <h1>Content Creator</h1>
-  <p>Always filming</p>
-  </div> 
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">👥</span>
+        <span class="card-title">Group Member</span>
+        <span class="card-sub">Unit over everything</span>
+      </div>
 
-  <div class = "category-card">
-  <span class = "icon">🥂</span>
-  <h1>Socialite</h1>
-  <p>You just exist and trend</p>
-  </div> 
-</div>
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">📱</span>
+        <span class="card-title">Content Creator</span>
+        <span class="card-sub">Always filming</span>
+      </div>
 
-     <div>
-       <a href="famepath.html"><button class="cont">Continue →</button></a>
-       <a href="login.html"><button class="back">← Back</button></a>
-     </div>
-  </body>
+      <div class="category-card" onclick="selectCard(this)">
+        <span class="icon">🥂</span>
+        <span class="card-title">Socialite</span>
+        <span class="card-sub">You just exist and trend</span>
+      </div>
+    </div>
+
+    <a href="famepath.html"><button class="cont">Continue →</button></a>
+    <a href="login.html"><button class="back">← Back</button></a>
+
+  </div>
+
+  <script>
+    function selectCard(el) {
+      document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+  </script>
+</body>
 </html>
