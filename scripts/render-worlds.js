@@ -1,5 +1,3 @@
-// This file should be loaded at the bottom of the page, after the HTML renders
-
 const worldsContainer = document.getElementById("worldsContainer");
 
 worlds.forEach(world => {
