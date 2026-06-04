@@ -75,7 +75,7 @@
       margin-bottom: 16px;
     }
 
-    .category-card {
+    .option {
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -89,13 +89,13 @@
       user-select: none;
     }
 
-    .category-card:hover {
+    .option:hover {
       border-color: #A38800;
       background: #242424;
       transform: translateY(-1px);
     }
 
-    .category-card.selected {
+    .option.selected {
       background: #0D0D0D;
       border-color: #e2bb00;
     }
@@ -184,66 +184,61 @@
       <p class="p2">Pick your category. This shapes your events and opportunities.</p>
 
       <div class="card-grid">
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">🎤</span>
           <span class="card-title">Singer / Rapper</span>
           <span class="card-sub">Music is your weapon</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">💿</span>
           <span class="card-title">K-Pop Idol</span>
           <span class="card-sub">The stans are ready</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">✨</span>
           <span class="card-title">Model</span>
           <span class="card-sub">The camera loves you</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">🏆</span>
           <span class="card-title">Athlete</span>
           <span class="card-sub">Champion energy</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">🎬</span>
           <span class="card-title">Actor / Actress</span>
           <span class="card-sub">Every scene is yours</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">👥</span>
           <span class="card-title">Group Member</span>
           <span class="card-sub">Unit over everything</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">📱</span>
           <span class="card-title">Content Creator</span>
           <span class="card-sub">Always filming</span>
         </div>
 
-        <div class="category-card" onclick="selectCard(this)">
+        <div class="option">
           <span class="icon">🥂</span>
           <span class="card-title">Socialite</span>
           <span class="card-sub">You just exist and trend</span>
         </div>
       </div>
 
-      <a href="famepath.html"><button class="cont">Continue →</button></a>
+      <a href="fame-path.html"><button class="cont">Continue →</button></a>
       <a href="login.html"><button class="back">← Back</button></a>
 
     </div>
   </div>
 
-  <script>
-    function selectCard(el) {
-      document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-    }
-  </script>
+  <script src="click.js"></script>
 </body>
 </html>
