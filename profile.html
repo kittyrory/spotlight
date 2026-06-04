@@ -10,114 +10,105 @@
     * {
       box-sizing: border-box;
     }
-
+    /* ── BANNER CONTAINER ── */
     .header-preview-box {
-      aspect-ratio: 3/1;
-      width: 1500px;
-      max-width: 100%;
-      object-fit: cover;
-      position: relative;
       width: 100%;
-      height: 180px;
-      background: linear-gradient(225deg, #AE8625, #F7EF8A, #D2AC47, #EDC967 100%);
-      margin-bottom: 40px;
+      height: 160px;
+      background-color: #121212;
+      border: 1px solid rgba(255, 209, 102, 0.15);
+      position: relative;
       border-radius: 16px;
-      transition: opacity 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 55px;
       cursor: pointer;
+      transition: background-color 0.2s ease;
+      overflow: visible !important;
+      z-index: 10;
     }
 
     .header-preview-box:hover {
-      cursor: pointer;
-      transition: background 0.5s ease;
-      opacity: 0.85;
+     background-color: #1a1a17;
     }
 
-    .header-preview-box::after {
-      content: "Add Picture";
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 48px;
-      color: white;
-      background: rgba(0, 0, 0, 0.6);
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
+    .banner-placeholder-text {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #757373;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;;
     }
-
-    .header-preview-box:hover::after {
-      opacity: 1;
-    }
-
-    .avatar-circle {
-      aspect-ratio: 1/1;
-      width: 400px;
-      max-width: 100%;
-      object-fit: cover;
-      position: absolute;
-      bottom: -35px;
-      left: 32px;
-      width: 90px;
-      height: 90px;
-      max-width: 400px;
-      aspect-ratio: 1/1;
-      background: #111;
-      display: flex;
-      border: 3px solid #161616;
-      border-radius: 50%;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.7);
-    }
-
-    .avatar-emoji {
-      font-size: 36px;
+    #header-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .avatar-circle:hover {
-      background: linear-gradient(225deg, #b58b22 0%, #57420a 35%, #1c1607 70%, #0000 100%) !important;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      opacity: 0.85;
-    }
-
-    .avatar-circle::after {
-      content: "Add Picture";
+      border-radius: 16px;
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 24px;
-      color: white;
-      background: rgba(0, 0, 0, 0.6);
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      z-index: 1;
     }
 
-    .avatar-circle:hover::after {
-      opacity: 1;
+   /* ── TWITTER-STYLE AVATAR ── */
+    
+  .avatar-circle {
+    position: absolute;
+    bottom: -40px;
+    left: 24px;
+    width: 85px;
+    height: 85px;
+    background: #212020;
+    border: 2px solid #111;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    box-shadow: 0 4px 12px rgba(4, 4, 4, 0.5);
+    border-color: #fff;
+    z-index: 20;
+   }
+
+   .avatar-circle:hover {
+    transform: scale(1.02);
+  }
+
+  #avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 21;
+  }
+ 
+  /* Stylized "Add Pic" Text Layout */
+  .avatar-prompt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    line-height: 1.3;
+    font-family: DM Sans, sans-serif;
+    pointer-events: none;
+    z-index: 2;
+  }
+ .avatar-prompt span {
+   font-size: 10px;
+   font-weight: 700;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+    color: #ffffff;
+    opacity: 0.7;
     }
 
+  
+/* ── TRIZA ── */
     .placeholder-text {
       color: #555;
       font-size: 11px;
@@ -154,7 +145,7 @@
       background: black;
       margin: 0 auto;
       color: aliceblue;
-      font-family: 'Open Sans', sans-serif;
+      font-family:'DM Mono', sans;
       width: 100%;
       max-width: 500px;
       padding: 40px 20px;
@@ -198,18 +189,21 @@
 
     .profile-text h2 {
       color: #888;
-      font-size: 14px;
-      color: #ffff;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      font-size: medium;
+      color: #ffffff;
       font-weight: 600;
       margin: 0;
     }
 
     .form-selection {
       display: flex;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      font-weight: 600;
       flex-direction: column;
       gap: 8px;
       margin: 20px 0;
-      color: grey;
+      color: rgb(255, 255, 255);
     }
 
     .field-input {
@@ -231,6 +225,7 @@
 
     .form-input {
       box-sizing: border-box;
+      font-family: 'DM Mono', monospace;
       background-color: #121212;
       border: 1px solid #222222;
       border-radius: 12px !important;
@@ -246,7 +241,7 @@
     }
 
     .profile-text p {
-      color: #666666;
+      color: #ffffff;
       font-size: 11px !important;
       margin: 2px 0 0;
     }
@@ -266,16 +261,19 @@
 
     .bio-title {
       color: #fff;
+      font-family: 'Times New Roman', Times, serif;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 900;
     }
 
     .gameplay-badge {
       color: #ffcc00;
-      font-size: 11px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
+      text-shadow: 0 0 5px #ffeb9c;
     }
 
     .bio-box-container {
@@ -380,22 +378,28 @@
 </head>
 
 <body>
-  <div class="header-preview-box">
-    <input type="file" id="profile-input" accept="image/*">
-
-    <label for="profile-input"  id="profile-label">
-      <div class="avatar-circle">
-        <span class="avatar-emoji">🎭</span>
+ <input type="file" id="header-input" accept="image/*" onchange="previewImage(this, 'header-img')" style="display: none;">
+ <input type="file" id="avatar-input" accept="image/*" onchange="previewImage(this, 'avatar-img')" style="display: none;">
+ <div class="header-preview-box" onclick="document.getElementById('header-input').click();">
+    <img id="header-img" src="" alt="" style="display: none;">
+    <div class="banner-placeholder-text" id="banner-text">Tap to add banner</div>
+    
+    <div class="avatar-circle" onclick="event.stopPropagation(); document.getElementById('avatar-input').click();">
+      <img id="avatar-img" src="" alt="" style="display: none;">
+      <div class="avatar-prompt">
+        <span>Add</span>
+        <span>Pic</span>
       </div>
-    </label>
+    </div>
   </div>
-
-  <div class="section-divider"></div>
 
   <div class="form-selection">
-    <label class="section-title">Display Name</label>
+    <label class="profile-text">
+      <h2>Display Name</h2>
+    </label>
     <input type="text" class="form-input" placeholder="Your Stage Name">
   </div>
+
 
   <div class="form-selection">
     <label class="section-title">Handle</label>
@@ -428,8 +432,46 @@
 
   <a href="world-selection.html"><button class="cont">Continue →</button></a>
   <a href="origin.html"><button class="back">← Back</button></a>
+<script>
+  // changes the color for the buttons when clicked
+document.querySelectorAll('.option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+  });
+});
 
-  <script src="click.js"></script>
+// Image Selection and Preview Function
+function previewImage(input, targetId) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const imgElement = document.getElementById(targetId);
+      imgElement.src = e.target.result;
+      imgElement.style.display = 'block';
+      imgElement.style.opacity= '1';
+
+      if (targetId === 'header-img') {
+        const bannerText = document.getElementById('banner-text');
+        if (bannerText) {
+          bannerText.style.display = 'none';
+        }
+      } else {
+        const avatarPrompt = document.querySelector('.avatar-prompt');
+        if (avatarPrompt) avatarPrompt.style.display = 'none';
+      }
+      console.log("Success! Image loaded into" + targetId);
+    };
+    
+    reader.readAsDataURL(file);
+  }else {
+    console.log("No file selected for.");
+  }
+} 
+
+</script>
 </body>
 
 </html>
