@@ -88,7 +88,6 @@
         color: var(--text);
       }
 
-      /* CHANGE 1: slide-up transition instead of display:none toggle */
       .confirm-bar {
         position: fixed;
         bottom: 0;
@@ -108,8 +107,7 @@
       .confirm-bar.visible {
         transform: translateY(0);
       }
-
-      /* CHANGE 2: shake animation on the whole bar */
+      
       @keyframes shake {
         0%,100% { transform: translateY(0) translateX(0); }
         15%  { transform: translateY(0) translateX(-6px); }
@@ -146,7 +144,6 @@
         align-items: center;
       }
 
-      /* CHANGE 3: pill-shaped confirm button (like cat buttons) */
       .btn-confirm {
         background: var(--accent);
         border: none;
@@ -417,6 +414,6 @@
     </div>
 
     <script src="scripts/worlds.js"></script>
-    <script src="scripts/world-scripts.js"></scripts>
+    <script src="scripts/world-scripts.js"></script>
   </body>
 </html>
