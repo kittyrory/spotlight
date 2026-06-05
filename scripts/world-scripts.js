@@ -1,35 +1,71 @@
 //------------------
+// FILTER
+//------------------
+
+window.applyFilters = function () {
+  const query    = document.getElementById('searchInput').value.toLowerCase().trim();
+  const category = window.getActiveCategory ? window.getActiveCategory() : 'All';
+
+  const filtered = (window.WORLDS || []).filter(function (w) {
+    const matchCat    = category === 'All' || w.category === category;
+    const matchSearch = !query
+      || w.title.toLowerCase().includes(query)
+      || (w.desc && w.desc.toLowerCase().includes(query))
+      || (w.tags && w.tags.some(function (t) { return t.toLowerCase().includes(query); }));
+    return matchCat && matchSearch;
+  });
+
+  renderWorlds(filtered);
+  attachClickListeners();
+};
+
+function attachClickListeners() {
+  const container = document.getElementById('worldsContainer');
+  container.querySelectorAll('.world-btn').forEach(function (btn) {
+    const world = (window.WORLDS || []).find(function (w) { return w.id == btn.dataset.id; });
+    if (!world) return;
+
+    const isSelected = (window.getSelected ? window.getSelected() : [])
+      .some(function (w) { return w.id === world.id; });
+    btn.style.borderColor = isSelected ? '#e2bb00' : '';
+    btn.style.background  = isSelected ? '#0D0D0D' : '';
+
+    btn.addEventListener('click', function () {
+      window.handleWorldClick(world);
+    });
+  });
+}
+
+//------------------
 // RENDER WORLDS
 //------------------
 
-const worldsContainer = document.getElementById("worldsContainer");
+function renderWorlds(list) {
+  const worldsContainer = document.getElementById("worldsContainer");
+  worldsContainer.innerHTML = "";
+
+  list.forEach(world => {
+    const tagsHTML = world.tags
+      .map(tag => `<span class="tag">${tag}</span>`)
+      .join("");
+
+    worldsContainer.innerHTML += `
+      <button class="world-btn" data-id="${world.id}">
+        <img class="world-btn-img" src="${world.image}">
+        <div class="world-btn-body">
+          <div class="world-btn-title">${world.title}</div>
+          <div class="world-btn-desc">${world.desc}</div>
+          <div class="world-btn-tag">${tagsHTML}</div>
+        </div>
+      </button>
+    `;
+  });
+}
 
 worlds.forEach((world, i) => { world.id = i; });
-worlds.forEach(world => {
-  const tagsHTML = world.tags
-    .map(tag => `<span class="tag">${tag}</span>`)
-    .join("");
-
-  worldsContainer.innerHTML += `
-    <button class="world-btn">
-      <img
-        class="world-btn-img"
-        src="${world.image}"
-      >
-      <div class="world-btn-body">
-        <div class="world-btn-title">
-          ${world.title}
-        </div>
-        <div class="world-btn-desc">
-          ${world.desc}
-        </div>
-        <div class="world-btn-tag">
-          ${tagsHTML}
-        </div>
-      </div>
-    </button>
-  `;
-});
+window.WORLDS = worlds;
+renderWorlds(worlds);
+attachClickListeners();
 
 //------------------
 // SEARCH FUNCTION
@@ -64,7 +100,7 @@ worlds.forEach(world => {
 })();
 
 //------------------
-// DROPDOWN BUTTON
+// DROPDOWN
 // (count, cap, dynamic "_/3" text, & shake)
 //------------------
 
@@ -154,43 +190,3 @@ worlds.forEach(world => {
     window.updateConfirmBar();
   });
 })();
-
-//------------------
-// FILTER
-//------------------
-
-window.applyFilters = function () {
-  const query    = document.getElementById('searchInput').value.toLowerCase().trim();
-  const category = window.getActiveCategory ? window.getActiveCategory() : 'All';
-
-  const filtered = (window.WORLDS || []).filter(function (w) {
-    const matchCat    = category === 'All' || w.category === category;
-    const matchSearch = !query
-      || w.title.toLowerCase().includes(query)
-      || (w.desc && w.desc.toLowerCase().includes(query))
-      || (w.tags && w.tags.some(function (t) { return t.toLowerCase().includes(query); }));
-    return matchCat && matchSearch;
-  });
-
-  renderWorlds(filtered);
-  attachClickListeners();
-};
-
-function attachClickListeners() {
-  const container = document.getElementById('worldsContainer');
-  container.querySelectorAll('.world-btn').forEach(function (btn) {
-    const world = (window.WORLDS || []).find(function (w) { return w.id == btn.dataset.id; });
-    if (!world) return;
-
-    const isSelected = (window.getSelected ? window.getSelected() : [])
-      .some(function (w) { return w.id === world.id; });
-    btn.style.borderColor = isSelected ? '#e2bb00' : '';
-    btn.style.background  = isSelected ? '#0D0D0D' : '';
-
-    btn.addEventListener('click', function () {
-      window.handleWorldClick(world);
-    });
-  });
-}
-
-attachClickListeners();
