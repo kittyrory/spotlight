@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Spotlight | Stage</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- font links -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100
+..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+ 
+  body {
+    background-color: #000;
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-family: 'DM Sans', sans-serif;
+  }
+ 
+  /* ── STICKY HEADER ── */
+  .top-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 9999;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+ 
+  .logo-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+ 
+  .logo-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ffd166;
+    display: inline-block;
+    box-shadow:
+      0 0 4px 1px #ffd166 inset,
+      0 0 12px 2px #ffd166 inset,
+      0 0 20px 4px #ffd166;
+  }
+ 
+  .logo-text {
+    font-family: 'Urbanist', sans-serif;
+    font-weight: 900;
+    color: #ffffff;
+    font-size: 26px;
+    letter-spacing: 1px;
+  }
+ 
+  .player-handle {
+    font-family: 'DM Mono', monospace;
+    color: #d7d7d7;
+    font-size: 13px;
+  }
+ 
+  /* ── DIVIDER ── */
+  .hr-divider {
+    position: fixed;
+    top: 65px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    height: 0.5px;
+    background: linear-gradient(to right, transparent, #ffd16689, transparent);
+    z-index: 9998;
+  }
+ 
+  /* ── SCROLLABLE CONTENT ── */
+  .page-content {
+    padding-top: 90px;
+    padding-left: 16px;
+    padding-right: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 48px;
+    width: 100%;
+  }
+ 
+  /* ── PROFILE CIRCLE ── */
+  .profile-upload-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+ 
+  #profile-input {
+    display: none;
+  }
+ 
+  .profile-circle {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #1f2833, #121821);
+    border: 1.5px solid #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 3px #0b0c10,
+      0 0 8px #ffd166,
+      0 8px 20px rgba(255, 209, 102, 0.3);
+    transition: all 0.3s ease;
+  }
+ 
+  #placeholder-text {
+    font-family: 'Open Sans', sans-serif;
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.3;
+  }
+ 
+  #profile-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+ 
+  /* ── HERO CARD ── */
+  .hero-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    padding: 0 16px;
+  }
+ 
+  .hero-badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #ffd166;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(255, 209, 102, 0.08);
+    border: 1px solid rgba(255, 209, 102, 0.25);
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+ 
+  .hero-handle {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: #ffffff;
+  }
+ 
+  .hero-role {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: #bebdbd;
+    letter-spacing: 1px;
+  }
+
+  /* ── CURRENT LEVEL ── */
+  .Current-Level {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .badges-row{
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 8px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .badges-row::-webkit-scrollbar {
+    display: none;
+  }
+  .badge{
+    border: 1px solid rgba(255, 209, 102, 0.25);
+    color: #c5c5c5;
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: rgba(255, 209, 102, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+  .badge.active {
+    border: 1px solid #ffd166;
+    color: #ffd166;
+    background: rgba(255, 209, 102, 0.25);
+  }
+  
+ .badge-lvl {
+  font-size: 9px;
+  color: #555;
+  letter-spacing: 1px;
+ }
+
+ .badge-name {
+  font-size: 11px;
+  font-weight: 600;
+ }
+
+ .badge.active .badge-lvl {
+  color: #ffd166;
+ }
+
+ .badge.active .badge-name {
+  color: #ffd166;
+ }
+
+  .level-card{
+    border:1px solid rgba(255, 209, 102, 0.25);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    background: #0a0a00;
+    width: 100%;
+    max-width: 440px;
+    align-self: center;
+  }
+
+ .Current-Level .level {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: #c5c5c5;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .left-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+  .Light-Up {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #ffd166;
+    text-shadow: 0 0 8px #ffd166;
+  }
+  .Keep-Up {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: #e4e4e4;
+  }
+  .XP {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: #868585;
+  }
+ /* ── XP-FILL── */
+  .level-up-progress {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #c5c5c5;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 0;
+  }
+ .xp-section {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+ .xp-wrapper {
+    width: 100%;
+    border-radius: 999px;
+  }
+
+  .xp-track {
+    width: 100%;
+    height: 8px;
+    background: #322d2d;
+    border-radius: 999px;
+    overflow: hidden;
+    animation: none;
+
+  }
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #b28a2e, #e2a41e, #ffc144);
+    border-radius: 999px;
+    width: 0%;
+    animation:pulse 2s ease-in-out infinite;
+  }
+
+ @keyframes pulse {
+  0%, 100% { box-shadow: 0 0 8px #ffc64b, 0 0 16px rgba(200,146,26,0.4); }
+  50% { box-shadow: 0 0 16px #f7b830, 0 0 32px rgba(255, 190, 51, 0.7), 0 0 48px rgba(200,146,26,0.3); }
+ }
+ 
+   /* ── ACCOMPLISHMENT ── */
+
+ .accomplishment-container {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .section-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 6px;
+  }
+  
+  .section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 16px;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  .see-all {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #999797;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+ /* ── CARD COMPONENT ── */
+  .accomplishment-card {
+    background-color: #0a0a00;
+    border: 1px solid rgba(255, 209, 102, 0.25);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card-header{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+   }
+   .card-subtitle {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #888;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+   }
+   .category-pill{
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: #ffd500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(255, 209, 102, 0.08);
+    border: 1px solid rgba(234, 166, 7, 0.25);
+    padding: 2px 8px;
+    border-radius: 999px;
+   }
+
+   .card-title {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: #ffffff;
+    margin: 0;
+   }
+
+   .card-description {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: #c5c5c5;
+    line-height: 1.5;
+   }
+
+   
+ /* ── TAGS ──*/
+  .tag{
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    white-space: nowrap;
+    display: inline-flex;
+    flex-shrink: 0;
+  }
+  .tag-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+  }
+  .tag.positive {
+    color: #a1e887;
+    background: rgba(161, 232, 135, 0.15);
+    border: 1px solid rgba(161, 232, 135, 0.25);
+  }
+  .tag.negative {
+    color: #e87c7c;
+    background: rgba(232, 124, 124, 0.15);
+    border: 1px solid rgba(232, 124, 124, 0.25);
+  }
+  
+
+  
+
+
+  /* ── MOBILE ── */
+  @media screen and (max-width: 480px) {
+    .top-header {
+      padding: 14px 18px;
+    }
+    .logo-text {
+      font-size: 22px;
+    }
+    .player-handle {
+      font-size: 12px;
+    }
+    .hr-divider {
+      top: 58px;
+    }
+    .page-content {
+      padding-top: 80px;
+    }
+    .profile-circle {
+      width: 80px;
+      height: 80px;
+    }
+    .hero-handle {
+      font-size: 19px;
+    }
+  }
+ 
+</style>
+</head>
+<body>
+ 
+  <!-- STICKY HEADER -->
+  <header class="top-header">
+    <div class="logo-wrapper">
+      <span class="logo-dot"></span>
+      <span class="logo-text">STAGE</span>
+    </div>
+    <div class="player-handle">@playersname</div>
+  </header>
+ 
+  <!-- THIN GOLD DIVIDER BELOW HEADER -->
+  <div class="hr-divider"></div>
+ 
+  <!-- SCROLLABLE PAGE CONTENT -->
+  <main class="page-content">
+ 
+    <!-- Profile Photo -->
+    <div class="profile-upload-container">
+      <input type="file" id="profile-input" accept="image/*">
+      <label for="profile-input" class="profile-circle" id="profile-label">
+        <span id="placeholder-text">+ Add<br>Pic</span>
+        <img id="profile-preview" src="#" alt="Profile Preview"/>
+      </label>
+    </div>
+ 
+    <!-- Hero Card -->
+    <div class="hero-card">
+      <span class="hero-badge">✦ Rising Star</span>
+      <span class="hero-handle">@yourhandle</span>
+      <span class="hero-role">✦ Singer</span>
+    </div>
+ 
+   
+  <!-- Current Level -->
+  <div class="level-card">
+
+     <!-- Row 1: CURRENT LEVEL + LVL 3 BUZZING -->
+     <div class="Current-Level">
+       <span class="level">CURRENT LEVEL</span>
+       <span class="level">Lv 3 . BUZZING</span>
+      </div>
+    <!-- Row 2: Light Up + XP -->
+     <div class="Current-Level">
+      <div class="left-group">
+       <span class="Light-Up">Light Up!</span>
+       <span class="Keep-Up">— Keep Sparking</span>
+      </div>
+       <span class="XP">1,240/2,000 XP</span>
+     </div>
+
+<!--LV 3/XP to go / Lv 4-->
+<div class="xp-section">
+  <div class="xp-wrapper">
+    <div class="xp-track">
+      <div class="xp-fill" id="xp-fill"></div>
+    </div>
+  </div>
+  <div class="Current-Level">
+    <span class="level-up-progress">Lv 3</span>
+    <span class="level-up-progress">760 XP to go</span>
+    <span class="level-up-progress">Lv 4</span>
+  </div>
+</div>
+
+<!--Badges-->
+ <div class="badges-row">
+  
+  <div class="badge">
+    <span class="badge-lvl">LVL 1</span>
+    <span class="badge-name">Nobody</span>
+  </div>
+  <div class="badge">
+    <span class="badge-lvl">LVL 2</span>
+    <span class="badge-name">Buzzing</span>
+  </div>
+  <div class="badge">
+    <span class="badge-lvl">LVL 3</span>
+    <span class="badge-name">Rising✦</span>
+  </div>
+  <div class="badge">
+    <span class="badge-lvl">LVL 4</span>
+    <span class="badge-name">Blazing</span>
+  </div>
+  <div class="badge">
+    <span class="badge-lvl">LVL 5</span>
+    <span class="badge-name">Attention</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 6</span>
+    <span class="badge-name">Supernova</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 7</span>
+    <span class="badge-name">Blinding</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 8</span>
+    <span class="badge-name">Incandescent</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 9</span>
+    <span class="badge-name">Flicker</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 10</span>
+    <span class="badge-name">Eclipse</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 11</span>
+    <span class="badge-name">Luminous</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 12</span>
+    <span class="badge-name">Flare</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 13</span>
+    <span class="badge-name">Glint</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 14</span>
+    <span class="badge-name">Luck</span>
+  </div>
+   <div class="badge">
+    <span class="badge-lvl">LVL 15</span>
+    <span class="badge-name">Overexposed</span>
+  </div>
+ </div> 
+</div>
+  <!--all the other sections below-->
+ <div class="accomplishment-container">
+   <div class="section-title-row">
+    <h2 class="section-title">ACCOMPLISHMENTS</h2>
+    <span class="see-all">See All</span>
+  </div>
+  <div class="accomplishment-card">
+    <div class="card-header">
+      <span class="card-subtitle">Who You Are</span>
+      <span class="category-pill">Identity</span>
+    </div>
+    <h3 class="card-title"> ✦The Nepo Baby</h3>
+    <p class="card-description">
+      Born into the industry. Doors open differently for you — but so does the scrutiny. Every move is watched, every mistake amplified.
+    </p>
+    <div class="tag-row">
+      <span class="tag positive">+20% Brand Deals</span>
+      <span class="tag negative">+30% Hate Comments</span>
+      <span class="tag positive">Industry Access Early</span>
+   </div>
+  </div>
+  <div class="accomplishment-card">
+    <div class="card-header">
+      <span class="card-subtitle">What You Do</span>
+      <span class="category-pill">CAREER</span>
+    </div>
+    <h3 class="card-title"> ✦Influencer</h3>
+    <p class="card-description">
+      Content, collabs, sponsorships, drama. The most parasocial career path.
+    </p>
+    <div class="tag-row">
+      <span class="tag positive">Social Fandoms Boosted</span>
+      <span class="tag negative">+15% Fan Loyalty</span>
+      <span class="tag negative">Cancel Risk</span>
+   </div>
+  </div>
+  <div class="accomplishment-card">
+    <div class="card-header">
+      <span class="card-subtitle">How You Got Here</span>
+      <span class="category-pill">ORIGIN</span>
+    </div>
+    <h3 class="card-title">✦Reality TV</h3>
+    <p class="card-description">
+      The whole country watched you before you dropped a single post.
+    </p>
+    <div class="tag-row">
+      <span class="tag positive">+ 500 Starting Followers</span>
+      <span class="tag negative">+ Mixed Public Opinion</span>
+      <span class="tag negative">+ Drama Events</span>
+   </div>
+  </div>
+ </div>
+ </main>
+
+  <script>
+      const profileInput = document.getElementById('profile-input');
+      const profilePreview = document.getElementById('profile-preview');
+      const placeholderText = document.getElementById('placeholder-text');
+ 
+      profileInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            profilePreview.src = e.target.result;
+            profilePreview.style.display = 'block';
+            placeholderText.style.display = 'none';
+          }
+          reader.readAsDataURL(file);
+        }
+      });
+  const currentLevel = 3
+
+   document.querySelectorAll('.badge').forEach((badge, index) => {
+   if (index + 1 <= currentLevel) {
+    badge.classList.add('active')
+   }
+   });
+
+   setTimeout(() => {
+  const fill = document.getElementById('xp-fill')
+  fill.style.transition = 'width 1.4s cubic-bezier(.16,1,.3,1)'
+  fill.style.width = '62%'
+ }, 300)
+  </script>
+</body>
+</html>
