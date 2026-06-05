@@ -5,6 +5,4 @@ document.querySelectorAll('.option').forEach(opt => {
     document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
     opt.classList.add('selected');
   });
-
-  DELETE THIS JS FILE PLEASEEEE
 });
