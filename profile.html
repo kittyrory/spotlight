@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width initial-scale=1.0">
+  <title>Spotlight | Profile Setup</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    /* ── BANNER CONTAINER ── */
+    .header-preview-box {
+      width: 100%;
+      height: 160px;
+      background-color: #121212;
+      border: 1px solid rgba(255, 209, 102, 0.15);
+      position: relative;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 55px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      overflow: visible !important;
+      z-index: 10;
+    }
+
+    .header-preview-box:hover {
+     background-color: #1a1a17;
+    }
+
+    .banner-placeholder-text {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #757373;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;;
+    }
+    #header-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+   /* ── TWITTER-STYLE AVATAR ── */
+    
+  .avatar-circle {
+    position: absolute;
+    bottom: -40px;
+    left: 24px;
+    width: 85px;
+    height: 85px;
+    background: #212020;
+    border: 2px solid #111;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+    box-shadow: 0 4px 12px rgba(4, 4, 4, 0.5);
+    border-color: #fff;
+    z-index: 20;
+   }
+
+   .avatar-circle:hover {
+    transform: scale(1.02);
+  }
+
+  #avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    z-index: 21;
+  }
+ 
+  /* Stylized "Add Pic" Text Layout */
+  .avatar-prompt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    line-height: 1.3;
+    font-family: DM Sans, sans-serif;
+    pointer-events: none;
+    z-index: 2;
+  }
+ .avatar-prompt span {
+   font-size: 10px;
+   font-weight: 700;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+    color: #ffffff;
+    opacity: 0.7;
+    }
+
+  
+/* ── TRIZA ── */
+    .placeholder-text {
+      color: #555;
+      font-size: 11px;
+      margin-top: 5px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    #placeholder-text,
+    .file-name
+    .browse-text {
+      display: none;
+    }
+
+    .header-title {
+      color: #fff;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      margin: 0;
+      text-align: center;
+    }
+
+    .header-spacer {
+      width: 40px;
+    }
+
+    body {
+      background: black;
+      margin: 0 auto;
+      color: aliceblue;
+      font-family:'DM Mono', sans;
+      width: 100%;
+      max-width: 500px;
+      padding: 40px 20px;
+      padding-top: 60px;
+    }
+
+    .section-divider {
+      width: 100%;
+      position: relative;
+      height: 1px;
+      background-color: #1a1a1a;
+      margin: 24px;
+      margin-bottom: 24px;
+      border: none;
+    }
+
+    .icon {
+      font-size: 24px;
+      background-color: black;
+      padding: 16px;
+      border: 1px solid #333;
+      justify-content: center;
+      border-radius: 12px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+      display: inline-flex;
+      align-items: center;
+      height: 50px;
+      width: 50px;
+      text-align: left;
+    }
+
+    .profile-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+      font-size: 12px;
+      color: #686868;
+    }
+
+    .profile-text h2 {
+      color: #888;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      font-size: medium;
+      color: #ffffff;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .form-selection {
+      display: flex;
+      font-family: Georgia, 'Times New Roman', Times, serif;
+      font-weight: 600;
+      flex-direction: column;
+      gap: 8px;
+      margin: 20px 0;
+      color: rgb(255, 255, 255);
+    }
+
+    .field-input {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      padding: 4px 0;
+      outline: none;
+      width: 100%;
+      border-color: #3333;
+    }
+
+    .handle-prefix {
+      color: #fff;
+      font-size: 16px;
+      user-select: none;
+    }
+
+    .form-input {
+      box-sizing: border-box;
+      font-family: 'DM Mono', monospace;
+      background-color: #121212;
+      border: 1px solid #222222;
+      border-radius: 12px !important;
+      color: #ffff !important;
+      font-size: 14px;
+      width: 100%;
+      outline: none !important;
+      padding: 16px !important;
+    }
+
+    .form-input::placeholder {
+      color: #555;
+    }
+
+    .profile-text p {
+      color: #ffffff;
+      font-size: 11px !important;
+      margin: 2px 0 0;
+    }
+
+    .bio-section {
+      width: 100%;
+      box-sizing: border-box;
+      margin-top: 24px;
+    }
+
+    .bio-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .bio-title {
+      color: #fff;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .gameplay-badge {
+      color: #ffcc00;
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-shadow: 0 0 5px #ffeb9c;
+    }
+
+    .bio-box-container {
+      background-color: #121212;
+      border: 1px solid #222222;
+      border-radius: 12px !important;
+      padding: 12px 14px !important;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bio-input {
+      background: transparent !important;
+      border: none !important;
+      color: #fff;
+      font-size: 14px !important;
+      line-height: 1.5;
+      width: 100%;
+      height: 55px;
+      resize: none;
+      outline: none;
+      padding: 0;
+      font-family: inherit;
+    }
+
+    .bio-input::placeholder {
+      color: #555;
+    }
+
+    .char-counter {
+      align-self: flex-end;
+      color: #38342e !important;
+      font-size: 10px;
+      margin-top: 4px !important;
+    }
+
+    .bio-suggestions {
+      color: #38342e;
+      font-size: 11px !important;
+      margin: 8px 0 0 0 !important;
+    }
+
+    .bio-suggestions span {
+      font-style: italic;
+    }
+
+    .profile-card:hover {
+      border-color: #ffd700 !important;
+      background-color: #1a1a1a !important;
+      transition: all 0.2s ease;
+    }
+
+    .cont {
+      background-color: #e2bb00;
+      border: none;
+      width: 100%;
+      height: 50px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-family: 'Urbanist', 'Open Sans', Arial;
+      font-size: 18px;
+      cursor: pointer;
+      display: block;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+    }
+
+    .cont:hover {
+      background: #FFD500;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 16px rgba(201, 149, 42, 0.3);
+    }
+
+    .back {
+      width: 100%;
+      border: 1px solid #555;
+      border-radius: 10px;
+      background-color: black;
+      color: #555;
+      margin-top: 10px;
+      height: 50px;
+      align-items: center;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .back:hover {
+      color: #808080;
+      border: 1px solid #808080;
+    }
+
+    a:link,
+    a:visited {
+      text-decoration: none;
+      color: inherit;
+    }
+  </style>
+</head>
+
+<body>
+ <input type="file" id="header-input" accept="image/*" onchange="previewImage(this, 'header-img')" style="display: none;">
+ <input type="file" id="avatar-input" accept="image/*" onchange="previewImage(this, 'avatar-img')" style="display: none;">
+ <div class="header-preview-box" onclick="document.getElementById('header-input').click();">
+    <img id="header-img" src="" alt="" style="display: none;">
+    <div class="banner-placeholder-text" id="banner-text">Tap to add banner</div>
+    
+    <div class="avatar-circle" onclick="event.stopPropagation(); document.getElementById('avatar-input').click();">
+      <img id="avatar-img" src="" alt="" style="display: none;">
+      <div class="avatar-prompt">
+        <span>Add</span>
+        <span>Pic</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-selection">
+    <label class="profile-text">
+      <h2>Display Name</h2>
+    </label>
+    <input type="text" class="form-input" placeholder="Your Stage Name">
+  </div>
+
+
+  <div class="form-selection">
+    <label class="section-title">Handle</label>
+    <input type="text" class="form-input" placeholder="@yourhandle">
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="bio-selection">
+    <div class="bio-header">
+      <label class="bio-title">Your Bio</label>
+      <span class="gameplay-badge">⚡AFFECTS GAMEPLAY</span>
+    </div>
+
+    <div class="bio-box-container">
+      <textarea class="bio-input"
+        placeholder="Tell the world who you are. Be iconic, be real, be chaotic-your words unlock hidden traits and shape how celebrities and fans treat you...."></textarea>
+      <div class="char-counter">0/150</div>
+    </div>
+
+    <p class="bio-suggestions">
+      Try:
+      <span>iconic</span>,
+      <span>drama</span>,
+      <span>love</span>,
+      <span>dark</span>,
+      <span>authentic</span>...
+    </p>
+  </div>
+
+  <a href="world-selection.html"><button class="cont">Continue →</button></a>
+  <a href="origin.html"><button class="back">← Back</button></a>
+<script>
+  // changes the color for the buttons when clicked
+document.querySelectorAll('.option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+  });
+});
+
+// Image Selection and Preview Function
+function previewImage(input, targetId) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const imgElement = document.getElementById(targetId);
+      imgElement.src = e.target.result;
+      imgElement.style.display = 'block';
+      imgElement.style.opacity= '1';
+
+      if (targetId === 'header-img') {
+        const bannerText = document.getElementById('banner-text');
+        if (bannerText) {
+          bannerText.style.display = 'none';
+        }
+      } else {
+        const avatarPrompt = document.querySelector('.avatar-prompt');
+        if (avatarPrompt) avatarPrompt.style.display = 'none';
+      }
+      console.log("Success! Image loaded into" + targetId);
+    };
+    
+    reader.readAsDataURL(file);
+  }else {
+    console.log("No file selected for.");
+  }
+} 
+
+</script>
+</body>
+
+</html>

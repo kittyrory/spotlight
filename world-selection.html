@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8">
@@ -86,9 +87,80 @@
         text-transform: uppercase;
         color: var(--text);
       }
-      
+
       .confirm-bar {
-        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border2);
+        padding: 16px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 100;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .confirm-bar.visible {
+        transform: translateY(0);
+      }
+      
+      @keyframes shake {
+        0%,100% { transform: translateY(0) translateX(0); }
+        15%  { transform: translateY(0) translateX(-6px); }
+        30%  { transform: translateY(0) translateX(6px); }
+        45%  { transform: translateY(0) translateX(-4px); }
+        60%  { transform: translateY(0) translateX(4px); }
+        75%  { transform: translateY(0) translateX(-2px); }
+        90%  { transform: translateY(0) translateX(2px); }
+      }
+
+      .confirm-bar.shake {
+        animation: shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+      }
+
+      .confirm-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .confirm-count {
+        font-family: 'Source Code Pro', monospace;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .confirm-count span {
+        color: var(--accent);
+      }
+
+      .selected-previews {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .btn-confirm {
+        background: var(--accent);
+        border: none;
+        color: var(--bg);
+        padding: 10px 22px;
+        border-radius: 50px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: opacity 0.2s, transform 0.15s;
+        letter-spacing: 0.3px;
+      }
+
+      .btn-confirm:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
       }
       
       h1 {
@@ -340,9 +412,8 @@
       </div>
       <button class="btn-confirm">Enter the Spotlight &rarr;</button>
     </div>
-  </body>
 
-  <script src="scripts/worlds.js"></script>
-  <script src="scripts/render-worlds.js"></script>
-  <script src="scripts/counter.js"></script>
+    <script src="scripts/worlds.js"></script>
+    <script src="scripts/world-scripts.js"></script>
+  </body>
 </html>
