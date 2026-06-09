@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>impentics — what drives you?</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  
+  <style>
+   </style>
+</head>
+<body>
+    <div class="wrapper">
+
+    <div id="intro">
+        <div style="padding-top:3.5rem;padding-bottom:3rem;text-align:center;">
+        <div class="eyebrow">a motive profiling system</div>
+        <h1 class="big-title">impen<em>tics</em></h1>
+        <p class="subtitle">three sections. core motive, modifier, manifest.<br>answer honestly — there are no good results.</p>
+        <button class="start-btn" onclick="startQuiz()">begin →</button>
+        </div>
+    </div>
+
+    <div id="transition" class="hidden">
+        <div class="section-num" id="t-num"></div>
+        <div class="transition-title" id="t-title"></div>
+        <p class="transition-desc" id="t-desc"></p>
+        <button class="continue-btn" onclick="beginSection()">continue →</button>
+    </div>
+
+    <div id="quiz" class="hidden">
+        <div class="section-header">
+        <div class="section-pip"></div>
+        <div class="section-label" id="section-label"></div>
+        </div>
+        <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="pfill"></div></div>
+        <div class="progress-count" id="pcount"></div>
+        </div>
+        <div class="question-card">
+        <div class="q-num" id="q-num"></div>
+        <div class="q-text" id="q-text"></div>
+        </div>
+        <div class="options" id="options"></div>
+        <div class="nav-row">
+        <button class="nav-btn" id="back-btn" onclick="goBack()">← back</button>
+        <button class="nav-btn primary" id="next-btn" onclick="goNext()" disabled>next →</button>
+        </div>
+    </div>
+
+    <div id="result" class="hidden">
+        <div class="eyebrow">your impentics type</div>
+        <div class="result-type-tag" id="r-tag" data-tag=""></div>
+        <div class="result-motive-name" id="r-name"></div>
+        <div class="result-badges" id="r-badges"></div>
+        <div class="desc-blocks" id="desc-blocks"></div>
+        <div class="breakdown-label">motive scores</div>
+        <div class="scores-grid" id="motive-scores"></div>
+        <div class="breakdown-label">modifier</div>
+        <div class="mini-grid two" id="modifier-scores"></div>
+        <div class="breakdown-label">manifest</div>
+        <div class="mini-grid three" id="manifest-scores"></div>
+        <button class="restart-btn" onclick="restart()">↺ retake</button>
+    </div>
+
+    </div>
+</body>
+</html>
