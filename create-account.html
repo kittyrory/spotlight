@@ -14,7 +14,7 @@
   * { 
     box-sizing: border-box; 
   }
-
+  
   body {
     margin: 0;
     min-height: 100vh;
@@ -25,19 +25,19 @@
     background-color: black;
     color: white;
   }
-
+  
   .card {
     width: 100%;
     max-width: 380px;
     padding: 40px;
   }
-
+  
   .logo {
     display: flex;
     align-items: center;
     margin-bottom: 28px;
   }
-
+  
   .logo-dot {
     width: 8px;
     height: 8px;
@@ -46,31 +46,31 @@
     margin-right: 8px;
     flex-shrink: 0;
   }
-
+  
   .logo-text {
     font-family: 'Anek Latin', Arial;
     font-size: 16px;
     letter-spacing: 2px;
     color: #666;
   }
-
+  
   .headline {
     font-family: 'Anek Latin', Arial;
     font-size: 40px;
     line-height: 1.1;
     margin: 0 0 6px 0;
   }
-
+  
   .sub {
     font-size: 0.85rem;
     margin: 0 0 28px 0;
     color: #666;
   }
-
+  
   .field {
     margin-bottom: 12px;
   }
-
+  
   .field input {
     width: 100%;
     padding: 13px 16px;
@@ -83,16 +83,42 @@
     outline: none;
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-
+  
   .field input::placeholder {
     color: #666;
   }
-
+  
   .field input:focus {
     border-color: #e2bb00;
     box-shadow: 0 0 0 3px #e2bb0033;
   }
-
+  
+  .field input.error {
+    border-color: #e25555;
+    box-shadow: 0 0 0 3px #e2555533;
+    animation: shake 0.3s ease;
+  }
+  
+  .error-msg {
+    font-size: 0.75rem;
+    color: #e25555;
+    margin-top: 5px;
+    padding-left: 4px;
+    display: none;
+  }
+  
+  .error-msg.visible {
+    display: block;
+  }
+  
+  @keyframes shake {
+    0%   { transform: translateX(0); }
+    25%  { transform: translateX(-6px); }
+    50%  { transform: translateX(6px); }
+    75%  { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+  }
+  
   .btn {
     display: block;
     width: 100%;
@@ -103,25 +129,32 @@
     font-weight: 700;
     font-size: 0.875rem;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
     text-align: center;
   }
-
+  
   .btn-primary {
     background-color: #e2bb00;
     color: black;
     margin-top: 8px;
   }
-
+  
   .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(226,187,0,0.3);
   }
-
+  
   .btn-primary:active { 
     transform: scale(0.98); 
   }
-
+  
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
   .divider {
     display: flex;
     align-items: center;
@@ -130,7 +163,7 @@
     font-size: 0.75rem;
     color: #666;
   }
-
+  
   .divider::before,
   .divider::after {
     content: '';
@@ -138,18 +171,18 @@
     height: 1px;
     background: #2a2a2a;
   }
-
+  
   .join-now {
     text-align: center;
     font-size: 0.82rem;
     color: #666;
     margin-top: 20px;
   }
-
+  
   .join-now a {
     color: #e2bb00;
   }
-
+  
   .join-now a:hover {
     text-decoration: underline;
   }
@@ -158,7 +191,6 @@
     text-decoration: none;
     color: inherit;
   }
-
   a:visited {
     text-decoration: none;
     color: inherit;
@@ -166,7 +198,7 @@
     
   span {
     color: #e2bb00;
-   }
+  }
 </style>
 </head>
 <body>
@@ -175,24 +207,77 @@
       <div class="logo-dot"></div>
       <span class="logo-text">SPOTLIGHT</span>
     </div>
-
-    <h1 class="headline">Create an<br>Account</h1>
-    <p class="sub">Enter your very own Spotlight.</p>
+    <h1 class="headline">Create an<br>Acccount.</h1>
+    <p class="sub">Enter the Spotlight.</p>
 
     <div class="field">
-      <input type="text" placeholder="Username" />
+      <input id="username" type="text" placeholder="Username" />
+      <p class="error-msg" id="username-error">Enter your username first</p>
     </div>
     <div class="field">
-      <input type="password" placeholder="Password" />
+      <input id="password" type="password" placeholder="Password" />
+      <p class="error-msg" id="password-error">Don't forget your password</p>
     </div>
 
-    <a href="identity.html"><button class="btn btn-primary">Sign In</button></a>
+    <button class="btn btn-primary" id="create-btn">Join now</button>
 
     <div class="divider">or</div>
-
     <p class="join-now">
-      Don't have an account? <a href="createaccount.html"><span>Join now</span></a>
+      Already have an account? <a href="create-account.html"><span>Sign in</span></a>
     </p>
   </div>
+
+  <script>
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const usernameError = document.getElementById('username-error');
+    const passwordError = document.getElementById('password-error');
+    const signInBtn    = document.getElementById('create-btn');
+
+    function clearError(input, errorEl) {
+      input.classList.remove('error');
+      errorEl.classList.remove('visible');
+    }
+
+    function showError(input, errorEl) {
+      // remove then re-add to re-trigger the shake animation
+      input.classList.remove('error');
+      void input.offsetWidth;
+      input.classList.add('error');
+      errorEl.classList.add('visible');
+    }
+
+    // clear errors as the user types
+    usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
+    passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
+
+    signInBtn.addEventListener('click', (e) => {
+      const usernameVal = usernameInput.value.trim();
+      const passwordVal = passwordInput.value.trim();
+
+      let hasError = false;
+
+      if (!usernameVal) {
+        showError(usernameInput, usernameError);
+        hasError = true;
+      }
+
+      if (!passwordVal) {
+        showError(passwordInput, passwordError);
+        hasError = true;
+      }
+
+      if (hasError) {
+        if (!usernameVal) {
+          usernameInput.focus();
+        } else {
+          passwordInput.focus();
+        }
+        return;
+      }
+
+      window.location.href = 'identity.html';
+    });
+  </script>
 </body>
 </html>
