@@ -694,6 +694,135 @@
         opacity: 0.8; 
         transform: translateY(-1px); 
       }
+
+      .cw-char-pill {
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        color: var(--muted);
+        padding: 5px 10px;
+        border-radius: 50px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+        margin-right: 4px;
+      }
+    
+      .cw-char-handle {
+        color: var(--accent);
+        font-family: 'Source Code Pro', monospace;
+        font-size: 11px;
+      }
+    
+      .cw-drama-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+    
+      .cw-drama-label-edge {
+        font-family: 'Urbanist', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted2);
+        white-space: nowrap;
+      }
+    
+      .cw-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        border-radius: 4px;
+        background: var(--border2);
+        outline: none;
+        cursor: pointer;
+      }
+    
+      .cw-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--bg);
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+    
+      .cw-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+    
+      .cw-drama-value {
+        margin-top: 8px;
+        font-family: 'Source Code Pro', monospace;
+        font-size: 11px;
+        color: var(--muted2);
+      }
+    
+      .cw-drama-value span {
+        color: var(--accent);
+        font-weight: 600;
+      }
+    
+      /* toggle switch */
+      .cw-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+    
+      .cw-toggle {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+    
+      .cw-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+    
+      .cw-toggle-track {
+        position: absolute;
+        inset: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        border-radius: 24px;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+      }
+    
+      .cw-toggle-track::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--muted2);
+        transition: transform 0.2s, background 0.2s;
+      }
+    
+      .cw-toggle input:checked + .cw-toggle-track {
+        background: var(--accent-dim);
+        border-color: var(--accent2);
+      }
+    
+      .cw-toggle input:checked + .cw-toggle-track::after {
+        transform: translateX(20px);
+        background: var(--accent);
+      }
     </style>
   </head>
 
@@ -789,13 +918,49 @@
         </div>
 
         <div class="cw-field">
-          <label class="cw-label">Tags <span class="cw-label-sub">(max 2)</span></label>
+          <label class="cw-label">Tags <span class="cw-label-sub">(max 6)</span></label>
           <div class="cw-tags-row">
-            <input type="text" id="cwTagInput" placeholder="e.g. Volleyball, Shounen" maxlength="24">
+            <input type="text" id="cwTagInput" placeholder="e.g. Wholesome, Lore-heavy" maxlength="24">
             <button class="cw-tag-add" id="cwTagAdd">+ Add</button>
           </div>
-          <div class="cw-tag-limit" id="cwTagLimit">Max 2 tags reached</div>
+          <div class="cw-tag-limit" id="cwTagLimit">Max 6 tags reached</div>
           <div class="cw-tag-pills" id="cwTagPills"></div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Characters <span class="cw-label-sub">(optional)</span></label>
+          <div class="cw-tags-row">
+            <input type="text" id="cwCharInput" placeholder="e.g. @jinwoo_sung" maxlength="32">
+            <button class="cw-tag-add" id="cwCharAddBtn">+ Add</button>
+          </div>
+          <div class="cw-tag-pills" id="cwCharList"></div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Drama Engine</label>
+          <div class="cw-drama-row">
+            <span class="cw-drama-label-edge">Cozy</span>
+            <input type="range" id="cwDramaSlider" min="1" max="5" value="3" class="cw-slider">
+            <span class="cw-drama-label-edge">Chaotic</span>
+          </div>
+          <div class="cw-drama-value">
+            Vibe: <span id="cwDramaValue">Balanced</span>
+          </div>
+        </div>
+
+        <div class="cw-field">
+          <div class="cw-toggle-row">
+            <div>
+              <div class="cw-label" style="margin-bottom:2px;">Cross-Universe Interactions</div>
+              <div class="cw-label-sub" style="font-size:11px;color:var(--muted2);">
+                Let characters from this world interact with your other selected worlds
+              </div>
+            </div>
+            <label class="cw-toggle">
+              <input type="checkbox" id="cwCrossUniverse">
+              <span class="cw-toggle-track"></span>
+            </label>
+          </div>
         </div>
 
         <div class="cw-footer">
@@ -804,6 +969,10 @@
         </div>
       </div>
     </div>
+
+    <script src="scripts/worlds.js"></script>
+    <script src="scripts/world-scripts.js"></script>
+  </body>
 
     <script src="scripts/worlds.js"></script>
     <script src="scripts/world-scripts.js"></script>
