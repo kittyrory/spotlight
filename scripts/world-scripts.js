@@ -36,19 +36,23 @@ function attachClickListeners() {
   });
 }
 
-//------------------
-// RENDER WORLDS
-//------------------
+function shuffle(arr) {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
 
 function renderWorlds(list) {
   const worldsContainer = document.getElementById("worldsContainer");
   worldsContainer.innerHTML = "";
 
-  list.forEach(world => {
+  shuffle(list).forEach(world => {      // <-- just wrap list with shuffle()
     const tagsHTML = world.tags
       .map(tag => `<span class="tag">${tag}</span>`)
       .join("");
-
     worldsContainer.innerHTML += `
       <button class="world-btn" data-id="${world.id}">
         <img class="world-btn-img" src="${world.image}">
@@ -66,19 +70,6 @@ worlds.forEach((world, i) => { world.id = i; });
 window.WORLDS = worlds;
 renderWorlds(worlds);
 attachClickListeners();
-
-//------------------
-// SEARCH FUNCTION
-//------------------
-
-(function () {
-  let searchQuery = '';
-  const searchInput = document.getElementById('searchInput');
-  searchInput.addEventListener('input', function (e) {
-    searchQuery = e.target.value.toLowerCase().trim();
-    applyFilters();
-  });
-})();
 
 //------------------
 // CATEGORY FILTERS
@@ -188,5 +179,181 @@ attachClickListeners();
   clearBtn.addEventListener('click', function () {
     window.clearSelected();
     window.updateConfirmBar();
+  });
+})();
+
+//------------------
+// CUSTOM WORLD CREATION
+//------------------
+
+(function () {
+  const overlay    = document.getElementById('cwOverlay');
+  const closeBtn   = document.getElementById('cwClose');
+  const cancelBtn  = document.getElementById('cwCancel');
+  const submitBtn  = document.getElementById('cwSubmit');
+  const imgZone    = document.getElementById('cwImgZone');
+  const imgInput   = document.getElementById('cwImgInput');
+  const imgPreview = document.getElementById('cwImgPreview');
+  const tagInput   = document.getElementById('cwTagInput');
+  const tagAddBtn  = document.getElementById('cwTagAdd');
+  const tagPills   = document.getElementById('cwTagPills');
+  const tagLimit   = document.getElementById('cwTagLimit');
+
+  let tags         = [];
+  let characters   = [];
+  let imageDataUrl = '';
+
+  // wire the existing create button
+  document.querySelector('.create-btn').addEventListener('click', function () {
+    overlay.classList.add('open');
+    document.getElementById('cwTitleInput').focus();
+  });
+
+  function close() {
+    overlay.classList.remove('open');
+    reset();
+  }
+
+  function reset() {
+    document.getElementById('cwTitleInput').value = '';
+    document.getElementById('cwDesc').value = '';
+    document.getElementById('cwCategory').value = '';
+    document.getElementById('cwDramaSlider').value = 3;
+    document.getElementById('cwDramaValue').textContent = getDramaLabel(3);
+    document.getElementById('cwCrossUniverse').checked = false;
+    tagInput.value = '';
+    tags = []; characters = []; imageDataUrl = '';
+    imgPreview.src = ''; imgZone.classList.remove('has-img');
+    tagPills.innerHTML = ''; tagLimit.classList.remove('show');
+    tagAddBtn.disabled = false;
+    document.getElementById('cwCharList').innerHTML = '';
+    document.getElementById('cwCharInput').value = '';
+    ['cwTitleErr', 'cwDescErr', 'cwCatErr'].forEach(function (id) {
+      document.getElementById(id).classList.remove('show');
+    });
+  }
+
+  closeBtn.addEventListener('click', close);
+  cancelBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+
+  // image handling
+  imgInput.addEventListener('change', function () {
+    const file = imgInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      imageDataUrl = e.target.result;
+      imgPreview.src = imageDataUrl;
+      imgZone.classList.add('has-img');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // tag handling — limit bumped to 6
+  function renderTags() {
+    tagPills.innerHTML = tags.map(function (t, i) {
+      return '<div class="cw-tag-pill">' + t +
+        '<button class="cw-tag-pill-remove" data-i="' + i + '">&times;</button></div>';
+    }).join('');
+    tagPills.querySelectorAll('.cw-tag-pill-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tags.splice(parseInt(btn.dataset.i), 1);
+        renderTags();
+      });
+    });
+    const atMax = tags.length >= 6;
+    tagAddBtn.disabled = atMax;
+    atMax ? tagLimit.classList.add('show') : tagLimit.classList.remove('show');
+  }
+
+  function addTag() {
+    const val = tagInput.value.trim();
+    if (!val || tags.length >= 6 || tags.includes(val)) { tagInput.value = ''; return; }
+    tags.push(val);
+    tagInput.value = '';
+    renderTags();
+  }
+
+  tagAddBtn.addEventListener('click', addTag);
+  tagInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); addTag(); }
+  });
+
+  // drama slider
+  function getDramaLabel(val) {
+    const labels = { 1: 'Cozy', 2: 'Chill', 3: 'Balanced', 4: 'Spicy', 5: 'Chaotic' };
+    return labels[val] || 'Balanced';
+  }
+
+  document.getElementById('cwDramaSlider').addEventListener('input', function () {
+    document.getElementById('cwDramaValue').textContent = getDramaLabel(parseInt(this.value));
+  });
+
+  // character handling
+  function renderCharacters() {
+    const list = document.getElementById('cwCharList');
+    list.innerHTML = characters.map(function (c, i) {
+      return '<div class="cw-char-pill">' +
+        '<span class="cw-char-handle">@' + c + '</span>' +
+        '<button class="cw-tag-pill-remove" data-ci="' + i + '">&times;</button>' +
+        '</div>';
+    }).join('');
+    list.querySelectorAll('.cw-tag-pill-remove').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        characters.splice(parseInt(btn.dataset.ci), 1);
+        renderCharacters();
+      });
+    });
+  }
+
+  function addCharacter() {
+    let val = document.getElementById('cwCharInput').value.trim().replace(/^@/, '');
+    if (!val || characters.includes(val)) {
+      document.getElementById('cwCharInput').value = '';
+      return;
+    }
+    characters.push(val);
+    document.getElementById('cwCharInput').value = '';
+    renderCharacters();
+  }
+
+  document.getElementById('cwCharAddBtn').addEventListener('click', addCharacter);
+  document.getElementById('cwCharInput').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); addCharacter(); }
+  });
+
+  // submit handling
+  submitBtn.addEventListener('click', function () {
+    let valid = true;
+    const title = document.getElementById('cwTitleInput').value.trim();
+    const desc  = document.getElementById('cwDesc').value.trim();
+    const cat   = document.getElementById('cwCategory').value;
+    const drama = parseInt(document.getElementById('cwDramaSlider').value);
+    const crossUniverse = document.getElementById('cwCrossUniverse').checked;
+
+    if (!title) { document.getElementById('cwTitleErr').classList.add('show'); valid = false; }
+    else { document.getElementById('cwTitleErr').classList.remove('show'); }
+
+    if (!desc) { document.getElementById('cwDescErr').classList.add('show'); valid = false; }
+    else { document.getElementById('cwDescErr').classList.remove('show'); }
+
+    if (!cat) { document.getElementById('cwCatErr').classList.add('show'); valid = false; }
+    else { document.getElementById('cwCatErr').classList.remove('show'); }
+
+    if (!valid) return;
+
+    window.WORLDS.push({
+      id: Date.now(),
+      title, desc, category: cat,
+      image: imageDataUrl || '',
+      tags: [...tags],
+      characters: [...characters],
+      drama,
+      crossUniverse
+    });
+
+    window.applyFilters();
+    close();
   });
 })();

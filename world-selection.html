@@ -21,7 +21,7 @@
         --muted: #888;
         --muted2: #555;
         --danger: #e05555;
-        --radius: 12px;
+        --cw-bg: #111;
       }
 
       body {
@@ -233,7 +233,7 @@
         border: none;
         color: var(--bg);
         padding: 12px 22px;
-        border-radius: var(--radius);
+        border-radius: 12px;
         font-family: 'Urbanist', Arial;
         font-size: 14px;
         font-weight: 700;
@@ -244,7 +244,7 @@
       }
 
       .create-btn:hover {
-        opacity: 0.55;
+        opacity: 0.8;
         transform: translateY(-1px);
       }
   
@@ -268,7 +268,7 @@
         border: 1px solid var(--border2);
         color: var(--text);
         padding: 12px 16px 12px 42px;
-        border-radius: var(--radius);
+        border-radius: 12px;
         font-family: 'Open Sans', sans-serif;
         font-size: 14px;
         outline: none;
@@ -362,6 +362,467 @@
         transition: all 0.15s;
         letter-spacing: 0.2px;
       }
+
+      .cw-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.75);
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        z-index: 200;
+        opacity: 0; 
+        pointer-events: none;
+        transition: opacity 0.25s;
+      }
+
+      .cw-overlay.open { 
+        opacity: 1; 
+        pointer-events: all; 
+      }
+
+      .cw-modal {
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: 20px;
+        width: min(540px, 94vw);
+        max-height: 88vh;
+        overflow-y: auto;
+        padding: 32px;
+        transform: translateY(16px) scale(0.98);
+        transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+      }
+
+      .cw-overlay.open .cw-modal { 
+        transform: none; 
+      }
+
+      .cw-header {
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between;
+        margin-bottom: 28px;
+      }
+
+      .cw-title {
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 900; 
+        font-size: 20px;
+      }
+
+      .cw-close {
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--muted);
+        width: 34px; height: 34px;
+        border-radius: 50%; cursor: pointer;
+        font-size: 18px;
+        display: flex; 
+        align-items: center; 
+        justify-content: center;
+        transition: all 0.2s;
+      }
+
+      .cw-close:hover { 
+        color: var(--text); 
+        border-color: var(--muted2); 
+      }
+
+      .cw-field { 
+        margin-bottom: 22px; 
+      }
+
+      .cw-label {
+        display: block;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 12px; 
+        font-weight: 700;
+        letter-spacing: 1.2px; 
+        text-transform: uppercase;
+        color: var(--muted); 
+        margin-bottom: 8px;
+      }
+
+      .cw-label span { 
+        color: var(--accent); 
+      }
+
+      .cw-label-sub {
+        color: var(--muted2); 
+        font-weight: 400;
+        text-transform: none; 
+        letter-spacing: 0; 
+        font-size: 11px;
+      }
+
+      .cw-modal input[type="text"],
+      .cw-modal textarea,
+      .cw-modal select {
+        width: 100%;
+        background: var(--cw-bg);
+        border: 1px solid var(--border2);
+        color: var(--text);
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 14px; outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+      }
+
+      .cw-modal input[type="text"]:focus,
+      .cw-modal textarea:focus,
+      .cw-modal select:focus { 
+        border-color: var(--accent2); 
+      }
+
+      .cw-modal textarea { 
+        resize: vertical; 
+        min-height: 80px; 
+      }
+
+      .cw-modal select {
+        appearance: none; 
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 38px;
+      }
+
+      .cw-modal select option { 
+        background: var(--surface); 
+      }
+
+      .cw-img-zone {
+        width: 100%; 
+        height: 140px;
+        border: 1.5px dashed var(--border2);
+        border-radius: 12px;
+        display: flex; 
+        flex-direction: column;
+        align-items: center; 
+        justify-content: center;
+        gap: 8px; 
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative; 
+        overflow: hidden;
+        background: var(--cw-bg);
+      }
+
+      .cw-img-zone:hover { 
+        border-color: rgba(226,187,0,0.4); 
+      }
+
+      .cw-img-zone input { 
+        position: absolute; 
+        inset: 0; 
+        opacity: 0; 
+        cursor: pointer; 
+      }
+
+      .cw-img-icon { 
+        font-size: 28px; 
+        color: #444; 
+      }
+
+      .cw-img-text { 
+        font-size: 12px; 
+        color: var(--muted2); 
+      }
+
+      .cw-img-preview {
+        position: absolute; 
+        inset: 0;
+        object-fit: cover; 
+        width: 100%; 
+        height: 100%;
+        display: none;
+      }
+
+      .cw-img-change {
+        position: absolute; 
+        bottom: 0; 
+        left: 0; 
+        right: 0;
+        background: rgba(0,0,0,0.65);
+        text-align: center; 
+        font-size: 11px; 
+        color: var(--muted);
+        padding: 6px; 
+        display: none;
+      }
+
+      .cw-img-zone.has-img .cw-img-preview,
+      .cw-img-zone.has-img .cw-img-change { 
+        display: block; 
+      }
+
+      .cw-img-zone.has-img .cw-img-icon,
+      .cw-img-zone.has-img .cw-img-text { 
+        display: none; 
+      }
+
+      .cw-tags-row { 
+        display: flex; gap: 8px; align-items: center; 
+      }
+
+      .cw-tags-row input[type="text"] { 
+        flex: 1; 
+      }
+
+      .cw-tag-add {
+        background: var(--accent-dim);
+        border: 1px solid rgba(226,187,0,0.35);
+        color: var(--accent);
+        padding: 11px 16px; 
+        border-radius: 10px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 13px; 
+        font-weight: 700;
+        cursor: pointer; 
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+
+      .cw-tag-add:hover { 
+        background: rgba(226,187,0,0.22); 
+      }
+
+      .cw-tag-add:disabled { 
+        opacity: 0.35; cursor: not-allowed; 
+      }
+
+      .cw-tag-pills { 
+        display: flex; 
+        flex-wrap: wrap; 
+        gap: 6px; 
+        margin-top: 10px; 
+      }
+
+      .cw-tag-pill {
+        background: var(--surface2);
+        border: 1px solid;
+        color: var(--muted); 
+        padding: 5px 10px var(--border2);
+        border-radius: 50px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 12px; 
+        font-weight: 600;
+        display: flex; 
+        align-items: center; 
+        gap: 6px;
+      }
+
+      .cw-tag-pill-remove {
+        color: var(--muted2); 
+        cursor: pointer; 
+        font-size: 14px;
+        background: none; 
+        border: none; 
+        transition: color 0.15s;
+      }
+
+      .cw-tag-pill-remove:hover { 
+        color: var(--danger); 
+      }
+
+      .cw-tag-limit { 
+        font-size: 11px; 
+        color: var(--danger); 
+        margin-top: 6px; 
+        display: none; 
+      }
+
+      .cw-tag-limit.show { 
+        display: block; 
+      }
+
+      .cw-err { 
+        font-size: 11px; 
+        color: var(--danger); 
+        margin-top: 5px; 
+        display: none; 
+      }
+
+      .cw-err.show { 
+        display: block; 
+      }
+
+      .cw-footer {
+        display: flex; 
+        justify-content: flex-end; 
+        gap: 10px;
+        margin-top: 30px; 
+        padding-top: 24px;
+        border-top: 1px solid var(--border);
+      }
+
+      .cw-btn-cancel {
+        background: transparent;
+        border: 1px solid ar(--border2);
+        color: var(--muted); 
+        padding: 11px 22px;
+        border-radius: 50px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 14px; 
+        font-weight: 700;
+        cursor: pointer; 
+        transition: all 0.2s;
+      }
+      
+      .cw-btn-cancel:hover { 
+        border-color: var(--muted2); 
+        color: var(--text); 
+      }
+
+      .cw-btn-create {
+        background: var(--accent); 
+        border: none; 
+        color: var(--bg);
+        padding: 11px 26px; 
+        border-radius: 50px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 14px; 
+        font-weight: 800;
+        cursor: pointer; 
+        letter-spacing: 0.3px;
+        transition: opacity 0.2s, transform 0.15s;
+      }
+
+      .cw-btn-create:hover { 
+        opacity: 0.8; 
+        transform: translateY(-1px); 
+      }
+
+      .cw-char-pill {
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        color: var(--muted);
+        padding: 5px 10px;
+        border-radius: 50px;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 6px;
+        margin-right: 4px;
+      }
+    
+      .cw-char-handle {
+        color: var(--accent);
+        font-family: 'Source Code Pro', monospace;
+        font-size: 11px;
+      }
+    
+      .cw-drama-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+    
+      .cw-drama-label-edge {
+        font-family: 'Urbanist', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted2);
+        white-space: nowrap;
+      }
+    
+      .cw-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        border-radius: 4px;
+        background: var(--border2);
+        outline: none;
+        cursor: pointer;
+      }
+    
+      .cw-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: 2px solid var(--bg);
+        cursor: pointer;
+        transition: transform 0.15s;
+      }
+    
+      .cw-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+      }
+    
+      .cw-drama-value {
+        margin-top: 8px;
+        font-family: 'Source Code Pro', monospace;
+        font-size: 11px;
+        color: var(--muted2);
+      }
+    
+      .cw-drama-value span {
+        color: var(--accent);
+        font-weight: 600;
+      }
+    
+      /* toggle switch */
+      .cw-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+    
+      .cw-toggle {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+    
+      .cw-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+      }
+    
+      .cw-toggle-track {
+        position: absolute;
+        inset: 0;
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        border-radius: 24px;
+        cursor: pointer;
+        transition: background 0.2s, border-color 0.2s;
+      }
+    
+      .cw-toggle-track::after {
+        content: '';
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--muted2);
+        transition: transform 0.2s, background 0.2s;
+      }
+    
+      .cw-toggle input:checked + .cw-toggle-track {
+        background: var(--accent-dim);
+        border-color: var(--accent2);
+      }
+    
+      .cw-toggle input:checked + .cw-toggle-track::after {
+        transform: translateX(20px);
+        background: var(--accent);
+      }
     </style>
   </head>
 
@@ -412,6 +873,106 @@
       </div>
       <button class="btn-confirm">Enter the Spotlight &rarr;</button>
     </div>
+
+    <div class="cw-overlay" id="cwOverlay">
+      <div class="cw-modal">
+        <div class="cw-header">
+          <div class="cw-title">Create a World</div>
+          <button class="cw-close" id="cwClose">&times;</button>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Title <span>*</span></label>
+          <input type="text" id="cwTitleInput" placeholder="e.g. Haikyuu Universe" maxlength="60">
+          <div class="cw-err" id="cwTitleErr">Title is required</div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Description <span>*</span></label>
+          <textarea id="cwDesc" placeholder="Describe what this world is about..." maxlength="200"></textarea>
+          <div class="cw-err" id="cwDescErr">Description is required</div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Banner Image</label>
+          <div class="cw-img-zone" id="cwImgZone">
+            <input type="file" id="cwImgInput" accept="image/*">
+            <div class="cw-img-icon">&#8679;</div>
+            <div class="cw-img-text">Click to upload an image</div>
+            <img class="cw-img-preview" id="cwImgPreview" src="" alt="">
+            <div class="cw-img-change">Click to change</div>
+          </div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Category <span>*</span></label>
+          <select id="cwCategory">
+            <option value="" disabled selected>Select a category</option>
+            <option value="K-Pop">K-Pop</option>
+            <option value="Hip-Hop &amp; Pop">Hip-Hop &amp; Pop</option>
+            <option value="Anime &amp; Film/TV">Anime &amp; Film/TV</option>
+            <option value="Fantasy">Fantasy</option>
+            <option value="Sports">Sports</option>
+          </select>
+          <div class="cw-err" id="cwCatErr">Category is required</div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Tags <span class="cw-label-sub">(max 6)</span></label>
+          <div class="cw-tags-row">
+            <input type="text" id="cwTagInput" placeholder="e.g. Wholesome, Lore-heavy" maxlength="24">
+            <button class="cw-tag-add" id="cwTagAdd">+ Add</button>
+          </div>
+          <div class="cw-tag-limit" id="cwTagLimit">Max 6 tags reached</div>
+          <div class="cw-tag-pills" id="cwTagPills"></div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Characters <span class="cw-label-sub">(optional)</span></label>
+          <div class="cw-tags-row">
+            <input type="text" id="cwCharInput" placeholder="e.g. @jinwoo_sung" maxlength="32">
+            <button class="cw-tag-add" id="cwCharAddBtn">+ Add</button>
+          </div>
+          <div class="cw-tag-pills" id="cwCharList"></div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Drama Engine</label>
+          <div class="cw-drama-row">
+            <span class="cw-drama-label-edge">Cozy</span>
+            <input type="range" id="cwDramaSlider" min="1" max="5" value="3" class="cw-slider">
+            <span class="cw-drama-label-edge">Chaotic</span>
+          </div>
+          <div class="cw-drama-value">
+            Vibe: <span id="cwDramaValue">Balanced</span>
+          </div>
+        </div>
+
+        <div class="cw-field">
+          <div class="cw-toggle-row">
+            <div>
+              <div class="cw-label" style="margin-bottom:2px;">Cross-Universe Interactions</div>
+              <div class="cw-label-sub" style="font-size:11px;color:var(--muted2);">
+                Let characters from this world interact with your other selected worlds
+              </div>
+            </div>
+            <label class="cw-toggle">
+              <input type="checkbox" id="cwCrossUniverse">
+              <span class="cw-toggle-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="cw-footer">
+          <button class="cw-btn-cancel" id="cwCancel">Cancel</button>
+          <button class="cw-btn-create" id="cwSubmit">Create World</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="scripts/worlds.js"></script>
+    <script src="scripts/world-scripts.js"></script>
+  </body>
 
     <script src="scripts/worlds.js"></script>
     <script src="scripts/world-scripts.js"></script>

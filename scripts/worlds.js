@@ -65,7 +65,7 @@ const worlds = [
   },
   {
     title: "ENHYPEN",
-    image: "banners/enhyphen.jpg",
+    image: "banners/enhypen.jpg",
     desc: "ENHYPEN is a seven-member boy group formed through the survival show I-Land under BELIFT LAB. Their lore revolves around vampires and the duality of darkness and light, with members Jungwon, Heeseung, Jay, Jake, Sunghoon, Sunoo, and Ni-ki.",
     tags: ["Dark", "Vampire Lore"],
     category: "K-Pop"
@@ -116,7 +116,7 @@ const worlds = [
   },
   {
     title: "Rap Universe",
-    image: "banners/hiphop.jpg",
+    image: "banners/rap.jpg",
     desc: "A sprawling world where rap legends and rising stars collide — cyphers, beefs, collaborations, and street credibility are the currency. From golden-era classics to drill and trap.",
     tags: ["Street", "Gritty"],
     category: "Hip-Hop & Pop"
@@ -137,7 +137,7 @@ const worlds = [
   },
   {
     title: "Opium World",
-    image: "banners/playboi.jpg",
+    image: "banners/opium.jpg",
     desc: "The dark, fashion-forward universe of Playboi Carti, Ken Carson, and the Opium collective. Vamp aesthetics, rage beats, and an anti-mainstream ethos that somehow became the mainstream.",
     tags: ["Vamp", "Rage"],
     category: "Hip-Hop & Pop"
@@ -330,8 +330,8 @@ const worlds = [
   // FANTASY
   {
     title: "Wizarding World",
-    image: "banners/harrypotter.jpg",
-    desc: "J.K. Rowling's magical Britain — Hogwarts, Diagon Alley, the Ministry of Magic, and Voldemort's shadow looming over all. A world of house loyalty, wand allegiances, and a fandom that never truly graduated.",
+    image: "banners/jkrowling.jpg",
+    desc: "J.K. Rowling's magical Britain — Hogwarts, Harry Potter, Diagon Alley, the Ministry of Magic, and Voldemort's shadow looming over all. A world of house loyalty, wand allegiances, and a fandom that never truly graduated.",
     tags: ["Magic", "House Pride"],
     category: "Fantasy"
   },
@@ -428,7 +428,7 @@ const worlds = [
   },
   {
     title: "Baldur's Gate Universe",
-    image: "banners/faerun.jpg",
+    image: "banners/baldursgate.jpg",
     desc: "Faerûn's Forgotten Realms — from the Sword Coast to the depths of Avernus. Baldur's Gate 3 brought D&D's richest campaign setting to a new generation with unmatched character depth, romance arcs, and the absolute menace of Astarion.",
     tags: ["D&D", "RPG"],
     category: "Fantasy"
@@ -451,7 +451,7 @@ const worlds = [
   },
   {
     title: "Formula 1",
-    image: "banners/f1.jpg",
+    image: "banners/formula1.jpg",
     desc: "The pinnacle of motorsport — 20 drivers, 10 teams, and a calendar spanning five continents. Paddock politics, tire strategies, and rivalries as intense as any soap opera. Drive to Survive introduced a new generation to the grid's chaos.",
     tags: ["Paddock Drama", "Speed"],
     category: "Sports"
@@ -521,14 +521,14 @@ const worlds = [
   },
   {
     title: "Street Ball Universe",
-    image: "banners/nba2k.jpg",
+    image: "banners/streetball.jpg",
     desc: "Rucker Park, AND1 Mixtapes, and the streetball legends who turned playgrounds into proving grounds. A world where handles, crossovers, and ankle-breaking moves earn more respect than any trophy — raw, unfiltered basketball culture.",
     tags: ["Street Cred", "Handles"],
     category: "Sports"
   },
   {
     title: "Tour de France",
-    image: "banners/cycling.jpg",
+    image: "banners/tourdefrance.jpg",
     desc: "Three weeks, 21 stages, and the world's most grueling athletic event carved through the French countryside and Alps. A world of team tactics, breakaways, doping scandals, and the yellow jersey as the ultimate prize in endurance sport.",
     tags: ["Endurance", "Yellow Jersey"],
     category: "Sports"

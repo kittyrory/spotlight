@@ -10,6 +10,7 @@
     * {
       box-sizing: border-box;
     }
+    
     /* ── BANNER CONTAINER ── */
     .header-preview-box {
       width: 100%;
@@ -39,6 +40,7 @@
       font-size: 14px;
       font-family: 'DM Sans', sans-serif;;
     }
+    
     #header-img {
       width: 100%;
       height: 100%;
@@ -98,6 +100,7 @@
     pointer-events: none;
     z-index: 2;
   }
+    
  .avatar-prompt span {
    font-size: 10px;
    font-weight: 700;
@@ -106,9 +109,8 @@
     color: #ffffff;
     opacity: 0.7;
     }
-
   
-/* ── TRIZA ── */
+    /* ── TRIZA ── */
     .placeholder-text {
       color: #555;
       font-size: 11px;
@@ -234,10 +236,39 @@
       width: 100%;
       outline: none !important;
       padding: 16px !important;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
     .form-input::placeholder {
       color: #555;
+    }
+
+    .form-input.error {
+      border-color: #e25555 !important;
+      box-shadow: 0 0 0 3px #e2555533;
+      animation: shake 0.3s ease;
+    }
+
+    .error-msg {
+      font-size: 0.75rem;
+      color: #e25555;
+      margin-top: 2px;
+      padding-left: 2px;
+      display: none;
+      font-family: 'DM Mono', monospace;
+      font-weight: normal;
+    }
+
+    .error-msg.visible {
+      display: block;
+    }
+
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-6px); }
+      50%  { transform: translateX(6px); }
+      75%  { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
     }
 
     .profile-text p {
@@ -246,7 +277,7 @@
       margin: 2px 0 0;
     }
 
-    .bio-section {
+    .bio-selection {
       width: 100%;
       box-sizing: border-box;
       margin-top: 24px;
@@ -284,6 +315,13 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .bio-box-container.error {
+      border-color: #e25555 !important;
+      box-shadow: 0 0 0 3px #e2555533;
+      animation: shake 0.3s ease;
     }
 
     .bio-input {
@@ -319,6 +357,7 @@
 
     .bio-suggestions span {
       font-style: italic;
+      color: #38342e;
     }
 
     .profile-card:hover {
@@ -338,6 +377,7 @@
       font-size: 18px;
       cursor: pointer;
       display: block;
+      color: black;
       transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
     }
 
@@ -345,6 +385,10 @@
       background: #FFD500;
       transform: translateY(-1px);
       box-shadow: 0 4px 16px rgba(201, 149, 42, 0.3);
+    }
+
+    .cont:active {
+      transform: scale(0.98);
     }
 
     .back {
@@ -368,19 +412,14 @@
       color: #808080;
       border: 1px solid #808080;
     }
-
-    a:link,
-    a:visited {
-      text-decoration: none;
-      color: inherit;
-    }
   </style>
 </head>
 
 <body>
- <input type="file" id="header-input" accept="image/*" onchange="previewImage(this, 'header-img')" style="display: none;">
- <input type="file" id="avatar-input" accept="image/*" onchange="previewImage(this, 'avatar-img')" style="display: none;">
- <div class="header-preview-box" onclick="document.getElementById('header-input').click();">
+  <input type="file" id="header-input" accept="image/*" onchange="previewImage(this, 'header-img')" style="display: none;">
+  <input type="file" id="avatar-input" accept="image/*" onchange="previewImage(this, 'avatar-img')" style="display: none;">
+
+  <div class="header-preview-box" onclick="document.getElementById('header-input').click();">
     <img id="header-img" src="" alt="" style="display: none;">
     <div class="banner-placeholder-text" id="banner-text">Tap to add banner</div>
     
@@ -397,13 +436,14 @@
     <label class="profile-text">
       <h2>Display Name</h2>
     </label>
-    <input type="text" class="form-input" placeholder="Your Stage Name">
+    <input id="display-name" type="text" class="form-input" placeholder="Your Stage Name">
+    <p class="error-msg" id="display-name-error">enter a display name</p>
   </div>
-
 
   <div class="form-selection">
     <label class="section-title">Handle</label>
-    <input type="text" class="form-input" placeholder="@yourhandle">
+    <input id="handle" type="text" class="form-input" placeholder="@yourhandle">
+    <p class="error-msg" id="handle-error">enter a handle</p>
   </div>
 
   <div class="section-divider"></div>
@@ -414,10 +454,10 @@
       <span class="gameplay-badge">⚡AFFECTS GAMEPLAY</span>
     </div>
 
-    <div class="bio-box-container">
-      <textarea class="bio-input"
+    <div class="bio-box-container" id="bio-container">
+      <textarea id="bio" class="bio-input" maxlength="150"
         placeholder="Tell the world who you are. Be iconic, be real, be chaotic-your words unlock hidden traits and shape how celebrities and fans treat you...."></textarea>
-      <div class="char-counter">0/150</div>
+      <div class="char-counter" id="char-counter">0/150</div>
     </div>
 
     <p class="bio-suggestions">
@@ -428,50 +468,123 @@
       <span>dark</span>,
       <span>authentic</span>...
     </p>
+    <p class="error-msg" id="bio-error">Write something - let the world know who you are!</p>
   </div>
 
-  <a href="world-selection.html"><button class="cont">Continue →</button></a>
-  <a href="origin.html"><button class="back">← Back</button></a>
-<script>
-  // changes the color for the buttons when clicked
-document.querySelectorAll('.option').forEach(opt => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
-  });
-});
+  <button class="cont" id="continue-btn">Continue →</button>
+  <button class="back" id="back-btn">← Back</button>
 
-// Image Selection and Preview Function
-function previewImage(input, targetId) {
-  const file = input.files[0];
-  if (file) {
-    const reader = new FileReader();
+  <script>
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    });
 
-    reader.onload = function(e) {
-      const imgElement = document.getElementById(targetId);
-      imgElement.src = e.target.result;
-      imgElement.style.display = 'block';
-      imgElement.style.opacity= '1';
+    // image preview 
+    function previewImage(input, targetId) {
+      const file = input.files[0];
+      if (!file) return;
 
-      if (targetId === 'header-img') {
-        const bannerText = document.getElementById('banner-text');
-        if (bannerText) {
-          bannerText.style.display = 'none';
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imgElement = document.getElementById(targetId);
+        imgElement.src = e.target.result;
+        imgElement.style.display = 'block';
+        imgElement.style.opacity = '1';
+
+        if (targetId === 'header-img') {
+          const bannerText = document.getElementById('banner-text');
+          if (bannerText) bannerText.style.display = 'none';
+        } else {
+          const avatarPrompt = document.querySelector('.avatar-prompt');
+          if (avatarPrompt) avatarPrompt.style.display = 'none';
         }
-      } else {
-        const avatarPrompt = document.querySelector('.avatar-prompt');
-        if (avatarPrompt) avatarPrompt.style.display = 'none';
-      }
-      console.log("Success! Image loaded into" + targetId);
-    };
-    
-    reader.readAsDataURL(file);
-  }else {
-    console.log("No file selected for.");
-  }
-} 
+      };
+      reader.readAsDataURL(file);
+    }
 
-</script>
+    // char counter
+    const bioInput     = document.getElementById('bio');
+    const charCounter  = document.getElementById('char-counter');
+
+    bioInput.addEventListener('input', () => {
+      charCounter.textContent = `${bioInput.value.length}/150`;
+    });
+
+    // validation helpers
+    function showError(inputEl, errorEl) {
+      inputEl.classList.remove('error');
+      void inputEl.offsetWidth;
+      inputEl.classList.add('error');
+      errorEl.classList.add('visible');
+    }
+
+    function clearError(inputEl, errorEl) {
+      inputEl.classList.remove('error');
+      errorEl.classList.remove('visible');
+    }
+
+    // bio container needs separate handling since it's a wrapper
+    function showBioError() {
+      const container = document.getElementById('bio-container');
+      const errorEl   = document.getElementById('bio-error');
+      container.classList.remove('error');
+      void container.offsetWidth;
+      container.classList.add('error');
+      errorEl.classList.add('visible');
+    }
+
+    function clearBioError() {
+      document.getElementById('bio-container').classList.remove('error');
+      document.getElementById('bio-error').classList.remove('visible');
+    }
+
+    // clear errors on input
+    const displayNameInput = document.getElementById('display-name');
+    const handleInput      = document.getElementById('handle');
+
+    displayNameInput.addEventListener('input', () => clearError(displayNameInput, document.getElementById('display-name-error')));
+    handleInput.addEventListener('input',      () => clearError(handleInput,      document.getElementById('handle-error')));
+    bioInput.addEventListener('input',         () => clearBioError());
+
+    // continue button linking
+    document.getElementById('continue-btn').addEventListener('click', () => {
+      const nameVal   = displayNameInput.value.trim();
+      const handleVal = handleInput.value.trim();
+      const bioVal    = bioInput.value.trim();
+
+      let hasError = false;
+
+      if (!nameVal) {
+        showError(displayNameInput, document.getElementById('display-name-error'));
+        hasError = true;
+      }
+      if (!handleVal) {
+        showError(handleInput, document.getElementById('handle-error'));
+        hasError = true;
+      }
+      if (!bioVal) {
+        showBioError();
+        hasError = true;
+      }
+
+      if (hasError) {
+        // scroll to first error
+        const firstError = document.querySelector('.form-input.error, .bio-box-container.error');
+        if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      window.location.href = 'world-selection.html';
+    });
+
+    // back button linking
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.location.href = 'origin.html';
+    });
+  </script>
 </body>
 
 </html>
