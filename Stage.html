@@ -192,7 +192,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
   }
 
   .badges-row{
@@ -255,7 +255,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 14px;
+    gap: 8px;
     background: #0a0a00;
     width: 100%;
     max-width: 440px;
@@ -414,11 +414,6 @@
     color: #ffffff;
     margin: 0;
    }
-    .glow-star {
-    color: #ffd166;
-    text-shadow: 0 0 8px #ffd166;
-
-  }
 
    .card-description {
     font-family: 'DM Sans', sans-serif;
@@ -427,7 +422,7 @@
     line-height: 1.5;
    }
 
-  
+   
  /* ── TAGS ──*/
   .tag{
     font-family: 'DM Mono', monospace;
@@ -456,241 +451,9 @@
     background: rgba(232, 124, 124, 0.15);
     border: 1px solid rgba(232, 124, 124, 0.25);
   }
-
- /* ── SKILLS PANEL ── */
- * { box-sizing: border-box; }
-  html, body { max-width: 100%; overflow-x: hidden; }
-  body {
-    background: #000;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    align-items: center;
-  }
- 
- .skill-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: nowrap;
-  gap: 8px;
-  margin-bottom: 6px;
- }
- .skill-block {
-  margin-bottom: 28px; 
- }
- .skill-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: #ddd;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
- }
- .skill-name.locked-name { color: #888; }
- .skill-meta {
-  font-size: 12px;
-  color: #666;
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  flex-shrink: 0;
-  white-space: nowrap;
- }
-
- .skills-wrap{
-  font-family:'DM Sans', sans-serif;
-  background: #111;
-  border-radius: 12px;
-  padding: 20px 22px;
-  color: #eee;
-  max-width: 520px;
-  width: 100%;
- }
-
- .skills-header{
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 20px;
- }
-
- .skills-header h2{
-  font-family: 'DM Sans', sans-serif;
-  font-size: 20px;
-  font-weight: 600;
-  color: #fff;
-  margin: 0;
- }
-
- .skills-header span{
-  font-size: 12px;
-  color: #666;
- }
-
-.skill-pct { font-family: 'Courier New'; font-weight: 900; }
- .pct-yellow { color: #e8a820; }
- .pct-red { color: #c44; }
- .track{
-  background: #2a2a2a;
-  border-radius: 4px;
-  height: 8px;
-  width: 100%;
-  margin-bottom: 8px;
-  overflow: hidden;
- }
- .fill{
-  height: 100%;
-  border-radius: 4px;
-  width: 0%;
-  position: relative;
-  overflow: hidden;
-  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
- }
-
- .fill-yellow {background: #d4960f}
- .fill-red {background: #8b1a1a; }
- .fill-green { background: #1d8a55; }
- .fill-locked { background: #333; width: 0% !important; transition: none; }
-
-  /* shimmer sweep across the filled bar */
- .fill::after{
-  content: "";
-  position: absolute;
-  top: 0; left: -150%;
-  width: 60%;
-  height: 100%;
- background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.35),
-    transparent
-  );
-  animation: shimmer 2.6s ease-in-out infinite;
-  animation-delay: 1.4s;
-  }
-  .fill-locked::after { display: none; }
- 
-  @keyframes shimmer {
-    0%   { left: -150%; }
-    60%  { left: 150%; }
-    100% { left: 150%; }
-  }
- 
-  /* loaded state: JS adds .filled and sets the target width via --target */
-  .fill.filled { width: var(--target); }
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tag {
-    font-size: 11px;
-    color: #777;
-    border: 1px solid #333;
-    border-radius: 20px;
-    padding: 2px 10px;
-  }
-  .locked-hint {
-    font-size: 11px;
-    color: #666;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    margin-top: 4px;
-  }
-  .locked-badge { font-size: 11px; color: #888; letter-spacing: 0.05em; }
- 
-  /* ===== PERKS GRID ===== */
-  .perks-wrap {
-    background: #111;
-    border: 1px solid #1a1a1a;
-    border-radius: 14px;
-    padding: 20px;
-    max-width: 520px;
-    width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-  .section-divider {
-  width: 100%;
-  max-width: 520px;
-  border: none;
-  border-top: 1px solid #222;
-  margin: 4px 0;
- }
-  .perks-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 16px;
-  }
-  .perks-header h2 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #fff;
-    margin: 0;
-  }
-  .perks-header span { font-size: 12px; color: #ffffff; }
-  .perks-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 10px;
-    margin-bottom: 14px;
-    width: 100%;
-  }
-  .perk-card {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px;
-    min-width: 0;
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
- }
- .perk-card.unlocked:hover {
-  animation: pulse 1.2s ease-in-out infinite;
- }
-
- @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 0 0 rgba(212, 150, 15, 0);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 0 18px rgba(212, 150, 15, 0.35);
-  }
- }
   
-  .perk-card.unlocked { background: #1e1a0e; border: 1.5px solid #8a6a00; }
-  .perk-card.locked { background: #181818; border: 1px solid #2a2a2a; }
-  .perk-card.coming-soon { background: #141414; border: 1px solid #222; }
-  .perk-icon { font-size: 28px; line-height: 1; flex-shrink: 0;}
-  .perk-icon.unlocked-icon { filter: none; opacity: 1; }
-  .perk-icon.locked-icon { filter: grayscale(1); opacity: 0.35; }
-  .perk-icon.soon-icon { filter: grayscale(1); opacity: 0.2; }
-  .perk-name {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-align: center;
-    text-transform: uppercase;
-    max-width: 100%;
-    overflow-wrap: break-word;
-  }
-  .perk-name.unlocked-name { color: #c8860a; }
-  .perk-name.locked-name { color: #444; }
-  .perk-name.soon-name { color: #333; }
-  .lock-badge { position: absolute; top: 7px; right: 7px; color: #444; font-size: 12px; }
-  .legend { display: flex; gap: 16px; align-items: center; }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #666; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-  .dot-gold { background: #c8860a; }
-  .dot-gray { background: #444; }
+
+  
 
 
   /* ── MOBILE ── */
@@ -749,7 +512,7 @@
  
     <!-- Hero Card -->
     <div class="hero-card">
-      <span class="hero-badge">✰Rising Star</span>
+      <span class="hero-badge">✦ Rising Star</span>
       <span class="hero-handle">@yourhandle</span>
       <span class="hero-role">✦ Singer</span>
     </div>
@@ -862,7 +625,7 @@
       <span class="card-subtitle">Who You Are</span>
       <span class="category-pill">Identity</span>
     </div>
-    <h3 class="card-title"><span class="glow-star">✭</span> The Nepo Baby</h3>
+    <h3 class="card-title"> ✦The Nepo Baby</h3>
     <p class="card-description">
       Born into the industry. Doors open differently for you — but so does the scrutiny. Every move is watched, every mistake amplified.
     </p>
@@ -877,7 +640,7 @@
       <span class="card-subtitle">What You Do</span>
       <span class="category-pill">CAREER</span>
     </div>
-    <h3 class="card-title"><span class="glow-star">✭</span> Influencer</h3>
+    <h3 class="card-title"> ✦Influencer</h3>
     <p class="card-description">
       Content, collabs, sponsorships, drama. The most parasocial career path.
     </p>
@@ -892,7 +655,7 @@
       <span class="card-subtitle">How You Got Here</span>
       <span class="category-pill">ORIGIN</span>
     </div>
-    <h3 class="card-title"><span class="glow-star">✭</span> Reality TV</h3>
+    <h3 class="card-title">✦Reality TV</h3>
     <p class="card-description">
       The whole country watched you before you dropped a single post.
     </p>
@@ -901,164 +664,6 @@
       <span class="tag negative">+ Mixed Public Opinion</span>
       <span class="tag negative">+ Drama Events</span>
    </div>
-  </div>
- </div>
- <!-- ===== SKILLS PANEL ===== -->
-
-  <div class="skills-wrap">
-    <div class="skills-header">
-      <h2>Skills</h2>
-      <span>grow through play</span>
-  </div>
-
-  <div class="skill-block">
-    <div class="skill-row">
-        <span class="skill-name">Charisma</span>
-        <div class="skill-meta">LVL 4 <span class="skill-pct pct-yellow">78%</span></div>
-    </div>
-      <div class="track"><div class="fill fill-yellow" style="--target:78%"></div></div>
-      <div class="tags">
-        <span class="tag">Fan Events</span>
-        <span class="tag">Interviews</span>
-        <span class="tag">Celeb DMs</span>
-      </div>
-  </div>
-
-  <div class="skill-block">
-    <div class="skill-row">
-        <span class="skill-name">Vocal Power</span>
-        <div class="skill-meta">LVL 3 <span class="skill-pct pct-yellow">61%</span></div>
-    </div>
-      <div class="track"><div class="fill fill-yellow" style="--target:61%"></div></div>
-      <div class="tags">
-        <span class="tag">Perfomances</span>
-        <span class="tag">Collabs</span>
-      </div>
-  </div>
-
- <div class="skill-block locked">
-    <div class="skill-row">
-        <span class="skill-name locked-name">Clout</span>
-        <span class="locked-badge">LOCKED</span>
-    </div>
-      <div class="track"><div class="fill fill-locked"></div></div>
-      <div class="locked-hint">
-        <span class="lock-icon">🔒</span> Unlocks at Level 5 · Spotlight
-      </div>
-  </div>
-
-
-  <div class="skill-block locked">
-    <div class="skill-row">
-        <span class="skill-name locked-name">Fan Loyalty</span>
-        <span class="locked-badge">LOCKED</span>
-    </div>
-      <div class="track"><div class="fill fill-locked"></div></div>
-      <div class="locked-hint">
-       <span class="lock-icon">🔒</span> Unlocks at Level 5 · Spotlight
-      </div>
-  </div>
-
-  <div class="skill-block locked">
-    <div class="skill-row">
-        <span class="skill-name locked-name">Scandal Resistance</span>
-        <span class="locked-badge">LOCKED</span>
-    </div>
-      <div class="track"><div class="fill fill-locked"></div></div>
-      <div class="locked-hint">
-        <span class="lock-icon">🔒</span> Unlocks at Level 5 · Spotlight
-      </div>
-  </div>
-
-  <div class="skill-block locked">
-    <div class="skill-row">
-        <span class="skill-name locked-name">Media Manipulation</span>
-        <span class="locked-badge">LOCKED</span>
-    </div>
-      <div class="track"><div class="fill fill-locked"></div></div>
-      <div class="locked-hint">
-        <span class="lock-icon">🔒</span> Unlocks at Level 5 · Spotlight
-      </div>
-  </div>
- </div>
- 
-  <hr class="section-divider"/>
-  <div class="perks-wrap">
-    <div class="perks-header">
-      <h2>Perks</h2>
-      <span>Unlock more gameplay</span>
-  </div>
-
- <div class="perks-grid">
-  <div class="perk-card unlocked">
-    <span class="perk-icon unlocked-icon">🎤</span>
-    <span class="perk-name unlocked-name">Viral Voice</span>
-  </div>
-
-  <div class="perk-card unlocked">
-    <span class="perk-icon unlocked-icon">🛡️</span>
-    <span class="perk-name unlocked-name">Ride or Die</span>
-  </div>
-
-  <div class="perk-card locked">
-    <span class="lock-badge">🔒</span>
-    <span class="perk-icon locked-icon">💼</span>
-    <span class="perk-name locked-name">Brand Ready</span>
-  </div>
-
-  <div class="perk-card locked">
-    <span class="lock-badge">🔒</span>
-    <span class="perk-icon locked-icon">🔥</span>
-    <span class="perk-name locked-name">Trend Setter</span>
-  </div>
-
-  <div class="perk-card locked">
-    <span class="lock-badge">🔒</span>
-    <span class="perk-icon locked-icon">💬</span>
-    <span class="perk-name locked-name">DM Access</span>
-  </div>
-
-  <div class="perk-card locked">
-    <span class="lock-badge">🔒</span>
-    <span class="perk-icon locked-icon">📈</span>
-    <span class="perk-name locked-name">Trending Push</span>
-  </div>
-
-  <div class="perk-card locked">
-    <span class="lock-badge">🔒</span>
-    <span class="perk-icon locked-icon">🎭</span>
-    <span class="perk-name locked-name">Drama Shield</span>
-  </div>
-
-  <div class="perk-card locked">
-    <span class="lock-badge">🔒</span>
-    <span class="perk-icon locked-icon">👑</span>
-    <span class="perk-name locked-name">Icon Status</span>
-  </div>
-
-  <div class="perk-card coming-soon">
-    <span class="perk-icon soon-icon">🌍</span>
-    <span class="perk-name soon-name">World Tour</span>
-  </div>
-  <div class="perk-card coming-soon">
-    <span class="perk-icon soon-icon">❤️</span>
-    <span class="perk-name soon-name">Collaber</span>
-  </div>
-  <div class="perk-card coming-soon">
-    <span class="perk-icon soon-icon">📰</span>
-    <span class="perk-name soon-name">Press Darling</span>
-  </div>
-
-  <div class="perk-card coming-soon">
-    <span class="perk-icon soon-icon">💎</span>
-    <span class="perk-name soon-name">Diamond Era</span>
-  </div>
- </div>
-
-  <div class="legend">
-    <div class="legend-item"><span class="dot dot-gold"></span>Unlocked</div>
-    <div class="legend-item"><span class="dot dot-gray"></span>Locked</div>
-    <div class="legend-item"><span style="font-size:12px;">🔄</span> Coming Soon</div>
   </div>
  </div>
  </main>
@@ -1093,16 +698,6 @@
   fill.style.transition = 'width 1.4s cubic-bezier(.16,1,.3,1)'
   fill.style.width = '62%'
  }, 300)
-
-  window.addEventListener('DOMContentLoaded', () => {
-    const fills = document.querySelectorAll('.fill:not(.fill-locked)');
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        fills.forEach(el => el.classList.add('filled'));
-      }, 150);
-    });
-  });
-
   </script>
 </body>
 </html>
