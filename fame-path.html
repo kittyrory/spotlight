@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Spotlight | Fame Path</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- font links -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
@@ -69,7 +68,23 @@
       color: inherit;
     }
 
-    /* the rest of this is just for the buttons */
+    .card-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .card-grid.shake {
+      animation: shake 0.3s ease;
+    }
+
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-6px); }
+      50%  { transform: translateX(6px); }
+      75%  { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
+    }
 
     .option {
       font-family: 'Open Sans', sans-serif;
@@ -128,6 +143,8 @@
       font-family: 'Urbanist', 'Open Sans', Arial;
       font-size: 18px;
       cursor: pointer;
+      color: black;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
     }
 
     .cont:hover {
@@ -156,16 +173,6 @@
       color: #808080;
       border: 1px solid #808080;
     }
-
-    a:link {
-      text-decoration: none;
-      color: inherit;
-    }
-  
-    a:visited {
-      text-decoration: none;
-      color: inherit;
-    }
   </style>
 </head>
 
@@ -182,74 +189,86 @@
         <h1>How do you want to be known?</h1>
         <p class="p2">Your path shapes which events find you. Choose wisely.</p>
 
-        <div class="option">
-          <span class="icon">⭐</span>
-          <div class="option-text">
-            <span class="title">The Viral Star</span>
-            <span class="subtitle">Everything you do blows up</span>
+        <div class="card-grid" id="card-grid">
+          <div class="option">
+            <span class="icon">⭐</span>
+            <div class="option-text">
+              <span class="title">The Viral Star</span>
+              <span class="subtitle">Everything you do blows up</span>
+            </div>
+            <span class="check">✓</span>
           </div>
-          <span class="check">✓</span>
+
+          <div class="option">
+            <span class="icon">💣</span>
+            <div class="option-text">
+              <span class="title">The Scandalous One</span>
+              <span class="subtitle">Drama follows you everywhere</span>
+            </div>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="option">
+            <span class="icon">💕</span>
+            <div class="option-text">
+              <span class="title">The Lover Player</span>
+              <span class="subtitle">Romance is your brand</span>
+            </div>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="option">
+            <span class="icon">🗣️</span>
+            <div class="option-text">
+              <span class="title">The Shit Talker</span>
+              <span class="subtitle">You say what others won't</span>
+            </div>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="option">
+            <span class="icon">🎭</span>
+            <div class="option-text">
+              <span class="title">The Mysterious One</span>
+              <span class="subtitle">Nobody knows your business</span>
+            </div>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="option">
+            <span class="icon">🕊️</span>
+            <div class="option-text">
+              <span class="title">The Activist</span>
+              <span class="subtitle">Everything is about the cause</span>
+            </div>
+            <span class="check">✓</span>
+          </div>
+
+          <div class="option">
+            <span class="icon">👑</span>
+            <div class="option-text">
+              <span class="title">The Industry Vet</span>
+              <span class="subtitle">You've been around</span>
+            </div>
+            <span class="check">✓</span>
+          </div>
         </div>
 
-        <div class="option">
-          <span class="icon">💣</span>
-          <div class="option-text">
-            <span class="title">The Scandalous One</span>
-            <span class="subtitle">Drama follows you everywhere</span>
-          </div>
-          <span class="check">✓</span>
-        </div>
-
-        <div class="option">
-          <span class="icon">💕</span>
-          <div class="option-text">
-            <span class="title">The Lover Player</span>
-            <span class="subtitle">Romance is your brand</span>
-          </div>
-          <span class="check">✓</span>
-        </div>
-
-        <div class="option">
-          <span class="icon">🗣️</span>
-          <div class="option-text">
-            <span class="title">The Shit Talker</span>
-            <span class="subtitle">You say what others won't</span>
-          </div>
-          <span class="check">✓</span>
-        </div>
-
-        <div class="option">
-          <span class="icon">🎭</span>
-          <div class="option-text">
-            <span class="title">The Mysterious One</span>
-            <span class="subtitle">Nobody knows your business</span>
-          </div>
-          <span class="check">✓</span>
-        </div>
-
-        <div class="option">
-          <span class="icon">🕊️</span>
-          <div class="option-text">
-            <span class="title">The Activist</span>
-            <span class="subtitle">Everything is about the cause</span>
-          </div>
-          <span class="check">✓</span>
-        </div>
-
-        <div class="option">
-          <span class="icon">👑</span>
-          <div class="option-text">
-            <span class="title">The Industry Vet</span>
-            <span class="subtitle">You've been around</span>
-          </div>
-          <span class="check">✓</span>
-        </div>
-
-        <a href="origin.html"><button class="cont">Continue →</button></a>
-        <a href="identity.html"><button class="back">← Back</button></a>
+        <button class="cont" id="continue-btn">Continue →</button>
+        <button class="back" id="back-btn">← Back</button>
       </div>
     </div>
-  </body>
 
-  <script src="scripts/options.js"></script>
+    <script src="scripts/options.js"></script>
+  
+    <script>
+    document.getElementById('continue-btn').addEventListener('click', () => {
+      window.location.href = 'origin.html';
+    });
+    
+    document.getElementById('back-btn').addEventListener('click', () => {
+      window.location.href = 'identity.html';
+    });
+    </script>
+  </body>
 </html>
