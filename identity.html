@@ -245,22 +245,12 @@
         </div>
       </div>
 
-      <button class="cont" id="continue-btn">Continue →</button>
-      <button class="back" id="back-btn">← Back</button>
+      <button class="cont" id="continue-btn" data-next="fame-path.html">Continue →</button>
+      <button class="back" id="back-btn" data-prev="login.html">← Back</button>
 
     </div>
   </div>
 
   <script src="scripts/options.js"></script>
-
-  <script>
-  document.getElementById('continue-btn').addEventListener('click', () => {
-    window.location.href = 'fame-path.html';
-  });
-  
-  document.getElementById('back-btn').addEventListener('click', () => {
-    window.location.href = 'login.html';
-  });
-  </script>
 </body>
 </html>
