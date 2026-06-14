@@ -19,12 +19,3 @@ document.getElementById('continue-btn').addEventListener('click', () => {
     cardGrid.classList.add('shake');
     return;
   }
-
-// button linking
-
-  window.location.href = 'fame-path.html';
-});
-
-document.getElementById('back-btn').addEventListener('click', () => {
-  window.location.href = 'login.html';
-});
