@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Spotlight | Origin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- font links -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
@@ -47,16 +46,6 @@
       font-size: 32px;
     }
 
-    a:link {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    a:visited {
-      text-decoration: none;
-      color: inherit;
-    }
-
     .progress-bar {
       display: flex;
       gap: 6px;
@@ -79,6 +68,8 @@
       font-family: 'Urbanist', 'Open Sans', Arial;
       font-size: 18px;
       cursor: pointer;
+      color: black;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
     }
 
     .cont:hover {
@@ -121,6 +112,7 @@
       margin-bottom: 10px;
       flex-direction: column;
       flex: 1;
+      transition: border-color 0.18s, background 0.18s;
     }
 
     .title {
@@ -144,22 +136,26 @@
       display: flex;
       flex-direction: row;
       gap: 10px;
-      transition: border-color 0.18s, background 0.18s, transform 0.15s;
     }
 
-    .container:hover {
-      transform: translateY(-1px);
+    #card-grid {
+      transition: transform 0.15s;
     }
 
-    a:link {
-      text-decoration: none;
-      color: inherit;
+    #card-grid.shake {
+      animation: shake 0.3s ease;
     }
 
-    a:visited {
-      text-decoration: none;
-      color: inherit;
+    @keyframes shake {
+      0%   { transform: translateX(0); }
+      25%  { transform: translateX(-6px); }
+      50%  { transform: translateX(6px); }
+      75%  { transform: translateX(-4px); }
+      100% { transform: translateX(0); }
     }
+
+    a:link { text-decoration: none; color: inherit; }
+    a:visited { text-decoration: none; color: inherit; }
   </style>
 </head>
 
@@ -176,46 +172,46 @@
         <h1>How did you get here?</h1>
         <p class="p2">Your origin is your backstory. The world already has opinions.</p>
 
-        <div class="container">
-          <div class="option">
-            <span class="icon">⚡</span>
-            <span class="title">Viral Moment</span>
+        <div id="card-grid">
+          <div class="container">
+            <div class="option">
+              <span class="icon">⚡</span>
+              <span class="title">Viral Moment</span>
+            </div>
+            <div class="option">
+              <span class="icon">🏢</span>
+              <span class="title">Industry Plant</span>
+            </div>
           </div>
-          <div class="option">
-            <span class="icon">🏢</span>
-            <span class="title">Industry Plant</span>
+
+          <div class="container">
+            <div class="option">
+              <span class="icon">🌑</span>
+              <span class="title">Underground Legend</span>
+            </div>
+            <div class="option">
+              <span class="icon">📺</span>
+              <span class="title">Reality TV</span>
+            </div>
+          </div>
+
+          <div class="container">
+            <div class="option">
+              <span class="icon">🎀</span>
+              <span class="title">Nepotism Baby</span>
+            </div>
+            <div class="option">
+              <span class="icon">🔥</span>
+              <span class="title">Self-Made</span>
+            </div>
           </div>
         </div>
 
-        <div class="container">
-          <div class="option">
-            <span class="icon">🌑</span>
-            <span class="title">Underground Legend</span>
-          </div>
-          <div class="option">
-            <span class="icon">📺</span>
-            <span class="title">Reality TV</span>
-          </div>
-        </div>
-
-        <div class="container">
-          <div class="option">
-            <span class="icon">🎀</span>
-            <span class="title">Nepotism Baby</span>
-          </div>
-          <div class="option">
-            <span class="icon">🔥</span>
-            <span class="title">Self-Made</span>
-          </div>
-        </div>
-
-        <div>
-          <a href="profile.html"><button class="cont">Continue →</button></a>
-          <a href="fame-path.html"><button class="back">← Back</button></a>
-        </div>
+        <button class="cont" id="continue-btn" data-next="profile.html">Continue →</button>
+        <button class="back" id="back-btn" data-prev="fame-path.html">← Back</button>
       </div>
     </div>
-  </body>
 
-  <script src="scripts/options.js"></script>
+    <script src="scripts/options.js"></script>
+  </body>
 </html>
