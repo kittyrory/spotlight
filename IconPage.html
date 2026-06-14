@@ -153,9 +153,6 @@ opacity: 0.85;
   text-align: center;
 }
 .Following, .Followers {
-  box-sizing: border-box;
-  border-radius: 25px;
-  border: 1px solid #d3d3d3;
   flex:1;
   padding: 15px 20px;
   width: 100%;
@@ -288,7 +285,7 @@ opacity: 0.98;
   margin-top: 2px;
 }
 .profile-arrow {
-  margin-left: 250px;        
+  margin-left: 200px;        
   color: #aaaaaa;          
   font-weight: 700;
   font-size: 16px;
@@ -312,44 +309,6 @@ font-weight: 700;
  white-space: normal;      
 margin-left: 8px;  
 }
-.cont {
-background-color: #e2bb00;
-border: none;
-width: 100%;
-height: 50px;
-border-radius: 10px;
-margin-top: 10px;
-font-family: 'Urbanist', 'Open Sans', Arial;
-font-size: 18px;
-cursor: pointer;
-display: block;
-transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
-}
-.cont:hover {
-background: #FFD500;
-transform: translateY(-1px);
-box-shadow: 0 4px 16px rgba(201,149,42,0.3);
-}
-.back {
-width: 100%;
-border: 1px solid #555;
-border-radius: 10px;
-background-color: black;
-color: #555;
-margin-top: 10px;
-height: 50px;
-align-items: center;
-text-align: center;
-display: flex;
-justify-content: center;
-cursor: pointer;
-font-size: 15px;
-transition: color 0.15s, border-color 0.15s;
-}
-.back:hover {
-color: #808080;
-border: 1px solid #808080;
-}
 </style>
 <body>
 <div class="header-box">
@@ -362,22 +321,22 @@ border: 1px solid #808080;
 </label>
 </div>
 <div class="Follow-Container">
-<div class="Following">Following</div>
 <div class="Followers">Followers</div>
+<div class="Following">Following</div>
 </div>
 <div class="description-box-container">
 <textarea id="description-field" class="description-input" placeholder="Tell the world who you are.."></textarea>
 <button id="action-btn" class="edit-btn" onclick="handleBioToggle()">Edit</button>
 </div>
 <div class="section-divider"></div>
+<h3>Socialite</h3>
 <div class="socialite-section">
-  <h3>Socialite</h3>
   <div class="stat-meter-bar-container">
     <div class="stat-text-row">
 <span class="stat-label">🤣 Humor</span>
 <span class="stat-bar-number">+1%</span>
 </div>
-<div class="stat-meter-bar" style="width:430px; background-color: #333333; height: 14px; border-radius: 15px; position: relative; overflow: hidden; margin-top: 5px; margin-bottom: 5px;"></div>
+<div class="stat-meter-bar" style="width:370px; background-color: #333333; height: 14px; border-radius: 15px; position: relative; overflow: hidden; margin-top: 5px; margin-bottom: 5px;"></div>
 <div style="width: 25%; height: 100%; background-color:orange; border-radius: 15px 0 0 15px;"></div>
 <span class="stat-note" style="display:block;">You're comedy gold!</span>
   </div>
@@ -387,14 +346,16 @@ border: 1px solid #808080;
     <div class="stat-text-row">
   <span class="stat-label">🧘 Aura</span>
 <span class="stat-bar-number">+2%</span>
-<div class="stat-meter-bar" style="width:430px; background-color: #333333; height: 14px; border-radius: 15px; position: relative; overflow: hidden; margin-top: 5px; margin-bottom: 5px;"></div>
+<div class="stat-meter-bar" style="width:370px; background-color: #333333; height: 14px; border-radius: 15px; position: relative; overflow: hidden; margin-top: 5px; margin-bottom: 5px;"></div>
 <div style="width: 25%; height: 100%; background-color:orange; border-radius: 15px 0 0 15px;"></div>
 <span class="stat-note">You have a captivating presence!</span>
   </div>
   </div>
 </div>
-<div class="Relationship-Status">
+<div class="Relationship-Status-section">
   <h3>Relationship Status</h3>
+</div>
+<div class="Relationship-Status"> 
   <div class="profile-header-row">
 <div class="relationship-avatar-circle">
 <span class="avatar-emoji">🎭</span>
@@ -406,7 +367,7 @@ border: 1px solid #808080;
  <span class="profile-arrow">❯</span>
   </div>
 <div class="stat-meter-bar-container">
-<div class="stat-meter-bar" style="width: 430px; background-color: #333333; height: 14px; border-radius: 15px; position: relative; overflow: hidden; margin-top: 10px;"></div>
+<div class="stat-meter-bar" style="width: 370px; background-color: #333333; height: 14px; border-radius: 15px; position: relative; overflow: hidden; margin-top: 10px;"></div>
   <div style="width: 25%; height: 100%; background-color: orange; border-radius: 15px 0 0 15px;"></div>
 <div class="relationship-stat-text-row">
 <span class="stat-bar-number">+2%</span>
@@ -414,16 +375,8 @@ border: 1px solid #808080;
 </div>
 </div>
 </div>
- <a href="origin.html"><button class="cont">Continue →</button></a>
-<a href="relationshipstatus.html"><button class="back">← Back</button></a>
 <script>
     // changes the color for the buttons when clicked
-document.querySelectorAll('.option').forEach(opt => {
-opt.addEventListener('click', () => {
-document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-opt.classList.add('selected');
-});
-});
 document.querySelector('.header-box').addEventListener('click', () => {
 document.getElementById('profile-input').click();
 });
