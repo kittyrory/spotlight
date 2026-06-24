@@ -315,10 +315,13 @@
       box-shadow: 0 0 0 3px #e2555533;
       animation: shake 0.3s ease;
     }
+      .bio-box-container.border-disrupter { border-color: #ff4133; }
+      .bio-box-container.border-professional { border-color: #33ccff; }
+      .bio-box-container.border-fan-favorite { border-color: #5cd65c; }
 
     .bio-input {
-      background: transparent !important;
-      border: none !important;
+      background: transparent;
+      border: none;
       color: #fff;
       font-size: 14px !important;
       line-height: 1.5;
@@ -576,7 +579,35 @@
     document.getElementById('back-btn').addEventListener('click', () => {
       window.location.href = 'origin.html';
     });
+
+    //bio dictionary
+  const dictionaryKeyWords = {
+  theDisrupter: ["drama", "chaotic", "wild"],
+  theProfessional: ["boss", "hustle", "grind"],
+  theFanFavorite: ["love", "authentic", "real"],
+  }
+
+const bioText = document.getElementById('bio');
+const bioContainer = document.getElementById ('bio-container');
+
+    const disrupterRegex = /drama|chaotic|wild/i;
+    const professionalRegex = /boss|hustle|grind/i;
+    const fanFavoriteRegex = /love|authentic|real/i;
+
+bioText.addEventListener ('input', () => {
+  bioContainer.classList.remove('border-disrupter', 
+  'border-professional', 
+  'border-fan-favorite'
+)});
+
+const userInput = bioText.value;
+  if (disrupterRegex.test(userInput)) {
+    bioContainer.classList.add('border-disrupter');
+  } else if (professionalRegex.test(userInput)) {
+    bioContainer.classList.add('border-professional');
+  } else if (fanFavoriteRegex.test(userInput)) {
+    bioContainer.classList.add('border-fan-favorite');
+  };
   </script>
 </body>
-
 </html>
