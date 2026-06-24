@@ -318,6 +318,7 @@
       .bio-box-container.border-disrupter { border-color: #ff4133; }
       .bio-box-container.border-professional { border-color: #33ccff; }
       .bio-box-container.border-fan-favorite { border-color: #5cd65c; }
+      .bio-box-container.border-enigma {border-color: whitesmoke;}
 
     .bio-input {
       background: transparent;
@@ -585,6 +586,7 @@
   theDisrupter: ["drama", "chaotic", "wild"],
   theProfessional: ["boss", "hustle", "grind"],
   theFanFavorite: ["love", "authentic", "real"],
+  theEnigma: ["dark", "iconic", "mysterious"],
   }
 
 const bioText = document.getElementById('bio');
@@ -593,11 +595,13 @@ const bioContainer = document.getElementById ('bio-container');
     const disrupterRegex = /drama|chaotic|wild/i;
     const professionalRegex = /boss|hustle|grind/i;
     const fanFavoriteRegex = /love|authentic|real/i;
+    const enigmaRegex = /dark|iconic| mysterious/i;
 
 bioText.addEventListener ('input', () => {
   bioContainer.classList.remove('border-disrupter', 
   'border-professional', 
-  'border-fan-favorite'
+  'border-fan-favorite',
+  'border-enigma',
 )});
 
 const userInput = bioText.value;
@@ -607,6 +611,9 @@ const userInput = bioText.value;
     bioContainer.classList.add('border-professional');
   } else if (fanFavoriteRegex.test(userInput)) {
     bioContainer.classList.add('border-fan-favorite');
+  };
+  else if (enigmaRegex.test(userInput)) {
+    bioContainer.classList.add('border-enigma');
   };
   </script>
 </body>
