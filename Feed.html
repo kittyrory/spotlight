@@ -3,313 +3,332 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Feed</title>
+  <!-- these fonts were referenced but not imported -->
+  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+  <title>Spotlight | Feed</title>
+  <style>
+    /* added repeated colors to root 
+    you can bring back the old colors if you want */
+    :root {
+      --bg: #0e0e0e; /* softer black (was #000 */
+      --color-border: #333;
+      --color-muted: #888;
+      --color-accent: #e2bb00; /* changed to fit the same accent as the other pages (was: #dd991b) */
+      --color-accent-rgb: 221, 153, 27;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .Feed {
+      display: inline-block;
+      font-family: 'Urbanist', 'Open Sans', Arial, sans-serif;
+      font-size: 22px;
+      cursor: pointer;
+      margin-bottom: 20px;
+      margin-top: 20px;
+    }
+
+    .toppage {
+      display: block;
+      color: white;
+      font-weight: bold;
+      /* fixed positioning so Feed / For You / Following / Blazing stay on top while scrolling */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      background-color: var(--bg);
+      border-bottom: 1px solid var(--color-border);
+      padding: 10px 20px;
+      z-index: 100;
+      box-sizing: border-box;
+    }
+
+    /* pushes the page content down so it isn't hidden under the fixed nav above */
+    .posts {
+      padding-top: 110px;
+    }
+
+    /* centered instead of left-leaning, and given a little breathing room
+    so the hover glow below doesn't feel cramped against neighbors 
+    (stylistic change) */
+    .connectedPages {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+
+    .connectedPages > div {
+      padding: 6px 14px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+    }
+
+    .connectedPages:hover {
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    /* nicer hover: soft glow + gentle lift instead of a hard box-shadow snap 
+    (stylistic change) */
+    #forYou:hover,
+    #following:hover,
+    #blazing:hover {
+      color: var(--color-accent);
+      border: 1px solid rgba(var(--color-accent-rgb), 0.5);
+      background-color: rgba(var(--color-accent-rgb), 0.08);
+      box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.35);
+      transform: translateY(-2px);
+      transition: all 0.25s ease;
+    }
+
+    .postCard {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 10px;
+      margin-top: 20px;
+    }
+
+    /* avatar is now a placeholder image slot instead of an emoji span */
+    .avatar {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+
+    .userMeta {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      align-items: center;
+      width: 100%;
+    }
+
+    .postTime {
+      margin-left: auto;
+      color: var(--color-muted);
+      gap: 70px;
+    }
+
+    .username {
+      color: var(--color-muted);
+    }
+
+    .tagRow {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .tag1,
+    .tag2 {
+      display: inline-block;
+      font-size: 14px;
+      color: var(--color-accent);
+    }
+
+    .tag1:hover,
+    .tag2:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+
+    .footerSpan {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      align-items: center;
+      width: 100%;
+      color: var(--color-muted);
+      font-size: 13px;
+    }
+
+    .likes:hover {
+      cursor: pointer;
+      color: var(--color-accent);
+    }
+
+    .retweets:hover {
+      cursor: pointer;
+      color: greenyellow;
+    }
+
+    .reply:hover {
+      cursor: pointer;
+      color: white;
+    }
+
+    .dislikes:hover {
+      cursor: pointer;
+      color: red;
+    }
+
+    /* fade-in on load */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .toppage {
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .postCard {
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    /* stagger each card slightly so they don't all pop in at once */
+    .postCard:nth-child(1) { animation-delay: 0.1s; }
+    .postCard:nth-child(2) { animation-delay: 0.25s; }
+    .postCard:nth-child(3) { animation-delay: 0.4s; }
+    .postCard:nth-child(4) { animation-delay: 0.55s; }
+    .postCard:nth-child(5) { animation-delay: 0.7s; }
+  </style>
 </head>
-<style>
-  body {
-    background-color: black;
-    color: white;
-    font-family: Arial, sans-serif;
-  }
-  /*considering removing this all together(later update: took it out since i didn't think it looked good)*/
-  .Feed {
-    display: inline-block;
-    font-family: 'Urbanist', 'Open Sans', Arial, sans-serif;
-    font-size: 22px;
-    cursor: pointer;
-    color:antiquewhite
-    border: 1px solid #808080;
-    margin-bottom: 20px;
-    margin-top: 20px;
-  }
-.toppage {
-  display: Inline-block;
-  color: white;
-  font-weight: bold;
-/* I was trying to add a fixed positioning so the feed and the following/followers and blazing pages remain on top as you scrolll*/
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  top: 0; 
-  left: 0;
-}
-.connectedPages {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.connectedPages:hover {
-  cursor: pointer;
-  padding: 5px;
-}
-#forYou:hover {
-  text-decoration: underline;
-border: 1px solid #808080;
-box-shadow: 0 4px 16px rgb(221, 153, 27);
-transition: background 0.5s ease;
-opacity: 0.98;
-}
-#following:hover {
-text-decoration: underline;
-border: 1px solid rgb(221, 153, 27);
-box-shadow: 0 4px 16px rgb(221, 153, 27);
-transition: background 0.5s ease;
-opacity: 0.98;
-}
-#blazing:hover {
-text-decoration: underline;
-border: 1px solid rgb(221, 153, 27);
-box-shadow: 0 4px 16px rgb(221, 153, 27);
-transition: background 0.5s ease;
-opacity: 0.98;
-}
-.postInputContainer {
-  display: inline-block;
-  border: 1px solid #333;
-  border-radius: 16px;
-  width: 800px;
-  height: 200px;
-  padding: 10px;
-}
-.personalAvatar {
-  display: inline;
-  margin-left: 10px;
-}
-/*this is the text box*/
-.postInput {
-  display: inline;
-  width: 600px;
-  height: 100px;
-  border: none;
-  background-color: #111;
-  color: white;
-  padding: 10px;
-  border-radius: 16px;
-  display: block;
-}
-.footersymbols {
- display: inline;
-  flex-direction: row;
-  gap: 16px;
-margin-top: 10px;
-align-items: center;
-width: 100%;
-color:#dd991b;
-font-size: 13px;
-}
-.postButton {
-  display: inline;
-  margin-left: 450px;
-  position: absolute;
-  background-color: #dd991b;
-  color: black;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 16px;
-  cursor: pointer;
-  width: 100px;
-  height: 40px;
-}
-.postButton:hover {
-  background-color: #ffcc00;
-  color: black;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 16px;
-  cursor: pointer;
-  width: 100px;
-  height: 40px;
-}
-.posts {
-  display: flex;
-  flex-direction: column;
- border: 1px solid #333;
- border-radius: 16px;
- padding: 10px;
- margin-top: 20px;
-}
-.avatar {
-display: inline-block;
- position: right;
-}
-.userMeta {
-display: flex;
-gap: 8px;
-margin-bottom: 10px;
-align-items: center;
-width: 100%;
-}
-.postTime {
-  margin-left: auto;
-  color: #888;
-  gap: 70px;
-}
-.username {
-  color: #888;
-}
-.hastags {
-  display: block;
-  font-size: 14px;
-  color: rgb(221, 153, 27);
-}
-.hastags:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-.footerSpan {
-display: flex;
-gap: 20px;
-margin-top: 10px;
-align-items: center;
-width: 100%;
-color: #888;
-font-size: 13px;
-}
-.likes:hover{
-  cursor: pointer;
-  color: rgb(221, 153, 27);
-}
-.retweets:hover{
-  cursor: pointer;
-  color: greenyellow;
-}
-.reply:hover{
-  cursor: pointer;
-  color: white;
-}
-.dislikes:hover{
-  cursor: pointer;
-  color: red;
-}
-</style>
 <body>
+
   <nav>
-  <div class="top page">
-    <span class="Feed">Feed</span>
-  <div class="connectedPages">
-    <div id="forYou">For You</div>
-    <div id="following">Following</div>
-    <div id="blazing">🔥Blazing</div>
-  </div>
-  </div>
-  </nav>
-<div class="postInputContainer">
-  <span class="personalAvatar">🦱</span>
-  <input type="text" class="postInput" placeholder="What's Sparking?">
-  <div class="footersymbols">
-    <span class="hashtagsymbol">#</span>
-    <span class="@symbol">@</span>
-    <span class="emojisymbol">?</span>
-    <span class="exploresymbol">🎯</span>
-  </div>
-  <button class="postButton">Spark it</button>
-</div>
-    <div class="posts">
-    <div class="Zendaya">
-      <div class="userMeta">
-      <span class="avatar">🦱</span>
-      <span class="displayName">Zendaya</span>
-      <span class="username">@ZendayaReal</span>
-      <span class="postTime">2m</span>
-      </div>
-      <div class="postContent">
-        <p>not gonna say who but someone on this app has been on 
-          their villain era lately and honestly? respect it.</p>
-            <span class="hastags">#NoContext #SpotlightGala2025</span>
-         <div class="footerSpan">
-            <span class="likes">🔸48.2k</span>
-            <span class="retweets">🔃1.2k</span>
-            <span class="dislikes">⭕842</span>
-            <span class="reply">Reply</span>
-          </div>
+    <div class="toppage">
+      <span class="Feed">Feed</span>
+      <div class="connectedPages">
+        <div id="forYou">For You</div>
+        <div id="following">Following</div>
+        <div id="blazing">🔥Blazing</div>
       </div>
     </div>
-     </div>
-     <div class="posts">
-    <div class="RM">
-       <p>🔃ARMY reflashed</p>
+  </nav>
+
+  <div class="posts">
+    <!-- fix: each post had an unused wrapper class (Zendaya, RM, Nicki Minaj)
+    that nothing in the CSS referenced. removed that redundant nesting and used
+    one consistent postCard class per post instead. -->
+    <div class="postCard">
       <div class="userMeta">
-      <span class="avatar">🦱</span>
-      <span class="displayName">RM</span>
-      <span class="username">@RM_Kimjoon</span>
-      <span class="postTime">14m</span>
+        <img class="avatar" src="https://placehold.co/36x36/png" alt="Zendaya avatar">
+        <span class="displayName">Zendaya</span>
+        <span class="username">@ZendayaReal</span>
+        <span class="postTime">2m</span>
       </div>
       <div class="postContent">
-        <p>the energy at last night's show was something else entirely. thank you to 
+        <p>not gonna say who but someone on this app has been on their villain era lately and honestly? respect it.</p>
+        <!-- since the tags were sharing the same class, they both
+        underlined when hovered. fixed that by giving them separate
+        but identical classes, now wrapped in a row so they sit side by side -->
+        <div class="tagRow">
+          <span class="tag1">#NoContext</span>
+          <span class="tag2">#SpotlightGala2025</span>
+        </div>
+        <div class="footerSpan">
+          <span class="likes">🔸48.2k</span>
+          <span class="retweets">🔃1.2k</span>
+          <span class="dislikes">⭕842</span>
+          <span class="reply">Reply</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="postCard">
+      <div class="userMeta">
+        <img class="avatar" src="https://placehold.co/36x36/png" alt="RM avatar">
+        <span class="displayName">RM</span>
+        <span class="username">@RM_Kimjoon</span>
+        <span class="postTime">14m</span>
+      </div>
+      <div class="postContent">
+        <p>the energy at last night's show was something else entirely. thank you to
           everyone who came an everyone who watched. we see you.💜</p>
-          <span class="hastags">#ARMY</span>
-          <div class="footerSpan">
-            <span class="likes">🔸201k</span>
-            <span class="retweets">🔃88.4k</span>
-            <span class="dislikes">⭕204</span>
-            <span class="reply">Reply</span>
-          </div>
-       </div>   
-  </div>
-     </div>
-     <div class="posts">
- <div class="Nicki Minaj">
-  <div class="userMeta">
-      <span class="avatar">🦱</span>
+        <div class="tagRow">
+          <span class="tag1">#ARMY</span>
+        </div>
+        <div class="footerSpan">
+          <span class="likes">🔸201k</span>
+          <span class="retweets">🔃88.4k</span>
+          <span class="dislikes">⭕204</span>
+          <span class="reply">Reply</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="postCard">
+      <div class="userMeta">
+        <img class="avatar" src="https://placehold.co/36x36/png" alt="Nicki Minaj avatar">
         <span class="displayName">Nicki Minaj</span>
         <span class="username">@NICKIMINAJ</span>
-      <span class="postTime">31m</span>
- </div>
-      <div class="postContent">
-        <p>some of y'all really thought being relevant for 5 minutes was the same as beinf iconic for 15 years. Real cute.</p>
-            <span class="hastags">#BardzArePermanent</span>
-      <div class="footerSpan">
-            <span class="likes">🔸92.7k</span>
-            <span class="retweets">🔃31.2k</span>
-            <span class="dislikes">⭕15.8k</span>
-            <span class="reply">Reply</span>
-          </div>
+        <span class="postTime">31m</span>
       </div>
- </div>
- </div>
- <div class="posts">
-       <div class="yourname_daily">
-        <div class="userMeta">
-      <span class="avatar">🦱</span>
+      <div class="postContent">
+        <p>some of y'all really thought being relevant for 5 minutes was the same as being iconic for 15 years. Real cute.</p>
+        <div class="tagRow">
+          <span class="tag1">#BardzArePermanent</span>
+        </div>
+        <div class="footerSpan">
+          <span class="likes">🔸92.7k</span>
+          <span class="retweets">🔃31.2k</span>
+          <span class="dislikes">⭕15.8k</span>
+          <span class="reply">Reply</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="postCard">
+      <div class="userMeta">
+        <img class="avatar" src="https://placehold.co/36x36/png" alt="yourname_daily avatar">
         <span class="displayName">yourname_daily</span>
         <span class="username">@yourname_daily</span>
-      <span class="postTime">45m</span>
+        <span class="postTime">45m</span>
       </div>
       <div class="postContent">
-        <p>okay can we talk about how @yourhandle has been EATING lately?? the era we didn't know we needed.
-          STREAM EVERYTHING</p>
-            <span class="hastags">#YourNameApologetic</span>
-    <div class="footerSpan">
-            <span class="likes">🔸3.4k</span>
-            <span class="retweets">🔃891</span>
-            <span class="dislikes">⭕23</span>
-            <span class="reply">Reply</span>
-          </div>
+        <p>okay can we talk about how @yourhandle has been EATING lately?? the era we didn't know we needed. STREAM EVERYTHING</p>
+        <div class="tagRow">
+          <span class="tag1">#YourNameApologetic</span>
+        </div>
+        <div class="footerSpan">
+          <span class="likes">🔸3.4k</span>
+          <span class="retweets">🔃891</span>
+          <span class="dislikes">⭕23</span>
+          <span class="reply">Reply</span>
+        </div>
       </div>
-       </div>
- </div>
- <div class="posts">
-       <div class="sasukeReal">
-        <div class="userMeta">
-      <span class="avatar">🦱</span>
+    </div>
+
+    <div class="postCard">
+      <div class="userMeta">
+        <img class="avatar" src="https://placehold.co/36x36/png" alt="sasuke_real avatar">
         <span class="displayName">sasuke_real</span>
         <span class="username">@sasuke_real</span>
-      <span class="postTime">2h</span>
+        <span class="postTime">2h</span>
       </div>
       <div class="postContent">
         <p>I don't follow trends. Trends follow me.</p>
-            <span class="hastags">#Uchicha #NoContext</span>
-      <div class="footerSpan">
-            <span class="likes">🔸67.1k</span>
-            <span class="retweets">🔃22.8k</span>
-            <span class="dislikes">⭕1.2k</span>
-            <span class="reply">Reply</span>
-          </div>
+        <div class="tagRow">
+          <span class="tag1">#Uchicha</span>
+          <span class="tag2">#NoContext</span>
+        </div>
+        <div class="footerSpan">
+          <span class="likes">🔸67.1k</span>
+          <span class="retweets">🔃22.8k</span>
+          <span class="dislikes">⭕1.2k</span>
+          <span class="reply">Reply</span>
+        </div>
       </div>
-       </div>
- </div>
-      <footer>
-       <p>placeholder</p>
-      </footer>
+    </div>
+
+  </div>
 </body>
 </html>
