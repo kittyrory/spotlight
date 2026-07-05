@@ -65,12 +65,47 @@
         font-weight: bold;
       }
 
+      /* fade-in on load, same pattern as the feed page */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeDown {
+        from {
+          opacity: 0;
+          transform: translateY(-14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       .header {
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 28px 0 24px;
         border-bottom: 1px solid var(--border);
+        animation: fadeDown 0.6s ease both;
       }
 
       .header-right {
@@ -192,6 +227,8 @@
       .categories {
         white-space: nowrap;
         overflow: scroll;
+        opacity: 0;
+        animation: fadeUp 0.5s 0.1s ease both;
       }
 
       .cat-btn {
@@ -310,6 +347,22 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.4);
       }
+
+      /* stagger world cards in on load, same idea as the postCard stagger on the feed */
+      .world-btn {
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+      }
+
+      .world-btn:nth-child(1) { animation-delay: 0.15s; }
+      .world-btn:nth-child(2) { animation-delay: 0.22s; }
+      .world-btn:nth-child(3) { animation-delay: 0.29s; }
+      .world-btn:nth-child(4) { animation-delay: 0.36s; }
+      .world-btn:nth-child(5) { animation-delay: 0.43s; }
+      .world-btn:nth-child(6) { animation-delay: 0.5s; }
+      .world-btn:nth-child(7) { animation-delay: 0.57s; }
+      .world-btn:nth-child(8) { animation-delay: 0.64s; }
+      .world-btn:nth-child(n+9) { animation-delay: 0.7s; }
 
       .world-btn-img {
         width: 100%;
@@ -969,10 +1022,6 @@
         </div>
       </div>
     </div>
-
-    <script src="scripts/worlds.js"></script>
-    <script src="scripts/world-scripts.js"></script>
-  </body>
 
     <script src="scripts/worlds.js"></script>
     <script src="scripts/world-scripts.js"></script>
