@@ -17,7 +17,12 @@
       --color-accent-rgb: 221, 153, 27;
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
       background-color: var(--bg);
       color: white;
       font-family: Arial, sans-serif;
@@ -30,6 +35,10 @@
       cursor: pointer;
       margin-bottom: 20px;
       margin-top: 20px;
+    }
+
+   .logoAccent {
+      color: var(--color-accent);
     }
 
     .toppage {
@@ -48,9 +57,16 @@
       box-sizing: border-box;
     }
 
-    /* pushes the page content down so it isn't hidden under the fixed nav above */
+    /* pushes the page content down so it isn't hidden under the fixed nav above.
+    also constrained the width and centered it, on a bigger screen resolution the
+    post cards were stretching edge-to-edge which made it look a little odd imo. 
+    also have side padding as a safety margin on smaller screens. */
     .posts {
       padding-top: 110px;
+      max-width: 680px;
+      margin: 0 auto;
+      padding-left: 16px;
+      padding-right: 16px;
     }
 
     /* centered instead of left-leaning, and given a little breathing room
@@ -68,10 +84,9 @@
       border: 1px solid transparent;
     }
 
-    .connectedPages:hover {
-      cursor: pointer;
-      padding: 5px;
-    }
+    /* removed a leftover .connectedPages:hover rule that shrank the
+    container's own padding to 5px on hover, it made the whole row 
+    jump/shift whenever the cursor passed over any part of it */
 
     /* nicer hover: soft glow + gentle lift instead of a hard box-shadow snap 
     (stylistic change) */
@@ -91,8 +106,14 @@
       flex-direction: column;
       border: 1px solid var(--color-border);
       border-radius: 16px;
-      padding: 10px;
+      padding: 16px;
       margin-top: 20px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .postCard:hover {
+      border-color: rgba(var(--color-accent-rgb), 0.4);
+      transform: translateY(-1px);
     }
 
     /* avatar is now a placeholder image slot instead of an emoji span */
@@ -103,6 +124,7 @@
       border-radius: 50%;
       object-fit: cover;
       flex-shrink: 0;
+      border: 1px solid var(--color-border);
     }
 
     .userMeta {
@@ -116,7 +138,8 @@
     .postTime {
       margin-left: auto;
       color: var(--color-muted);
-      gap: 70px;
+      /* removed "gap: 70px" here, postTime isn't a flex/grid 
+      container so that property had no effect; it was dead CSS */
     }
 
     .username {
@@ -205,7 +228,8 @@
 
   <nav>
     <div class="toppage">
-      <span class="Feed">Feed</span>
+      <!-- "light" wrapped in .logoAccent for the yellow accent color -->
+      <span class="Feed">Spot<span class="logoAccent">Light</span> Feed</span>
       <div class="connectedPages">
         <div id="forYou">For You</div>
         <div id="following">Following</div>
@@ -229,7 +253,7 @@
         <p>not gonna say who but someone on this app has been on their villain era lately and honestly? respect it.</p>
         <!-- since the tags were sharing the same class, they both
         underlined when hovered. fixed that by giving them separate
-        but identical classes, now wrapped in a row so they sit side by side -->
+        but identical classes -->
         <div class="tagRow">
           <span class="tag1">#NoContext</span>
           <span class="tag2">#SpotlightGala2025</span>
