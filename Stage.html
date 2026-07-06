@@ -112,8 +112,8 @@
   }
  
   .profile-circle {
-    width: 90px;
-    height: 90px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     background: linear-gradient(145deg, #1f2833, #121821);
     border: 1.5px solid #ffffff;
@@ -162,7 +162,7 @@
  
   .hero-badge {
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-size: 13px;
     color: #ffd166;
     letter-spacing: 2px;
     text-transform: uppercase;
@@ -175,13 +175,13 @@
   .hero-handle {
     font-family: 'DM Sans', sans-serif;
     font-weight: 700;
-    font-size: 22px;
+    font-size: 15px;
     color: #ffffff;
   }
  
   .hero-role {
     font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
+    font-size: 15px;
     color: #bebdbd;
     letter-spacing: 1px;
   }
@@ -192,7 +192,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    gap: 6px;
+    gap: 9px;
   }
 
   .badges-row{
@@ -220,7 +220,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
     flex-shrink: 0;
   }
   .badge.active {
@@ -340,10 +340,10 @@
 
  .accomplishment-container {
     width: 100%;
-    max-width: 440px;
+    max-width: 500px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
   }
 
   .section-title-row {
@@ -378,7 +378,7 @@
     padding: 12px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     position: relative;
     overflow: hidden;
   }
@@ -469,7 +469,6 @@
     gap: 20px;
     align-items: center;
   }
- 
  .skill-row {
   display: flex;
   justify-content: space-between;
@@ -479,7 +478,7 @@
   margin-bottom: 6px;
  }
  .skill-block {
-  margin-bottom: 28px; 
+  margin-bottom: 26px; 
  }
  .skill-name {
   font-size: 15px;
@@ -510,11 +509,23 @@
   width: 100%;
  }
 
+ .section-divider{
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, #333, #666, #333);
+  max-width: 520px;
+  width: 100%;
+  margin: 12px 0 16px 0;
+  opacity: 0.7;
+ }
  .skills-header{
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 20px;
+  margin-bottom: 0;
+  max-width: 520px;
+  width: 100%;
+  padding:0 4px;
  }
 
  .skills-header h2{
@@ -610,18 +621,24 @@
     box-sizing: border-box;
     overflow: hidden;
   }
-  .section-divider {
-  width: 100%;
-  max-width: 520px;
+ .section-divider{
   border: none;
-  border-top: 1px solid #222;
-  margin: 4px 0;
+  height: 1px;
+  background: linear-gradient(90deg, #333, #666, #333);
+  max-width: 520px;
+  width: 100%;
+  margin: 12px 0 16px 0;
+  opacity: 0.7;
  }
   .perks-header {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 16px;
+    margin-bottom: 0;
+    max-width: 520px;
+    width: 100%;
+    padding: 0 4px;
+    box-sizing: border-box;
   }
   .perks-header h2 {
     font-size: 20px;
@@ -674,13 +691,19 @@
   .perk-icon.locked-icon { filter: grayscale(1); opacity: 0.35; }
   .perk-icon.soon-icon { filter: grayscale(1); opacity: 0.2; }
   .perk-name {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
     text-align: center;
     text-transform: uppercase;
     max-width: 100%;
-    overflow-wrap: break-word;
+    word-break: break-word;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .perk-name.unlocked-name { color: #c8860a; }
   .perk-name.locked-name { color: #444; }
@@ -852,6 +875,7 @@
  </div> 
 </div>
   <!--all the other sections below-->
+  <hr class="section-divider"/>
  <div class="accomplishment-container">
    <div class="section-title-row">
     <h2 class="section-title">ACCOMPLISHMENTS</h2>
@@ -905,12 +929,15 @@
  </div>
  <!-- ===== SKILLS PANEL ===== -->
 
-  <div class="skills-wrap">
-    <div class="skills-header">
+<hr class="section-divider"/>
+ <div class="skills-header">
       <h2>Skills</h2>
       <span>grow through play</span>
   </div>
 
+
+
+<div class="skills-wrap">
   <div class="skill-block">
     <div class="skill-row">
         <span class="skill-name">Charisma</span>
@@ -981,14 +1008,15 @@
       </div>
   </div>
  </div>
- 
+</div>
   <hr class="section-divider"/>
-  <div class="perks-wrap">
+  
     <div class="perks-header">
       <h2>Perks</h2>
       <span>Unlock more gameplay</span>
-  </div>
+    </div>
 
+<div class="perks-wrap">
  <div class="perks-grid">
   <div class="perk-card unlocked">
     <span class="perk-icon unlocked-icon">🎤</span>
@@ -1054,7 +1082,7 @@
     <span class="perk-name soon-name">Diamond Era</span>
   </div>
  </div>
-
+</div>
   <div class="legend">
     <div class="legend-item"><span class="dot dot-gold"></span>Unlocked</div>
     <div class="legend-item"><span class="dot dot-gray"></span>Locked</div>
