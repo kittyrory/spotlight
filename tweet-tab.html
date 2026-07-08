@@ -652,7 +652,7 @@
   let images = [];
  
   function readFiles(fileList){
-    const files = Array.from(fileList).slice(0, 12); // sane upper bound
+    const files = Array.from(fileList).slice(0, 4 - images.length);
     const readers = files.map(file => new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target.result);
@@ -661,6 +661,8 @@
     Promise.all(readers).then(results => {
       images = images.concat(results);
       renderGrid();
+      galleryBtn.style.opacity = images.length >= 4 ? '0.4' : '1';
+      galleryBtn.style.pointerEvents = images.length >= 4 ? 'none' : 'auto';
     });
   }
  
@@ -707,6 +709,8 @@
   removeImage.addEventListener('click', () => {
     images = [];
     renderGrid();
+    galleryBtn.style.opacity = '1';
+    galleryBtn.style.pointerEvents = 'auto';
   });
  
   // Highlights collapse/expand
