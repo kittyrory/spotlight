@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Spotlight | Notifications</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <title>Spotlight | Tweet Tab</title>
+    <style>
+        :root{
+            --bg:#ffffff;
+            --card-bg:#f4f4f4;
+            --border:#e2e2e2;
+            --text-primary:#1a1a1a;
+            --text-secondary:#7a7a7a;
+            --text-tertiary:#9c9c9c;
+            --accent:#1a1a1a;
+            --pill-bg:#efefef;
+            --danger:#c0392b;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            font-family: -apple-system, "SF Pro Display", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone{
+            width: 100%;
+            max-width: 480px;
+            max-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* Top bar */
+        .topbar{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 20px 16px;
+        }
+
+        .cancel{
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+         .topbar-right{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+ 
+  .drafts{
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+ 
+  .post-btn{
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 9px 22px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+  }
+ 
+  .post-btn:disabled{
+    background: var(--text-tertiary);
+    cursor: not-allowed;
+  }
+ 
+  /* Composer */
+  .composer{
+    display: flex;
+    gap: 14px;
+    padding: 6px 20px 18px;
+  }
+ 
+  .avatar{
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+ 
+  .composer-main{
+    flex: 1;
+    min-width: 0;
+  }
+ 
+  .identity-row{
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+ 
+  .name{
+    font-weight: 700;
+    font-size: 1.02rem;
+  }
+ 
+  .handle{
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  }
+ 
+  /* Audience dropdown */
+  .audience-wrap{
+    position: relative;
+    display: inline-block;
+    margin: 8px 0 14px;
+  }
+ 
+  .audience-pill{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border);
+    background: var(--pill-bg);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.88rem;
+    padding: 5px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    user-select: none;
+  }
+ 
+  .audience-pill svg{
+    width: 12px;
+    height: 12px;
+    fill: var(--text-secondary);
+    transition: transform 0.15s ease;
+  }
+ 
+  .audience-pill.open svg{
+    transform: rotate(180deg);
+  }
+ 
+  .audience-menu{
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    width: 220px;
+    overflow: hidden;
+    z-index: 10;
+    display: none;
+  }
+ 
+  .audience-menu.open{
+    display: block;
+  }
+ 
+  .audience-option{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+ 
+  .audience-option:hover{
+    background: var(--card-bg);
+  }
+ 
+  .audience-option.disabled{
+    cursor: not-allowed;
+    color: var(--text-tertiary);
+  }
+ 
+  .audience-option.disabled:hover{
+    background: transparent;
+  }
+ 
+  .soon-tag{
+    font-size: 0.66rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-tertiary);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+ 
+  .audience-divider{
+    height: 1px;
+    background: var(--border);
+  }
+ 
+  .compose-input{
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    font-family: inherit;
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.4;
+    background: transparent;
+  }
+ 
+  .compose-input::placeholder{
+    color: var(--text-tertiary);
+  }
+ 
+  .word-count-row{
+    display: flex;
+    justify-content: flex-end;
+    padding: 4px 20px 0;
+  }
+ 
+  .word-count{
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-tertiary);
+  }
+ 
+  .word-count.warn{
+    color: #b8860b;
+  }
+ 
+  .word-count.over{
+    color: var(--danger);
+  }
+ 
+  /* Image preview grid */
+  .image-preview{
+    margin: 4px 20px 16px;
+    display: none;
+    position: relative;
+  }
+ 
+  .image-preview.active{
+    display: block;
+  }
+ 
+  .image-grid{
+    display: grid;
+    gap: 4px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+ 
+  .image-grid.count-1{ grid-template-columns: 1fr; }
+  .image-grid.count-2{ grid-template-columns: 1fr 1fr; }
+  .image-grid.count-3{ grid-template-columns: 1fr 1fr; }
+  .image-grid.count-3 .tile:first-child{ grid-row: span 2; }
+  .image-grid.count-4plus{ grid-template-columns: 1fr 1fr; }
+ 
+  .tile{
+    position: relative;
+    background: var(--card-bg);
+  }
+ 
+  .tile img{
+    width: 100%;
+    height: 100%;
+    min-height: 140px;
+    max-height: 260px;
+    object-fit: cover;
+    display: block;
+  }
+ 
+  .tile-overlay{
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+ 
+  .image-remove{
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+  }
+ 
+  /* Media row */
+  .media-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 20px 20px;
+  }
+ 
+  .media-buttons{
+    display: flex;
+    gap: 12px;
+  }
+ 
+  .media-btn{
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+ 
+  .media-btn:hover{
+    background: #eaeaea;
+  }
+ 
+  .media-btn:active{
+    background: #dedede;
+  }
+ 
+  .media-btn svg{
+    width: 20px;
+    height: 20px;
+    fill: var(--text-primary);
+  }
+ 
+  .divider-line{
+    height: 1px;
+    background: var(--border);
+    margin: 0 20px;
+  }
+ 
+  /* Highlights */
+  .highlights-header{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 20px 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+ 
+  .highlights-title{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+ 
+  .highlights-title svg{
+    width: 19px;
+    height: 19px;
+    fill: var(--text-secondary);
+  }
+ 
+  .chevron{
+    width: 18px;
+    height: 18px;
+    fill: var(--text-secondary);
+    transition: transform 0.2s ease;
+  }
+ 
+  .chevron.collapsed{
+    transform: rotate(180deg);
+  }
+ 
+  .highlights-scroll{
+    display: flex;
+    gap: 14px;
+    padding: 0 20px 20px;
+    overflow-x: auto;
+    transition: max-height 0.2s ease;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* IE 10+ */
+  }
+
+  .highlights-scroll::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+ 
+  .highlights-scroll.hidden{
+    display: none;
+  }
+ 
+  .highlight-card{
+    flex: 0 0 auto;
+    width: 240px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px;
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--text-primary);
+    background: var(--card-bg);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+  }
+ 
+  .highlight-card:hover{
+    border-color: #bdbdbd;
+    background: #ececec;
+    transform: translateY(-2px);
+  }
+ 
+  .highlight-tag-row{
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+ 
+  .highlight-icon{
+    width: 15px;
+    height: 15px;
+    fill: var(--text-secondary);
+    flex: 0 0 auto;
+  }
+ 
+  .highlight-tag{
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+ 
+  @media (max-width: 380px){
+    .topbar, .composer, .media-row, .highlights-header{ padding-left: 16px; padding-right: 16px; }
+    .word-count-row{ padding-left: 16px; padding-right: 16px; }
+    .image-preview{ margin-left: 16px; margin-right: 16px; }
+    .highlight-card{ width: 210px; }
+  }
+</style>
+</head>
+<body>
+ 
+<div class="phone">
+ 
+  <div class="topbar">
+    <button class="cancel">Cancel</button>
+    <div class="topbar-right">
+      <span class="drafts">Drafts</span>
+      <button class="post-btn" id="postBtn">Post</button>
+    </div>
+  </div>
+ 
+  <div class="composer">
+    <div class="avatar">NA</div>
+    <div class="composer-main">
+      <div class="identity-row">
+        <span class="name">Kenzie Vale</span>
+        <span class="handle">@kenzievale</span>
+      </div>
+ 
+      <div class="audience-wrap" id="audienceWrap">
+        <div class="audience-pill" id="audiencePill">
+          <span id="audienceLabel">Everyone</span>
+          <svg viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z"/></svg>
+        </div>
+        <div class="audience-menu" id="audienceMenu">
+          <div class="audience-option" data-value="Everyone">Everyone</div>
+          <div class="audience-divider"></div>
+          <div class="audience-option disabled" data-disabled="true">
+            Close Friends
+            <span class="soon-tag">Coming soon</span>
+          </div>
+        </div>
+      </div>
+ 
+      <textarea class="compose-input" id="composeInput" placeholder="What's the tea today?" rows="3" maxlength="250"></textarea>
+    </div>
+  </div>
+ 
+  <div class="word-count-row">
+    <span class="word-count" id="wordCount">0 / 250</span>
+  </div>
+ 
+  <div class="image-preview" id="imagePreview">
+    <button class="image-remove" id="removeImage">✕</button>
+    <div class="image-grid" id="imageGrid"></div>
+  </div>
+ 
+  <div class="media-row">
+    <div class="media-buttons">
+      <div class="media-btn" id="galleryBtn" title="Choose from gallery">
+        <svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+      </div>
+      <div class="media-btn" id="cameraBtn" title="Take a photo">
+        <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4zM9 2l-1.83 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
+      </div>
+      <input type="file" id="galleryInput" accept="image/*" multiple style="display:none">
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+    </div>
+  </div>
+ 
+  <div class="divider-line"></div>
+ 
+  <div class="highlights-header" id="highlightsHeader">
+    <div class="highlights-title">
+      <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4-6.3-4.6-6.3 4.6 2.3-7.4-6-4.4h7.6z"/></svg>
+      Highlights
+    </div>
+    <svg class="chevron" id="chevronIcon" viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+  </div>
+ 
+  <div class="highlights-scroll" id="highlightsScroll">
+    <div class="highlight-card" data-text="my mom said i peaked at birth. she's not wrong but she's also not the one with a nine figure exit so">
+      <div class="highlight-tag-row">
+        <svg class="highlight-icon" viewBox="0 0 24 24"><path d="M12 21c-.3 0-.6-.1-.8-.3C7.1 17 3 13 3 9c0-3.3 2.7-6 6-6 1.5 0 2.9.6 4 1.6C14.1 3.6 15.5 3 17 3c3.3 0 6 2.7 6-6 0 4-4.1 8-8.2 11.7-.2.2-.5.3-.8.3z"/></svg>
+        <span class="highlight-tag">Family drama</span>
+      </div>
+      my mom said i peaked at birth. she's not wrong but she's also not the one with a nine figure exit so
+    </div>
+    <div class="highlight-card" data-text="my glam team just quit and somehow my highlight is still doing more for me than your whole personality">
+      <div class="highlight-tag-row">
+        <svg class="highlight-icon" viewBox="0 0 24 24"><path d="M12 2L1 21h22L12 2zm0 4.2L18.8 19H5.2L12 6.2z"/></svg>
+        <span class="highlight-tag">Petty</span>
+      </div>
+      my glam team just quit and somehow my highlight is still doing more for me than your whole personality
+    </div>
+    <div class="highlight-card" data-text="reminder that i built an empire off vibes alone and the girlies still can't do the math">
+      <div class="highlight-tag-row">
+        <svg class="highlight-icon" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4-6.3-4.6-6.3 4.6 2.3-7.4-6-4.4h7.6z"/></svg>
+        <span class="highlight-tag">Delusional confidence</span>
+      </div>
+      reminder that i built an empire off vibes alone and the girlies still can't do the math
+    </div>
+    <div class="highlight-card" data-text="production keeps asking me to react more babe i AM reacting this is just my face">
+      <div class="highlight-tag-row">
+        <svg class="highlight-icon" viewBox="0 0 24 24"><path d="M17 10.5V7c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-3.5l4 4v-11l-4 4z"/></svg>
+        <span class="highlight-tag">Reality TV energy</span>
+      </div>
+      production keeps asking me to "react more" babe i AM reacting this is just my face
+    </div>
+    <div class="highlight-card" data-text="the audacity to call this a feud when i've never once said her name. manifesting relevance is crazy work">
+      <div class="highlight-tag-row">
+        <svg class="highlight-icon" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <span class="highlight-tag">Fake feud</span>
+      </div>
+      the audacity to call this a feud when i've never once said her name. manifesting relevance is crazy work
+    </div>
+    <div class="highlight-card" data-text="not the group chat leaking again. i said what i said and honestly i'd say it again on the record">
+      <div class="highlight-tag-row">
+        <svg class="highlight-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+        <span class="highlight-tag">Leak response</span>
+      </div>
+      not the group chat leaking again. i said what i said and honestly i'd say it again on the record
+    </div>
+  </div>
+ 
+</div>
+ 
+<script>
+  const composeInput = document.getElementById('composeInput');
+  const wordCount = document.getElementById('wordCount');
+  const postBtn = document.getElementById('postBtn');
+  const CHAR_LIMIT = 250;
+ 
+  function updateCount(){
+    const len = composeInput.value.length;
+    wordCount.textContent = len + ' / ' + CHAR_LIMIT;
+    wordCount.classList.remove('warn', 'over');
+    if(len >= CHAR_LIMIT){
+      wordCount.classList.add('over');
+    } else if(len >= CHAR_LIMIT - 40){
+      wordCount.classList.add('warn');
+    }
+  }
+  composeInput.addEventListener('input', updateCount);
+  updateCount();
+ 
+  // Audience dropdown
+  const audiencePill = document.getElementById('audiencePill');
+  const audienceMenu = document.getElementById('audienceMenu');
+  const audienceLabel = document.getElementById('audienceLabel');
+  const audienceWrap = document.getElementById('audienceWrap');
+ 
+  audiencePill.addEventListener('click', (e) => {
+    e.stopPropagation();
+    audienceMenu.classList.toggle('open');
+    audiencePill.classList.toggle('open');
+  });
+ 
+  document.querySelectorAll('.audience-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if(opt.dataset.disabled) return;
+      audienceLabel.textContent = opt.dataset.value;
+      audienceMenu.classList.remove('open');
+      audiencePill.classList.remove('open');
+    });
+  });
+ 
+  document.addEventListener('click', (e) => {
+    if(!audienceWrap.contains(e.target)){
+      audienceMenu.classList.remove('open');
+      audiencePill.classList.remove('open');
+    }
+  });
+ 
+  // Media: gallery (multi) + camera (single), rendered as a grid/collage
+  const galleryBtn = document.getElementById('galleryBtn');
+  const cameraBtn = document.getElementById('cameraBtn');
+  const galleryInput = document.getElementById('galleryInput');
+  const cameraInput = document.getElementById('cameraInput');
+  const imagePreview = document.getElementById('imagePreview');
+  const imageGrid = document.getElementById('imageGrid');
+  const removeImage = document.getElementById('removeImage');
+ 
+  let images = [];
+ 
+  function readFiles(fileList){
+    const files = Array.from(fileList).slice(0, 12); // sane upper bound
+    const readers = files.map(file => new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.readAsDataURL(file);
+    }));
+    Promise.all(readers).then(results => {
+      images = images.concat(results);
+      renderGrid();
+    });
+  }
+ 
+  function renderGrid(){
+    if(images.length === 0){
+      imagePreview.classList.remove('active');
+      imageGrid.innerHTML = '';
+      return;
+    }
+    imagePreview.classList.add('active');
+ 
+    const count = images.length;
+    let gridClass = 'count-1';
+    if(count === 2) gridClass = 'count-2';
+    else if(count === 3) gridClass = 'count-3';
+    else if(count >= 4) gridClass = 'count-4plus';
+ 
+    imageGrid.className = 'image-grid ' + gridClass;
+    imageGrid.innerHTML = '';
+ 
+    const shown = images.slice(0, 4);
+    shown.forEach((src, i) => {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      const img = document.createElement('img');
+      img.src = src;
+      tile.appendChild(img);
+ 
+      if(i === 3 && count > 4){
+        const overlay = document.createElement('div');
+        overlay.className = 'tile-overlay';
+        overlay.textContent = '+' + (count - 4);
+        tile.appendChild(overlay);
+      }
+      imageGrid.appendChild(tile);
+    });
+  }
+ 
+  galleryBtn.addEventListener('click', () => galleryInput.click());
+  cameraBtn.addEventListener('click', () => cameraInput.click());
+  galleryInput.addEventListener('change', (e) => { readFiles(e.target.files); galleryInput.value = ''; });
+  cameraInput.addEventListener('change', (e) => { readFiles(e.target.files); cameraInput.value = ''; });
+ 
+  removeImage.addEventListener('click', () => {
+    images = [];
+    renderGrid();
+  });
+ 
+  // Highlights collapse/expand
+  const highlightsHeader = document.getElementById('highlightsHeader');
+  const highlightsScroll = document.getElementById('highlightsScroll');
+  const chevronIcon = document.getElementById('chevronIcon');
+ 
+  highlightsHeader.addEventListener('click', () => {
+    highlightsScroll.classList.toggle('hidden');
+    chevronIcon.classList.toggle('collapsed');
+  });
+ 
+  // Clicking a highlight card inserts its text into the composer
+  document.querySelectorAll('.highlight-card').forEach(card => {
+    card.addEventListener('click', () => {
+      composeInput.value = card.dataset.text;
+      composeInput.focus();
+      updateCount();
+    });
+  });
+</script>
+ 
+</body>
+</html>
