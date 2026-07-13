@@ -227,6 +227,7 @@
     </p>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
   <script>
     const usernameInput = document.getElementById('username');
@@ -281,7 +282,7 @@
       signInBtn.disabled = true;
       signInBtn.textContent = 'Signing in...';
 
-      // supabase auth is email-based under the hood, but we only have
+      // supabase auth is email-based under the hood, but we only want
       // username + password on the frontend. so we turn the username into
       // a fake email the user never sees, and use that for auth.
       const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
