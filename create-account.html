@@ -223,27 +223,29 @@
 
     <div class="divider">or</div>
     <p class="join-now">
-      Already have an account? <a href="create-account.html"><span>Sign in</span></a>
+      Already have an account? <a href="login.html"><span>Sign in</span></a>
     </p>
   </div>
 
+  <script src="scripts/supabase.js"></script>
   <script>
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     const usernameError = document.getElementById('username-error');
     const passwordError = document.getElementById('password-error');
-    const signInBtn    = document.getElementById('create-btn');
+    const createBtn     = document.getElementById('create-btn');
 
     function clearError(input, errorEl) {
       input.classList.remove('error');
       errorEl.classList.remove('visible');
     }
 
-    function showError(input, errorEl) {
+    function showError(input, errorEl, message) {
       // remove then re-add to re-trigger the shake animation
       input.classList.remove('error');
       void input.offsetWidth;
       input.classList.add('error');
+      if (message) errorEl.textContent = message;
       errorEl.classList.add('visible');
     }
 
@@ -251,19 +253,19 @@
     usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
     passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
 
-    signInBtn.addEventListener('click', (e) => {
+    createBtn.addEventListener('click', async (e) => {
       const usernameVal = usernameInput.value.trim();
       const passwordVal = passwordInput.value.trim();
 
       let hasError = false;
 
       if (!usernameVal) {
-        showError(usernameInput, usernameError);
+        showError(usernameInput, usernameError, 'Enter your username first');
         hasError = true;
       }
 
       if (!passwordVal) {
-        showError(passwordInput, passwordError);
+        showError(passwordInput, passwordError, "Don't forget your password");
         hasError = true;
       }
 
@@ -273,6 +275,33 @@
         } else {
           passwordInput.focus();
         }
+        return;
+      }
+
+      createBtn.disabled = true;
+      createBtn.textContent = 'Creating...';
+
+      // supabase auth is email-based under the hood, but we only have
+      // username + password on the frontend. so we turn the username into
+      // a fake email the user never sees, and use that for auth
+      const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
+
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: fakeEmail,
+        password: passwordVal,
+        options: {
+          data: { username: usernameVal }
+        }
+      });
+
+      createBtn.disabled = false;
+      createBtn.textContent = 'Join now';
+
+      if (signUpError) {
+        // supabase throws a generic "already registered"
+        // error when the username is taken
+        showError(usernameInput, usernameError, 'That username is already taken');
+        usernameInput.focus();
         return;
       }
 
