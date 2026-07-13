@@ -227,7 +227,6 @@
     </p>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
   <script>
     const usernameInput = document.getElementById('username');
@@ -284,10 +283,12 @@
 
       // supabase auth is email-based under the hood, but we only have
       // username + password on the frontend. so we turn the username into
-      // a fake email the user never sees, and use that for auth
+      // a fake email the user never sees, and use that for auth.
+      // username also gets passed in as metadata so the db trigger can
+      // pick it up and create the matching profiles row.
       const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
 
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabaseClient.auth.signUp({
         email: fakeEmail,
         password: passwordVal,
         options: {
@@ -299,8 +300,8 @@
       createBtn.textContent = 'Join now';
 
       if (signUpError) {
-        // supabase throws a generic "already registered"
-        // error when the username is taken
+        // supabase throws a generic "already registered" style error
+        // when the fake email is taken, i.e. the username is taken
         showError(usernameInput, usernameError, 'That username is already taken');
         usernameInput.focus();
         return;
