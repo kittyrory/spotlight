@@ -219,9 +219,13 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
     <script src="scripts/options.js"></script>
     <script>
+      // origin.html: save the selected origin to the user's profile row,
+      // then move on to the next step.
+
       const cardGrid = document.getElementById('card-grid');
       const continueBtn = document.getElementById('continue-btn');
       const backBtn = document.getElementById('back-btn');
