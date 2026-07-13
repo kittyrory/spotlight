@@ -78,6 +78,13 @@
       box-shadow: 0 4px 16px rgba(201,149,42,0.3);
     }
 
+    .cont:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
     .back {
       width: 100%;
       border: 1px solid #555;
@@ -174,33 +181,33 @@
 
         <div id="card-grid">
           <div class="container">
-            <div class="option">
+            <div class="option" data-value="viral-moment">
               <span class="icon">⚡</span>
               <span class="title">Viral Moment</span>
             </div>
-            <div class="option">
+            <div class="option" data-value="industry-plant">
               <span class="icon">🏢</span>
               <span class="title">Industry Plant</span>
             </div>
           </div>
 
           <div class="container">
-            <div class="option">
+            <div class="option" data-value="underground-legend">
               <span class="icon">🌑</span>
               <span class="title">Underground Legend</span>
             </div>
-            <div class="option">
+            <div class="option" data-value="reality-tv">
               <span class="icon">📺</span>
               <span class="title">Reality TV</span>
             </div>
           </div>
 
           <div class="container">
-            <div class="option">
+            <div class="option" data-value="nepotism-baby">
               <span class="icon">🎀</span>
               <span class="title">Nepotism Baby</span>
             </div>
-            <div class="option">
+            <div class="option" data-value="self-made">
               <span class="icon">🔥</span>
               <span class="title">Self-Made</span>
             </div>
@@ -212,6 +219,59 @@
       </div>
     </div>
 
+    <script src="scripts/supabase.js"></script>
     <script src="scripts/options.js"></script>
+    <script>
+      const cardGrid = document.getElementById('card-grid');
+      const continueBtn = document.getElementById('continue-btn');
+      const backBtn = document.getElementById('back-btn');
+      let selectedOrigin = null;
+
+      cardGrid.addEventListener('click', (e) => {
+        const option = e.target.closest('.option');
+        if (!option) return;
+
+        document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        option.classList.add('selected');
+        selectedOrigin = option.dataset.value;
+      });
+
+      continueBtn.addEventListener('click', async () => {
+        if (!selectedOrigin) {
+          cardGrid.classList.remove('shake');
+          void cardGrid.offsetWidth;
+          cardGrid.classList.add('shake');
+          return;
+        }
+
+        continueBtn.disabled = true;
+        continueBtn.textContent = 'Saving...';
+
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+        if (userError || !user) {
+          console.error('No logged in user:', userError);
+          window.location.href = 'login.html';
+          return;
+        }
+
+        const { error } = await supabaseClient
+          .from('profiles')
+          .upsert({ id: user.id, origin: selectedOrigin });
+
+        if (error) {
+          console.error('Error saving origin:', error);
+          continueBtn.disabled = false;
+          continueBtn.textContent = 'Continue →';
+          return;
+        }
+
+        window.location.href = continueBtn.dataset.next;
+      });
+
+      backBtn.addEventListener('click', () => {
+        window.location.href = backBtn.dataset.prev;
+      });
+    </script>
   </body>
 </html>
