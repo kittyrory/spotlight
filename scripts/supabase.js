@@ -4,4 +4,4 @@
 const supabaseUrl = 'https://qhcohcxmxndexkhexbst.supabase.co';
 const supabaseAnonKey = 'sb_publishable_mX0YOWlolguEx3j0uCjtmQ_VlMdEYhz';
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
