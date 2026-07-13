@@ -10,7 +10,7 @@ window.applyFilters = function () {
     const matchCat    = category === 'All' || w.category === category;
     const matchSearch = !query
       || w.title.toLowerCase().includes(query)
-      || (w.desc && w.desc.toLowerCase().includes(query))
+      || (w.descripton && w.descripton.toLowerCase().includes(query))
       || (w.tags && w.tags.some(function (t) { return t.toLowerCase().includes(query); }));
     return matchCat && matchSearch;
   });
@@ -58,7 +58,7 @@ function renderWorlds(list) {
         <img class="world-btn-img" src="${world.image}">
         <div class="world-btn-body">
           <div class="world-btn-title">${world.title}</div>
-          <div class="world-btn-desc">${world.desc}</div>
+          <div class="world-btn-descripton">${world.descripton}</div>
           <div class="world-btn-tag">${tagsHTML}</div>
         </div>
       </button>
@@ -216,7 +216,7 @@ attachClickListeners();
 
   function reset() {
     document.getElementById('cwTitleInput').value = '';
-    document.getElementById('cwDesc').value = '';
+    document.getElementById('cwdescripton').value = '';
     document.getElementById('cwCategory').value = '';
     document.getElementById('cwDramaSlider').value = 3;
     document.getElementById('cwDramaValue').textContent = getDramaLabel(3);
@@ -228,7 +228,7 @@ attachClickListeners();
     tagAddBtn.disabled = false;
     document.getElementById('cwCharList').innerHTML = '';
     document.getElementById('cwCharInput').value = '';
-    ['cwTitleErr', 'cwDescErr', 'cwCatErr'].forEach(function (id) {
+    ['cwTitleErr', 'cwdescriptonErr', 'cwCatErr'].forEach(function (id) {
       document.getElementById(id).classList.remove('show');
     });
   }
@@ -327,7 +327,7 @@ attachClickListeners();
   submitBtn.addEventListener('click', function () {
     let valid = true;
     const title = document.getElementById('cwTitleInput').value.trim();
-    const desc  = document.getElementById('cwDesc').value.trim();
+    const descripton  = document.getElementById('cwdescripton').value.trim();
     const cat   = document.getElementById('cwCategory').value;
     const drama = parseInt(document.getElementById('cwDramaSlider').value);
     const crossUniverse = document.getElementById('cwCrossUniverse').checked;
@@ -335,8 +335,8 @@ attachClickListeners();
     if (!title) { document.getElementById('cwTitleErr').classList.add('show'); valid = false; }
     else { document.getElementById('cwTitleErr').classList.remove('show'); }
 
-    if (!desc) { document.getElementById('cwDescErr').classList.add('show'); valid = false; }
-    else { document.getElementById('cwDescErr').classList.remove('show'); }
+    if (!descripton) { document.getElementById('cwdescriptonErr').classList.add('show'); valid = false; }
+    else { document.getElementById('cwdescriptonErr').classList.remove('show'); }
 
     if (!cat) { document.getElementById('cwCatErr').classList.add('show'); valid = false; }
     else { document.getElementById('cwCatErr').classList.remove('show'); }
@@ -345,7 +345,7 @@ attachClickListeners();
 
     window.WORLDS.push({
       id: Date.now(),
-      title, desc, category: cat,
+      title, descripton, category: cat,
       image: imageDataUrl || '',
       tags: [...tags],
       characters: [...characters],
@@ -356,4 +356,113 @@ attachClickListeners();
     window.applyFilters();
     close();
   });
+})();
+
+//------------------
+// SAVE SELECTED WORLDS
+//------------------
+
+window.saveWorldsAndContinue = async function () {
+  const confirmBtn = document.getElementById('confirmWorldsBtn');
+  const selected = window.getSelected ? window.getSelected() : [];
+
+  if (!selected.length) return;
+
+  confirmBtn.disabled = true;
+  const originalText = confirmBtn.textContent;
+  confirmBtn.textContent = 'Saving...';
+
+  const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+  if (userError || !user) {
+    console.error('No logged in user:', userError);
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // just store the essentials per world, not the whole object
+  const worldsToSave = selected.map(function (w) {
+    return { id: w.id, title: w.title, category: w.category, image: w.image || '' };
+  });
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .upsert({ id: user.id, selected_worlds: worldsToSave });
+
+  if (error) {
+    console.error('Error saving selected worlds:', error);
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = originalText;
+    return;
+  }
+
+  window.location.href = 'Feed.html';
+};
+
+//------------------
+// SAVE CUSTOM WORLDS TO A SHARED TABLE
+//------------------
+
+document.getElementById('cwSubmit').addEventListener('click', async function () {
+  const worlds = window.WORLDS || [];
+  if (!worlds.length) return;
+
+  const latest = worlds[worlds.length - 1];
+
+  // only save world objects created just now (they get a Date.now() id
+  if (typeof latest.id !== 'number' || latest.id < 1000000) return;
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  const { error } = await supabaseClient
+    .from('custom_worlds')
+    .insert({
+      created_by: user ? user.id : null,
+      title: latest.title,
+      descriptonription: latest.descripton,
+      category: latest.category,
+      image: latest.image || '',
+      tags: latest.tags || [],
+      characters: latest.characters || [],
+      drama: latest.drama,
+      cross_universe: latest.crossUniverse
+    });
+
+  if (error) {
+    console.error('Error saving custom world:', error);
+  }
+});
+
+//------------------
+// LOAD CUSTOM WORLDS ON PAGE LOAD
+//------------------
+
+(async function loadCustomWorlds() {
+  const { data, error } = await supabaseClient
+    .from('custom_worlds')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error loading custom worlds:', error);
+    return;
+  }
+  if (!data || !data.length) return;
+
+  const mapped = data.map(function (row) {
+    return {
+      id: row.id,
+      title: row.title,
+      description row.descripton,
+      category: row.category,
+      image: row.image || '',
+      tags: row.tags || [],
+      characters: row.characters || [],
+      drama: row.drama,
+      crossUniverse: row.cross_universe
+    };
+  });
+
+  window.WORLDS = (window.WORLDS || []).concat(mapped);
+  window.applyFilters();
 })();
