@@ -924,7 +924,7 @@
         <div class="confirm-count">Selected: <span id="countText">0 / 3</span></div>
         <div class="selected-previews" id="selectedPreviews"></div>
       </div>
-      <button class="btn-confirm" onclick="window.location.href='Feed.html'">Enter the Spotlight &rarr;</button>
+      <button class="btn-confirm" id="confirmWorldsBtn" onclick="window.saveWorldsAndContinue()">Enter the Spotlight &rarr;</button>
     </div>
 
     <div class="cw-overlay" id="cwOverlay">
@@ -1023,6 +1023,8 @@
       </div>
     </div>
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
     <script src="scripts/worlds.js"></script>
     <script src="scripts/world-scripts.js"></script>
   </body>
