@@ -301,8 +301,7 @@
       createBtn.textContent = 'Join now';
 
       if (signUpError) {
-        // supabase throws a generic "already registered" style error
-        // when the fake email is taken, i.e. the username is taken
+        console.error('Signup error:', signUpError);
         showError(usernameInput, usernameError, 'That username is already taken');
         usernameInput.focus();
         return;
