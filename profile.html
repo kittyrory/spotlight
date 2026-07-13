@@ -439,7 +439,7 @@
   <div class="form-selection">
     <label class="section-title">Handle</label>
     <input id="handle" type="text" class="form-input" placeholder="@yourhandle">
-    <p class="error-msg" id="handle-error">Enter a handle</p>
+    <p class="error-msg" id="handle-error">Enter in a handle</p>
   </div>
 
   <div class="section-divider"></div>
@@ -470,6 +470,8 @@
   <button class="cont" id="continue-btn">Continue →</button>
   <button class="back" id="back-btn">← Back</button>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="scripts/supabase.js"></script>
   <script>
     document.querySelectorAll('.option').forEach(opt => {
       opt.addEventListener('click', () => {
@@ -546,7 +548,7 @@
     bioInput.addEventListener('input',         () => clearBioError());
 
     // continue button linking
-    document.getElementById('continue-btn').addEventListener('click', () => {
+    document.getElementById('continue-btn').addEventListener('click', async () => {
       const nameVal   = displayNameInput.value.trim();
       const handleVal = handleInput.value.trim();
       const bioVal    = bioInput.value.trim();
@@ -570,6 +572,41 @@
         // scroll to first error
         const firstError = document.querySelector('.form-input.error, .bio-box-container.error');
         if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      const continueBtn = document.getElementById('continue-btn');
+      continueBtn.disabled = true;
+      continueBtn.textContent = 'Saving...';
+
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+      if (userError || !user) {
+        console.error('No logged in user:', userError);
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // header/avatar images are stored as base64 data URLs straight from the file reader. 
+      // note (for myself): might bloat the profiles table fast, worth moving to supabase storage later
+      const headerImgEl = document.getElementById('header-img');
+      const avatarImgEl = document.getElementById('avatar-img');
+
+      const { error } = await supabaseClient
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          display_name: nameVal,
+          handle: handleVal,
+          bio: bioVal,
+          avatar_url: avatarImgEl.src || null,
+          header_url: headerImgEl.src || null
+        });
+
+      if (error) {
+        console.error('Error saving profile:', error);
+        continueBtn.disabled = false;
+        continueBtn.textContent = 'Continue →';
         return;
       }
 
