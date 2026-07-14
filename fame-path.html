@@ -120,6 +120,11 @@
     .check {
       margin-left: auto;
       color: #e2bb00;
+      visibility: hidden;
+    }
+
+    .option.selected .check {
+      visibility: visible;
     }
 
     .option:hover {
@@ -151,6 +156,13 @@
       background: #FFD500;
       transform: translateY(-1px);
       box-shadow: 0 4px 16px rgba(201,149,42,0.3);
+    }
+
+    .cont:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
 
     .back {
@@ -190,7 +202,7 @@
         <p class="p2">Your path shapes which events find you. Choose wisely.</p>
 
         <div class="card-grid" id="card-grid">
-          <div class="option">
+          <div class="option" data-value="viral-star">
             <span class="icon">⭐</span>
             <div class="option-text">
               <span class="title">The Viral Star</span>
@@ -199,7 +211,7 @@
             <span class="check">✓</span>
           </div>
 
-          <div class="option">
+          <div class="option" data-value="scandalous-one">
             <span class="icon">💣</span>
             <div class="option-text">
               <span class="title">The Scandalous One</span>
@@ -208,7 +220,7 @@
             <span class="check">✓</span>
           </div>
 
-          <div class="option">
+          <div class="option" data-value="lover-player">
             <span class="icon">💕</span>
             <div class="option-text">
               <span class="title">The Lover Player</span>
@@ -217,7 +229,7 @@
             <span class="check">✓</span>
           </div>
 
-          <div class="option">
+          <div class="option" data-value="shit-talker">
             <span class="icon">🗣️</span>
             <div class="option-text">
               <span class="title">The Shit Talker</span>
@@ -226,7 +238,7 @@
             <span class="check">✓</span>
           </div>
 
-          <div class="option">
+          <div class="option" data-value="mysterious-one">
             <span class="icon">🎭</span>
             <div class="option-text">
               <span class="title">The Mysterious One</span>
@@ -235,7 +247,7 @@
             <span class="check">✓</span>
           </div>
 
-          <div class="option">
+          <div class="option" data-value="activist">
             <span class="icon">🕊️</span>
             <div class="option-text">
               <span class="title">The Activist</span>
@@ -244,7 +256,7 @@
             <span class="check">✓</span>
           </div>
 
-          <div class="option">
+          <div class="option" data-value="industry-vet">
             <span class="icon">👑</span>
             <div class="option-text">
               <span class="title">The Industry Vet</span>
@@ -259,6 +271,31 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
     <script src="scripts/options.js"></script>
+    <script>
+      // called by options.js right before it navigates to the next page
+      window.onContinueSave = async function (selectedValue) {
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+
+        if (userError || !user) {
+          console.error('No logged in user:', userError);
+          window.location.href = 'login.html';
+          return false;
+        }
+
+        const { error } = await supabaseClient
+          .from('profiles')
+          .upsert({ id: user.id, fame_path: selectedValue });
+
+        if (error) {
+          console.error('Error saving:', error);
+          return false;
+        }
+
+        return true;
+      };
+    </script>
   </body>
 </html>

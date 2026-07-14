@@ -103,7 +103,10 @@
     font-weight: 700;
     font-size: 1.1rem;
     color: var(--text-primary);
+    overflow: hidden;
   }
+
+  .avatar img{ width: 100%; height: 100%; object-fit: cover; }
  
   .composer-main{
     flex: 1;
@@ -480,7 +483,7 @@
 <div class="phone">
  
   <div class="topbar">
-    <button class="cancel">Cancel</button>
+    <button class="cancel" id="cancelBtn">Cancel</button>
     <div class="topbar-right">
       <span class="drafts">Drafts</span>
       <button class="post-btn" id="postBtn">Post</button>
@@ -488,11 +491,11 @@
   </div>
  
   <div class="composer">
-    <div class="avatar">NA</div>
+    <div class="avatar" id="composerAvatar">NA</div>
     <div class="composer-main">
       <div class="identity-row">
-        <span class="name">Kenzie Vale</span>
-        <span class="handle">@kenzievale</span>
+        <span class="name" id="composerName">Your name</span>
+        <span class="handle" id="composerHandle">@yourhandle</span>
       </div>
  
       <div class="audience-wrap" id="audienceWrap">
@@ -593,11 +596,15 @@
  
 </div>
  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="scripts/supabase.js"></script>
 <script>
   const composeInput = document.getElementById('composeInput');
   const wordCount = document.getElementById('wordCount');
   const postBtn = document.getElementById('postBtn');
   const CHAR_LIMIT = 250;
+  const DRAFT_KEY = 'spotlight-post-draft';
+  let currentProfile = null;
  
   function updateCount(){
     const len = composeInput.value.length;
@@ -609,7 +616,32 @@
       wordCount.classList.add('warn');
     }
   }
-  composeInput.addEventListener('input', updateCount);
+  function saveDraft(){
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        text: composeInput.value,
+        audience: audienceLabel.textContent,
+        images
+      }));
+    } catch (error) {
+      console.warn('Could not cache post draft:', error);
+    }
+  }
+
+  function restoreDraft(){
+    try {
+      const draft = JSON.parse(localStorage.getItem(DRAFT_KEY));
+      if (!draft) return;
+      composeInput.value = draft.text || '';
+      audienceLabel.textContent = draft.audience || 'Everyone';
+      images = Array.isArray(draft.images) ? draft.images : [];
+      renderGrid();
+    } catch (error) {
+      console.warn('Could not restore post draft:', error);
+    }
+  }
+
+  composeInput.addEventListener('input', () => { updateCount(); saveDraft(); });
   updateCount();
  
   // Audience dropdown
@@ -630,6 +662,7 @@
       audienceLabel.textContent = opt.dataset.value;
       audienceMenu.classList.remove('open');
       audiencePill.classList.remove('open');
+      saveDraft();
     });
   });
  
@@ -663,6 +696,7 @@
       renderGrid();
       galleryBtn.style.opacity = images.length >= 4 ? '0.4' : '1';
       galleryBtn.style.pointerEvents = images.length >= 4 ? 'none' : 'auto';
+      saveDraft();
     });
   }
  
@@ -711,6 +745,7 @@
     renderGrid();
     galleryBtn.style.opacity = '1';
     galleryBtn.style.pointerEvents = 'auto';
+    saveDraft();
   });
  
   // Highlights collapse/expand
@@ -729,8 +764,98 @@
       composeInput.value = card.dataset.text;
       composeInput.focus();
       updateCount();
+      saveDraft();
     });
   });
+
+  async function loadComposerProfile() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('display_name, handle, avatar_url')
+      .eq('id', user.id)
+      .single();
+    if (error) console.error('Could not load composer profile:', error);
+
+    currentProfile = profile || {};
+    const name = currentProfile.display_name || 'Your name';
+    const handle = currentProfile.handle ? `@${currentProfile.handle.replace(/^@/, '')}` : '@yourhandle';
+    document.getElementById('composerName').textContent = name;
+    document.getElementById('composerHandle').textContent = handle;
+    const avatar = document.getElementById('composerAvatar');
+    if (currentProfile.avatar_url) {
+      const image = document.createElement('img');
+      image.src = currentProfile.avatar_url;
+      image.alt = '';
+      avatar.replaceChildren(image);
+    }
+    else avatar.textContent = name.slice(0, 2).toUpperCase();
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const [header, data] = dataUrl.split(',');
+    const mime = (header.match(/data:(.*?);base64/) || [])[1] || 'image/jpeg';
+    const bytes = atob(data);
+    const array = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i += 1) array[i] = bytes.charCodeAt(i);
+    return new Blob([array], { type: mime });
+  }
+
+  async function uploadImages(userId) {
+    return Promise.all(images.map(async (image, index) => {
+      const blob = dataUrlToBlob(image);
+      const extension = blob.type.split('/')[1] || 'jpg';
+      const path = `${userId}/${Date.now()}-${index}.${extension}`;
+      const { error } = await supabaseClient.storage.from('post-images').upload(path, blob, { contentType: blob.type });
+      if (error) throw error;
+      const { data } = supabaseClient.storage.from('post-images').getPublicUrl(path);
+      return data.publicUrl;
+    }));
+  }
+
+  postBtn.addEventListener('click', async () => {
+    const content = composeInput.value.trim();
+    if (!content && !images.length) return;
+    if (content.length > CHAR_LIMIT) return;
+
+    postBtn.disabled = true;
+    postBtn.textContent = 'Posting...';
+    try {
+      const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+      if (userError || !user) throw userError || new Error('You need to log in first.');
+      const imageUrls = await uploadImages(user.id);
+      const { error } = await supabaseClient.from('posts').insert({
+        user_id: user.id,
+        content,
+        image_urls: imageUrls,
+        audience: audienceLabel.textContent,
+        like_count: Math.floor(Math.random() * 900) + 50,
+        dislike_count: Math.floor(Math.random() * 90) + 1,
+        repost_count: Math.floor(Math.random() * 200) + 1
+      });
+      if (error) throw error;
+      localStorage.removeItem(DRAFT_KEY);
+      window.location.href = 'Feed.html';
+    } catch (error) {
+      console.error('Could not publish post:', error);
+      alert('Your post could not be published. Make sure the Supabase SQL setup has been run.');
+      postBtn.disabled = false;
+      postBtn.textContent = 'Post';
+    }
+  });
+
+  document.getElementById('cancelBtn').addEventListener('click', () => {
+    saveDraft();
+    window.location.href = 'Feed.html';
+  });
+
+  restoreDraft();
+  loadComposerProfile();
 </script>
  
 </body>

@@ -771,7 +771,7 @@
       <span class="logo-dot"></span>
       <span class="logo-text">STAGE</span>
     </div>
-    <div class="player-handle">@playersname</div>
+    <div class="player-handle" id="stage-player-handle">@playersname</div>
   </header>
  
   <!-- THIN GOLD DIVIDER BELOW HEADER -->
@@ -792,8 +792,8 @@
     <!-- Hero Card -->
     <div class="hero-card">
       <span class="hero-badge">✰Rising Star</span>
-      <span class="hero-handle">@yourhandle</span>
-      <span class="hero-role">✦ Singer</span>
+      <span class="hero-handle" id="stage-hero-handle">@yourhandle</span>
+      <span class="hero-role" id="stage-hero-role">✦ Singer</span>
     </div>
  
    
@@ -1110,6 +1110,8 @@
  </div>
  </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="scripts/supabase.js"></script>
   <script>
       const profileInput = document.getElementById('profile-input');
       const profilePreview = document.getElementById('profile-preview');
@@ -1149,6 +1151,47 @@
       }, 150);
     });
   });
+
+  async function loadStageProfile() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('display_name, handle, avatar_url, identity')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !profile) {
+      if (error) console.error('Could not load Stage profile:', error);
+      return;
+    }
+
+    const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
+    document.getElementById('stage-player-handle').textContent = handle;
+    document.getElementById('stage-hero-handle').textContent = profile.display_name || handle;
+    const occupations = {
+      'singer-rapper': 'Singer / Rapper',
+      'kpop-idol': 'K-pop Idol',
+      model: 'Model',
+      athlete: 'Athlete',
+      'actor-actress': 'Actor / Actress',
+      'group-member': 'Group Member',
+      'content-creator': 'Content Creator',
+      socialite: 'Socialite'
+    };
+    if (profile.identity) {
+      document.getElementById('stage-hero-role').textContent = `✦ ${occupations[profile.identity] || profile.identity}`;
+    }
+
+    if (profile.avatar_url) {
+      profilePreview.src = profile.avatar_url;
+      profilePreview.style.display = 'block';
+      placeholderText.style.display = 'none';
+    }
+  }
+
+  loadStageProfile();
 
   </script>
 </body>

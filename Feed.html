@@ -26,6 +26,7 @@
       background-color: var(--bg);
       color: white;
       font-family: Arial, sans-serif;
+      padding-bottom: 88px;
     }
 
     .Feed {
@@ -116,6 +117,18 @@
       transform: translateY(-1px);
     }
 
+    .postMedia {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-top: 14px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    .postMedia:has(img:only-child) { grid-template-columns: 1fr; }
+    .postMedia img { width: 100%; max-height: 360px; object-fit: cover; border-radius: 12px; }
+
     /* avatar is now a placeholder image slot instead of an emoji span */
     .avatar {
       display: inline-block;
@@ -175,25 +188,35 @@
       font-size: 13px;
     }
 
-    .likes:hover {
+    .reaction {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      padding: 0;
+      color: inherit;
+      background: none;
+      border: 0;
+      font: inherit;
       cursor: pointer;
-      color: var(--color-accent);
+      transition: color 0.2s ease;
     }
 
-    .retweets:hover {
-      cursor: pointer;
-      color: greenyellow;
+    .reaction svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
     }
 
+    .likes:hover { color: var(--color-accent); }
+    .retweets:hover { color: greenyellow; }
     .reply:hover {
-      cursor: pointer;
       color: white;
     }
-
-    .dislikes:hover {
-      cursor: pointer;
-      color: red;
-    }
+    .dislikes:hover { color: red; }
 
     /* fade-in on load */
     @keyframes fadeIn {
@@ -222,9 +245,80 @@
     .postCard:nth-child(3) { animation-delay: 0.4s; }
     .postCard:nth-child(4) { animation-delay: 0.55s; }
     .postCard:nth-child(5) { animation-delay: 0.7s; }
+
+    .bottomTab {
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 40px;
+      width: 100%;
+      padding: 10px 20px;
+      background-color: var(--bg);
+      border-top: 1px solid var(--color-border);
+      z-index: 100;
+    }
+
+    .bottomTab a {
+      padding: 6px 14px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: white;
+      font: bold 16px 'Urbanist', Arial, sans-serif;
+      text-align: center;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .bottomTab a:hover,
+    .bottomTab a[aria-current="page"] {
+      color: var(--color-accent);
+      border-color: rgba(var(--color-accent-rgb), 0.5);
+      background-color: rgba(var(--color-accent-rgb), 0.08);
+      box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.35);
+      transform: translateY(-2px);
+    }
+
+    .composeButton {
+      position: fixed;
+      right: 20px;
+      bottom: 92px;
+      display: grid;
+      width: 56px;
+      height: 56px;
+      place-items: center;
+      color: #111;
+      background: var(--color-accent);
+      border-radius: 50%;
+      box-shadow: 0 7px 20px rgba(0, 0, 0, 0.45);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      z-index: 101;
+    }
+
+    .composeButton:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 10px 24px rgba(var(--color-accent-rgb), 0.32);
+    }
+
+    .composeButton svg { width: 27px; height: 27px; }
+
+    @media (max-width: 480px) {
+      .composeButton { right: 16px; }
+      .bottomTab { gap: 8px; }
+      .bottomTab a { padding: 6px 8px; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
+
+  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+    <symbol id="icon-like" viewBox="0 0 24 24"><path d="M7 10v10H4V10h3Zm3 10h7.2a2 2 0 0 0 1.95-1.56l1.1-5A2 2 0 0 0 18.3 11H14l.55-3.2A2.9 2.9 0 0 0 11.7 4L8.5 10.4V20H10Z" /></symbol>
+    <symbol id="icon-retweet" viewBox="0 0 24 24"><path d="m17 3 4 4-4 4" /><path d="M3 7h18" /><path d="m7 21-4-4 4-4" /><path d="M21 17H3" /></symbol>
+    <symbol id="icon-reply" viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-5 3v-3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" /></symbol>
+    <symbol id="icon-dislike" viewBox="0 0 24 24"><path d="M7 14V4H4v10h3Zm3-10h7.2a2 2 0 0 1 1.95 1.56l1.1 5A2 2 0 0 1 18.3 13H14l.55 3.2A2.9 2.9 0 0 1 11.7 20l-3.2-6.4V4H10Z" /></symbol>
+  </svg>
 
   <nav>
     <div class="toppage">
@@ -259,10 +353,10 @@
           <span class="tag2">#SpotlightGala2025</span>
         </div>
         <div class="footerSpan">
-          <span class="likes">🔸48.2k</span>
-          <span class="retweets">🔃1.2k</span>
-          <span class="dislikes">⭕842</span>
-          <span class="reply">Reply</span>
+          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>48.2k</button>
+          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>1.2k</button>
+          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>842</button>
+          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
         </div>
       </div>
     </div>
@@ -281,10 +375,10 @@
           <span class="tag1">#ARMY</span>
         </div>
         <div class="footerSpan">
-          <span class="likes">🔸201k</span>
-          <span class="retweets">🔃88.4k</span>
-          <span class="dislikes">⭕204</span>
-          <span class="reply">Reply</span>
+          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>201k</button>
+          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>88.4k</button>
+          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>204</button>
+          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
         </div>
       </div>
     </div>
@@ -302,10 +396,10 @@
           <span class="tag1">#BardzArePermanent</span>
         </div>
         <div class="footerSpan">
-          <span class="likes">🔸92.7k</span>
-          <span class="retweets">🔃31.2k</span>
-          <span class="dislikes">⭕15.8k</span>
-          <span class="reply">Reply</span>
+          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>92.7k</button>
+          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>31.2k</button>
+          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>15.8k</button>
+          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
         </div>
       </div>
     </div>
@@ -323,10 +417,10 @@
           <span class="tag1">#YourNameApologetic</span>
         </div>
         <div class="footerSpan">
-          <span class="likes">🔸3.4k</span>
-          <span class="retweets">🔃891</span>
-          <span class="dislikes">⭕23</span>
-          <span class="reply">Reply</span>
+          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>3.4k</button>
+          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>891</button>
+          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>23</button>
+          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
         </div>
       </div>
     </div>
@@ -345,14 +439,132 @@
           <span class="tag2">#NoContext</span>
         </div>
         <div class="footerSpan">
-          <span class="likes">🔸67.1k</span>
-          <span class="retweets">🔃22.8k</span>
-          <span class="dislikes">⭕1.2k</span>
-          <span class="reply">Reply</span>
+          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>67.1k</button>
+          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>22.8k</button>
+          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>1.2k</button>
+          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
         </div>
       </div>
     </div>
 
   </div>
+
+  <a class="composeButton" href="tweet-tab.html" aria-label="Create a post">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
+      <path d="m12 2 1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5L12 2Z" />
+      <path d="m19 15 .6 2.4L22 18l-2.4.6L19 21l-.6-2.4L16 18l2.4-.6L19 15Z" />
+    </svg>
+  </a>
+
+  <nav class="bottomTab" aria-label="Primary navigation">
+    <a href="Feed.html" aria-current="page">Feed</a>
+    <a href="#" aria-label="Explore (coming soon)">Explore</a>
+    <a href="notifications.html">Beams</a>
+    <a href="Stage.html">Stage</a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="scripts/supabase.js"></script>
+  <script>
+    function createReaction(type, icon, count) {
+      const button = document.createElement('button');
+      button.className = `reaction ${type}`;
+      const label = { likes: 'Like', retweets: 'Retweet', dislikes: 'Dislike', reply: 'Reply' }[type];
+      button.setAttribute('aria-label', `${label} this post`);
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+      use.setAttribute('href', `#${icon}`);
+      svg.appendChild(use);
+      button.append(svg, document.createTextNode(count));
+      return button;
+    }
+
+    function formatCount(value) {
+      return value >= 1000 ? `${(value / 1000).toFixed(1).replace('.0', '')}k` : value;
+    }
+
+    function timeSince(dateString) {
+      const minutes = Math.max(1, Math.floor((Date.now() - new Date(dateString)) / 60000));
+      if (minutes < 60) return `${minutes}m`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h`;
+      return `${Math.floor(hours / 24)}d`;
+    }
+
+    function renderUserPost(post, profile) {
+      const card = document.createElement('article');
+      card.className = 'postCard';
+      const meta = document.createElement('div');
+      meta.className = 'userMeta';
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      avatar.src = profile?.avatar_url || 'https://placehold.co/36x36/png';
+      avatar.alt = `${profile?.display_name || 'User'} avatar`;
+      const displayName = document.createElement('span');
+      displayName.className = 'displayName';
+      displayName.textContent = profile?.display_name || 'Spotlight user';
+      const handle = document.createElement('span');
+      handle.className = 'username';
+      handle.textContent = profile?.handle ? `@${profile.handle.replace(/^@/, '')}` : '@spotlightuser';
+      const time = document.createElement('span');
+      time.className = 'postTime';
+      time.textContent = timeSince(post.created_at);
+      meta.append(avatar, displayName, handle, time);
+
+      const content = document.createElement('div');
+      content.className = 'postContent';
+      if (post.content) {
+        const text = document.createElement('p');
+        text.textContent = post.content;
+        content.appendChild(text);
+      }
+      if (Array.isArray(post.image_urls) && post.image_urls.length) {
+        const media = document.createElement('div');
+        media.className = 'postMedia';
+        post.image_urls.forEach((url) => {
+          const image = document.createElement('img');
+          image.src = url;
+          image.alt = 'Post image';
+          media.appendChild(image);
+        });
+        content.appendChild(media);
+      }
+      const footer = document.createElement('div');
+      footer.className = 'footerSpan';
+      footer.append(
+        createReaction('likes', 'icon-like', formatCount(post.like_count || 0)),
+        createReaction('retweets', 'icon-retweet', formatCount(post.repost_count || 0)),
+        createReaction('dislikes', 'icon-dislike', formatCount(post.dislike_count || 0)),
+        createReaction('reply', 'icon-reply', 'Reply')
+      );
+      content.appendChild(footer);
+      card.append(meta, content);
+      return card;
+    }
+
+    async function loadUserPosts() {
+      const { data: posts, error } = await supabaseClient
+        .from('posts')
+        .select('id, user_id, content, image_urls, like_count, dislike_count, repost_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(25);
+      if (error) {
+        console.error('Could not load posts:', error);
+        return;
+      }
+      if (!posts?.length) return;
+      const userIds = [...new Set(posts.map((post) => post.user_id))];
+      const { data: profiles, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('id, display_name, handle, avatar_url')
+        .in('id', userIds);
+      if (profileError) console.error('Could not load post profiles:', profileError);
+      const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
+      const feed = document.querySelector('.posts');
+      posts.reverse().forEach((post) => feed.prepend(renderUserPost(post, profileById.get(post.user_id))));
+    }
+
+    loadUserPosts();
+  </script>
 </body>
 </html>
