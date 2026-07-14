@@ -600,6 +600,7 @@
         .from('profiles')
         .upsert({
           id: user.id,
+          username: user.user_metadata?.username || user.email?.split('@')[0],
           display_name: nameVal,
           handle: handleVal,
           bio: bioVal,

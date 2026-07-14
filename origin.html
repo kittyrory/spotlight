@@ -236,7 +236,11 @@
 
         const { error } = await supabaseClient
           .from('profiles')
-          .upsert({ id: user.id, origin: selectedValue });
+          .upsert({
+            id: user.id,
+            username: user.user_metadata?.username || user.email?.split('@')[0],
+            origin: selectedValue
+          });
 
         if (error) {
           console.error('Error saving:', error);

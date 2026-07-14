@@ -285,9 +285,13 @@
           return false;
         }
 
-        const { error } = await supabaseClient
-          .from('profiles')
-          .upsert({ id: user.id, fame_path: selectedValue });
+      const { error } = await supabaseClient
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          username: user.user_metadata?.username || user.email?.split('@')[0],
+          fame_path: selectedValue
+        });
 
         if (error) {
           console.error('Error saving:', error);

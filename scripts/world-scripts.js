@@ -387,7 +387,11 @@ window.saveWorldsAndContinue = async function () {
 
   const { error } = await supabaseClient
     .from('profiles')
-    .upsert({ id: user.id, selected_worlds: worldsToSave });
+    .upsert({
+      id: user.id,
+      username: user.user_metadata?.username || user.email?.split('@')[0],
+      selected_worlds: worldsToSave
+    });
 
   if (error) {
     console.error('Error saving selected worlds:', error);
