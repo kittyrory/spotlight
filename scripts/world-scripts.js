@@ -10,7 +10,7 @@ window.applyFilters = function () {
     const matchCat    = category === 'All' || w.category === category;
     const matchSearch = !query
       || w.title.toLowerCase().includes(query)
-      || (w.descripton && w.descripton.toLowerCase().includes(query))
+      || ((w.description || w.descripton || '').toLowerCase().includes(query))
       || (w.tags && w.tags.some(function (t) { return t.toLowerCase().includes(query); }));
     return matchCat && matchSearch;
   });
@@ -58,7 +58,7 @@ function renderWorlds(list) {
         <img class="world-btn-img" src="${world.image}">
         <div class="world-btn-body">
           <div class="world-btn-title">${world.title}</div>
-          <div class="world-btn-descripton">${world.descripton}</div>
+          <div class="world-btn-description">${world.description || world.descripton || ''}</div>
           <div class="world-btn-tag">${tagsHTML}</div>
         </div>
       </button>
@@ -457,7 +457,7 @@ document.getElementById('cwSubmit').addEventListener('click', async function () 
     return {
       id: row.id,
       title: row.title,
-      description row.descripton,
+      description: row.descripton,
       category: row.category,
       image: row.image || '',
       tags: row.tags || [],
