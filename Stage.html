@@ -1116,16 +1116,32 @@
       const profileInput = document.getElementById('profile-input');
       const profilePreview = document.getElementById('profile-preview');
       const placeholderText = document.getElementById('placeholder-text');
- 
+      let stageAvatarChanged = false;
+
       profileInput.addEventListener('change', function() {
         const file = this.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = function(e) {
-            profilePreview.src = e.target.result;
+          reader.onload = async function(e) {
+            const avatarUrl = e.target.result;
+            stageAvatarChanged = true;
+            profilePreview.src = avatarUrl;
             profilePreview.style.display = 'block';
             placeholderText.style.display = 'none';
-          }
+
+            const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+            if (userError || !user) {
+              console.log('Could not save Stage profile image:', userError || 'No signed-in user.');
+              return;
+            }
+
+            const { error } = await supabaseClient
+              .from('profiles')
+              .update({ avatar_url: avatarUrl })
+              .eq('id', user.id);
+
+            if (error) console.log('Could not save Stage profile image:', error);
+          };
           reader.readAsDataURL(file);
         }
       });
@@ -1184,7 +1200,7 @@
       document.getElementById('stage-hero-role').textContent = `✦ ${occupations[profile.identity] || profile.identity}`;
     }
 
-    if (profile.avatar_url) {
+    if (profile.avatar_url && !stageAvatarChanged) {
       profilePreview.src = profile.avatar_url;
       profilePreview.style.display = 'block';
       placeholderText.style.display = 'none';

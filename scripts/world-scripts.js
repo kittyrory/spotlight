@@ -49,7 +49,7 @@ function renderWorlds(list) {
   const worldsContainer = document.getElementById("worldsContainer");
   worldsContainer.innerHTML = "";
 
-  shuffle(list).forEach(world => {      // <-- just wrap list with shuffle()
+  shuffle(list).forEach(world => {
     const tagsHTML = world.tags
       .map(tag => `<span class="tag">${tag}</span>`)
       .join("");
@@ -92,7 +92,6 @@ attachClickListeners();
 
 //------------------
 // DROPDOWN
-// (count, cap, dynamic "_/3" text, & shake)
 //------------------
 
 (function () {
@@ -250,7 +249,6 @@ attachClickListeners();
     reader.readAsDataURL(file);
   });
 
-  // tag handling — limit bumped to 6
   function renderTags() {
     tagPills.innerHTML = tags.map(function (t, i) {
       return '<div class="cw-tag-pill">' + t +

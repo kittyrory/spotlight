@@ -833,7 +833,6 @@
         user_id: user.id,
         content,
         image_urls: imageUrls,
-        audience: audienceLabel.textContent,
         like_count: Math.floor(Math.random() * 900) + 50,
         dislike_count: Math.floor(Math.random() * 90) + 1,
         repost_count: Math.floor(Math.random() * 200) + 1
@@ -842,8 +841,7 @@
       localStorage.removeItem(DRAFT_KEY);
       window.location.href = 'Feed.html';
     } catch (error) {
-      console.error('Could not publish post:', error);
-      alert('Your post could not be published. Make sure the Supabase SQL setup has been run.');
+      console.log('Could not publish post:', error);
       postBtn.disabled = false;
       postBtn.textContent = 'Post';
     }
