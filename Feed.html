@@ -211,16 +211,16 @@
       stroke-width: 1.8;
     }
 
-    .likes:hover { color: var(--color-accent); }
-    .retweets:hover { color: greenyellow; }
+    .likes:hover { color: greenyellow }
+    .retweets:hover { color: var(--color-accent);; }
     .reply:hover {
       color: white;
     }
     .dislikes:hover { color: red; }
 
     /* filled/active state once a user has actually reacted */
-    .likes.active { color: var(--color-accent); }
-    .retweets.active { color: greenyellow; }
+    .likes.active { color: greenyellow; }
+    .retweets.active { color: var(--color-accent);; }
     .dislikes.active { color: #ff5c5c; }
     .reaction.active svg { fill: currentColor; }
     .reaction:disabled { opacity: 0.5; cursor: not-allowed; }
