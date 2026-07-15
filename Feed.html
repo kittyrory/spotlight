@@ -282,18 +282,19 @@
     .replyItem {
       display: flex;
       gap: 8px;
-      font-size: 13px;
+      font-size: 15px;
       align-items: flex-start;
     }
 
     .replyItem .avatar {
-      width: 26px;
-      height: 26px;
+      width: 30px;
+      height: 30px;
     }
 
     .replyItem .replyMeta {
       color: var(--color-muted);
       margin-right: 6px;
+      font-size: 13px;
     }
 
     .replyItem .replyMeta .displayName {
@@ -541,7 +542,7 @@
 
   <nav class="bottomTab" aria-label="Primary navigation">
     <a href="Feed.html" aria-current="page">Feed</a>
-    <a href="#" aria-label="Explore">Explore</a>
+    <a href="#" aria-label="Explore (coming soon)">Explore</a>
     <a href="notifications.html">Beams</a>
     <a href="Stage.html">Stage</a>
   </nav>
@@ -729,6 +730,7 @@
           button.classList.add('active');
           countSpan.textContent = formatCount(rawCount + 1);
 
+          // likes and dislikes are mutually exclusive: dropping one clears the other
           const opposite = type === 'like' ? 'dislike' : type === 'dislike' ? 'like' : null;
           if (opposite) {
             const card = button.closest('.postCard');
