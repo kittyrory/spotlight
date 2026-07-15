@@ -216,7 +216,7 @@ attachClickListeners();
 
   function reset() {
     document.getElementById('cwTitleInput').value = '';
-    document.getElementById('cwdescripton').value = '';
+    document.getElementById('cwdescription').value = '';
     document.getElementById('cwCategory').value = '';
     document.getElementById('cwDramaSlider').value = 3;
     document.getElementById('cwDramaValue').textContent = getDramaLabel(3);
@@ -228,7 +228,7 @@ attachClickListeners();
     tagAddBtn.disabled = false;
     document.getElementById('cwCharList').innerHTML = '';
     document.getElementById('cwCharInput').value = '';
-    ['cwTitleErr', 'cwdescriptonErr', 'cwCatErr'].forEach(function (id) {
+    ['cwTitleErr', 'cwdescriptionErr', 'cwCatErr'].forEach(function (id) {
       document.getElementById(id).classList.remove('show');
     });
   }
@@ -327,7 +327,7 @@ attachClickListeners();
   submitBtn.addEventListener('click', function () {
     let valid = true;
     const title = document.getElementById('cwTitleInput').value.trim();
-    const descripton  = document.getElementById('cwdescripton').value.trim();
+    const description = document.getElementById('cwdescription').value.trim();
     const cat   = document.getElementById('cwCategory').value;
     const drama = parseInt(document.getElementById('cwDramaSlider').value);
     const crossUniverse = document.getElementById('cwCrossUniverse').checked;
@@ -335,8 +335,8 @@ attachClickListeners();
     if (!title) { document.getElementById('cwTitleErr').classList.add('show'); valid = false; }
     else { document.getElementById('cwTitleErr').classList.remove('show'); }
 
-    if (!descripton) { document.getElementById('cwdescriptonErr').classList.add('show'); valid = false; }
-    else { document.getElementById('cwdescriptonErr').classList.remove('show'); }
+    if (!description) { document.getElementById('cwdescriptionErr').classList.add('show'); valid = false; }
+    else { document.getElementById('cwdescriptionErr').classList.remove('show'); }
 
     if (!cat) { document.getElementById('cwCatErr').classList.add('show'); valid = false; }
     else { document.getElementById('cwCatErr').classList.remove('show'); }
@@ -345,7 +345,7 @@ attachClickListeners();
 
     window.WORLDS.push({
       id: Date.now(),
-      title, descripton, category: cat,
+      title, description, category: cat,
       image: imageDataUrl || '',
       tags: [...tags],
       characters: [...characters],
@@ -423,7 +423,7 @@ document.getElementById('cwSubmit').addEventListener('click', async function () 
     .insert({
       created_by: user ? user.id : null,
       title: latest.title,
-      descriptonription: latest.descripton,
+      description: latest.description,
       category: latest.category,
       image: latest.image || '',
       tags: latest.tags || [],
@@ -457,7 +457,7 @@ document.getElementById('cwSubmit').addEventListener('click', async function () 
     return {
       id: row.id,
       title: row.title,
-      description: row.descripton,
+      description: row.description,
       category: row.category,
       image: row.image || '',
       tags: row.tags || [],
