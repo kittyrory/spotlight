@@ -218,6 +218,89 @@
     }
     .dislikes:hover { color: red; }
 
+    /* filled/active state once a user has actually reacted */
+    .likes.active { color: var(--color-accent); }
+    .retweets.active { color: greenyellow; }
+    .dislikes.active { color: #ff5c5c; }
+    .reaction.active svg { fill: currentColor; }
+    .reaction:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .replySection {
+      margin-top: 12px;
+      display: none;
+    }
+
+    .replySection.open {
+      display: block;
+    }
+
+    .replyForm {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .replyForm textarea {
+      flex: 1;
+      resize: none;
+      min-height: 38px;
+      max-height: 100px;
+      background: #1a1a1a;
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      color: white;
+      font: inherit;
+      padding: 8px 10px;
+    }
+
+    .replyForm textarea:focus {
+      outline: 1px solid var(--color-accent);
+    }
+
+    .replySubmit {
+      background: var(--color-accent);
+      color: #111;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      padding: 0 16px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .replySubmit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .replyList {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .replyItem {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      align-items: flex-start;
+    }
+
+    .replyItem .avatar {
+      width: 26px;
+      height: 26px;
+    }
+
+    .replyItem .replyMeta {
+      color: var(--color-muted);
+      margin-right: 6px;
+    }
+
+    .replyItem .replyMeta .displayName {
+      color: white;
+      font-weight: 600;
+    }
+
     /* fade-in on load */
     @keyframes fadeIn {
       from {
@@ -458,7 +541,7 @@
 
   <nav class="bottomTab" aria-label="Primary navigation">
     <a href="Feed.html" aria-current="page">Feed</a>
-    <a href="#" aria-label="Explore (coming soon)">Explore</a>
+    <a href="#" aria-label="Explore">Explore</a>
     <a href="notifications.html">Beams</a>
     <a href="Stage.html">Stage</a>
   </nav>
@@ -466,6 +549,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
   <script>
+    // maps a footer button's class to the reaction_type value stored in post_reactions
+    const REACTION_TYPE_BY_CLASS = { likes: 'like', dislikes: 'dislike', retweets: 'repost' };
+
     function createReaction(type, icon, count) {
       const button = document.createElement('button');
       button.className = `reaction ${type}`;
@@ -475,7 +561,10 @@
       const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
       use.setAttribute('href', `#${icon}`);
       svg.appendChild(use);
-      button.append(svg, document.createTextNode(count));
+      const countSpan = document.createElement('span');
+      countSpan.className = 'reactionCount';
+      countSpan.textContent = count;
+      button.append(svg, countSpan);
       return button;
     }
 
@@ -491,9 +580,32 @@
       return `${Math.floor(hours / 24)}d`;
     }
 
-    function renderUserPost(post, profile) {
+    function renderReplyItem(reply, profile) {
+      const item = document.createElement('div');
+      item.className = 'replyItem';
+      const avatar = document.createElement('img');
+      avatar.className = 'avatar';
+      avatar.src = profile?.avatar_url || 'https://placehold.co/26x26/png';
+      avatar.alt = `${profile?.display_name || 'User'} avatar`;
+      const body = document.createElement('div');
+      const metaSpan = document.createElement('span');
+      metaSpan.className = 'replyMeta';
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'displayName';
+      nameSpan.textContent = profile?.display_name || 'Spotlight user';
+      metaSpan.append(nameSpan, document.createTextNode(` @${profile?.handle?.replace(/^@/, '') || 'spotlightuser'} · ${timeSince(reply.created_at)}`));
+      const textDiv = document.createElement('div');
+      textDiv.textContent = reply.content;
+      body.append(metaSpan, textDiv);
+      item.append(avatar, body);
+      return item;
+    }
+
+    function renderUserPost(post, profile, currentUser, myReactions, replies, profileById) {
       const card = document.createElement('article');
       card.className = 'postCard';
+      card.dataset.postId = post.id;
+
       const meta = document.createElement('div');
       meta.className = 'userMeta';
       const avatar = document.createElement('img');
@@ -529,17 +641,123 @@
         });
         content.appendChild(media);
       }
+
       const footer = document.createElement('div');
       footer.className = 'footerSpan';
-      footer.append(
-        createReaction('likes', 'icon-like', formatCount(post.like_count || 0)),
-        createReaction('retweets', 'icon-retweet', formatCount(post.repost_count || 0)),
-        createReaction('dislikes', 'icon-dislike', formatCount(post.dislike_count || 0)),
-        createReaction('reply', 'icon-reply', 'Reply')
-      );
+      const likeBtn = createReaction('likes', 'icon-like', formatCount(post.like_count || 0));
+      const retweetBtn = createReaction('retweets', 'icon-retweet', formatCount(post.repost_count || 0));
+      const dislikeBtn = createReaction('dislikes', 'icon-dislike', formatCount(post.dislike_count || 0));
+      const replyBtn = createReaction('reply', 'icon-reply', 'Reply');
+
+      [likeBtn, dislikeBtn, retweetBtn].forEach((button) => {
+        const type = REACTION_TYPE_BY_CLASS[[...button.classList].find((c) => c in REACTION_TYPE_BY_CLASS)];
+        if (myReactions.has(type)) button.classList.add('active');
+        button.addEventListener('click', () => toggleReaction(post.id, type, button, currentUser));
+      });
+
+      footer.append(likeBtn, retweetBtn, dislikeBtn, replyBtn);
       content.appendChild(footer);
-      card.append(meta, content);
+
+      // reply section: hidden thread + composer, toggled by the Reply button
+      const replySection = document.createElement('div');
+      replySection.className = 'replySection';
+
+      const replyList = document.createElement('div');
+      replyList.className = 'replyList';
+      replies.forEach((reply) => replyList.appendChild(renderReplyItem(reply, profileById.get(reply.user_id))));
+
+      const replyForm = document.createElement('div');
+      replyForm.className = 'replyForm';
+      const textarea = document.createElement('textarea');
+      textarea.placeholder = currentUser ? 'Post your reply' : 'Log in to reply';
+      textarea.disabled = !currentUser;
+      textarea.maxLength = 250;
+      const submitBtn = document.createElement('button');
+      submitBtn.className = 'replySubmit';
+      submitBtn.textContent = 'Reply';
+      submitBtn.disabled = !currentUser;
+      submitBtn.addEventListener('click', async () => {
+        const value = textarea.value.trim();
+        if (!value || !currentUser) return;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Posting...';
+        const { data, error } = await supabaseClient
+          .from('post_replies')
+          .insert({ post_id: post.id, user_id: currentUser.id, content: value })
+          .select()
+          .single();
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Reply';
+        if (error) {
+          console.error('Could not post reply:', error);
+          return;
+        }
+        replyList.appendChild(renderReplyItem(data, profileById.get(currentUser.id)));
+        textarea.value = '';
+      });
+      replyForm.append(textarea, submitBtn);
+      replySection.append(replyForm, replyList);
+
+      replyBtn.addEventListener('click', () => replySection.classList.toggle('open'));
+
+      card.append(meta, content, replySection);
       return card;
+    }
+
+    async function toggleReaction(postId, type, button, currentUser) {
+      if (!currentUser) return;
+      const countSpan = button.querySelector('.reactionCount');
+      const wasActive = button.classList.contains('active');
+      const rawCount = parseCount(countSpan.textContent);
+      button.disabled = true;
+      try {
+        if (wasActive) {
+          const { error } = await supabaseClient
+            .from('post_reactions')
+            .delete()
+            .eq('post_id', postId)
+            .eq('user_id', currentUser.id)
+            .eq('reaction_type', type);
+          if (error) throw error;
+          button.classList.remove('active');
+          countSpan.textContent = formatCount(Math.max(0, rawCount - 1));
+        } else {
+          const { error } = await supabaseClient
+            .from('post_reactions')
+            .insert({ post_id: postId, user_id: currentUser.id, reaction_type: type });
+          if (error) throw error;
+          button.classList.add('active');
+          countSpan.textContent = formatCount(rawCount + 1);
+
+          const opposite = type === 'like' ? 'dislike' : type === 'dislike' ? 'like' : null;
+          if (opposite) {
+            const card = button.closest('.postCard');
+            const oppositeClass = opposite === 'like' ? 'likes' : 'dislikes';
+            const oppositeBtn = card.querySelector(`.reaction.${oppositeClass}`);
+            if (oppositeBtn?.classList.contains('active')) {
+              const oppositeCountSpan = oppositeBtn.querySelector('.reactionCount');
+              const oppositeCount = parseCount(oppositeCountSpan.textContent);
+              await supabaseClient
+                .from('post_reactions')
+                .delete()
+                .eq('post_id', postId)
+                .eq('user_id', currentUser.id)
+                .eq('reaction_type', opposite);
+              oppositeBtn.classList.remove('active');
+              oppositeCountSpan.textContent = formatCount(Math.max(0, oppositeCount - 1));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Could not update reaction:', error);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    function parseCount(text) {
+      if (text.endsWith('k')) return Math.round(parseFloat(text) * 1000);
+      return parseInt(text, 10) || 0;
     }
 
     async function loadUserPosts() {
@@ -553,15 +771,60 @@
         return;
       }
       if (!posts?.length) return;
-      const userIds = [...new Set(posts.map((post) => post.user_id))];
+
+      const { data: { user: currentUser } } = await supabaseClient.auth.getUser();
+      const postIds = posts.map((post) => post.id);
+
+      const { data: replies, error: repliesError } = await supabaseClient
+        .from('post_replies')
+        .select('id, post_id, user_id, content, created_at')
+        .in('post_id', postIds)
+        .order('created_at', { ascending: true });
+      if (repliesError) console.error('Could not load replies:', repliesError);
+
+      let myReactionRows = [];
+      if (currentUser) {
+        const { data, error: reactionError } = await supabaseClient
+          .from('post_reactions')
+          .select('post_id, reaction_type')
+          .eq('user_id', currentUser.id)
+          .in('post_id', postIds);
+        if (reactionError) console.error('Could not load reactions:', reactionError);
+        myReactionRows = data || [];
+      }
+
+      const userIds = [...new Set([
+        ...posts.map((post) => post.user_id),
+        ...(replies || []).map((reply) => reply.user_id)
+      ])];
       const { data: profiles, error: profileError } = await supabaseClient
         .from('profiles')
         .select('id, display_name, handle, avatar_url')
         .in('id', userIds);
       if (profileError) console.error('Could not load post profiles:', profileError);
       const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
+
+      const repliesByPost = new Map();
+      (replies || []).forEach((reply) => {
+        if (!repliesByPost.has(reply.post_id)) repliesByPost.set(reply.post_id, []);
+        repliesByPost.get(reply.post_id).push(reply);
+      });
+
+      const reactionsByPost = new Map();
+      myReactionRows.forEach((row) => {
+        if (!reactionsByPost.has(row.post_id)) reactionsByPost.set(row.post_id, new Set());
+        reactionsByPost.get(row.post_id).add(row.reaction_type);
+      });
+
       const feed = document.querySelector('.posts');
-      posts.reverse().forEach((post) => feed.prepend(renderUserPost(post, profileById.get(post.user_id))));
+      posts.reverse().forEach((post) => feed.prepend(renderUserPost(
+        post,
+        profileById.get(post.user_id),
+        currentUser,
+        reactionsByPost.get(post.id) || new Set(),
+        repliesByPost.get(post.id) || [],
+        profileById
+      )));
     }
 
     loadUserPosts();
