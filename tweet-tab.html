@@ -829,13 +829,19 @@
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
       if (userError || !user) throw userError || new Error('You need to log in first.');
       const imageUrls = await uploadImages(user.id);
+      const baseLikes = Math.floor(Math.random() * 900) + 50;
+      const baseDislikes = Math.floor(Math.random() * 90) + 1;
+      const baseReposts = Math.floor(Math.random() * 200) + 1;
       const { error } = await supabaseClient.from('posts').insert({
         user_id: user.id,
         content,
         image_urls: imageUrls,
-        like_count: 0,
-        dislike_count: 0,
-        repost_count: 0
+        base_like_count: baseLikes,
+        base_dislike_count: baseDislikes,
+        base_repost_count: baseReposts,
+        like_count: baseLikes,
+        dislike_count: baseDislikes,
+        repost_count: baseReposts
       });
       if (error) throw error;
       localStorage.removeItem(DRAFT_KEY);
