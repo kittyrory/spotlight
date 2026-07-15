@@ -185,6 +185,35 @@
       color: #808080;
       border: 1px solid #808080;
     }
+
+    /* fade-in on load */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .div2 {
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .card-grid .option {
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .card-grid .option:nth-child(1) { animation-delay: 0.05s; }
+    .card-grid .option:nth-child(2) { animation-delay: 0.1s; }
+    .card-grid .option:nth-child(3) { animation-delay: 0.15s; }
+    .card-grid .option:nth-child(4) { animation-delay: 0.2s; }
+    .card-grid .option:nth-child(5) { animation-delay: 0.25s; }
+    .card-grid .option:nth-child(6) { animation-delay: 0.3s; }
+    .card-grid .option:nth-child(7) { animation-delay: 0.35s; }
   </style>
 </head>
 

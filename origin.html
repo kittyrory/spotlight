@@ -163,6 +163,31 @@
 
     a:link { text-decoration: none; color: inherit; }
     a:visited { text-decoration: none; color: inherit; }
+
+    /* fade-in on load */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .div2 {
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .container {
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+    }
+
+    .container:nth-child(1) { animation-delay: 0.1s; }
+    .container:nth-child(2) { animation-delay: 0.25s; }
+    .container:nth-child(3) { animation-delay: 0.4s; }
   </style>
 </head>
 
