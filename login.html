@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <title>Spotlight | Log In</title>
@@ -9,10 +9,47 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap" rel="stylesheet">
-  
+
+<script>
+  // apply saved theme immediately to avoid a flash of the wrong theme.
+  (function () {
+    var saved = localStorage.getItem('spotlight-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
+
 <style>
   * { 
     box-sizing: border-box; 
+  }
+
+  :root,
+  [data-theme="dark"] {
+    --bg: #000000;
+    --text: #ffffff;
+    --muted: #666666;
+    --border: #2a2a2a;
+    --gold: #e2bb00;
+    --error: #e25555;
+    --gold-shadow: rgba(226, 187, 0, 0.2);
+    --gold-glow: rgba(226, 187, 0, 0.3);
+    --error-shadow: rgba(226, 85, 85, 0.2);
+    --toggle-border: rgba(255, 255, 255, 0.25);
+    --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+  }
+
+  [data-theme="light"] {
+    --bg: #f4f3f1;
+    --text: #1e1e1e;
+    --muted: #666666;
+    --border: #2a2a2a;
+    --gold: #e2bb00;
+    --error: #e25555;
+    --gold-shadow: rgba(226, 187, 0, 0.2);
+    --gold-glow: rgba(226, 187, 0, 0.3);
+    --error-shadow: rgba(226, 85, 85, 0.2);
+    --toggle-border: rgba(0, 0, 0, 0.25);
+    --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
   }
   
   body {
@@ -22,8 +59,52 @@
     justify-content: center;
     align-items: center;
     font-family: 'Open Sans', sans-serif;
-    background-color: black;
-    color: white;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  #theme-toggle {
+    position: fixed;
+    top: clamp(16px, 3vw, 32px);
+    left: clamp(16px, 3vw, 32px);
+    z-index: 20;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1.5px solid var(--toggle-border);
+    background-color: transparent;
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+  }
+
+  #theme-toggle:hover {
+    border-color: var(--gold);
+    box-shadow: 0 0 12px var(--toggle-hover-shadow);
+  }
+
+  #theme-toggle:active {
+    transform: scale(0.92);
+  }
+
+  #theme-toggle svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  [data-theme="dark"] #theme-toggle .icon-moon,
+  [data-theme="light"] #theme-toggle .icon-sun {
+    display: none;
   }
   
   .card {
@@ -41,7 +122,7 @@
   .logo-dot {
     width: 8px;
     height: 8px;
-    background: #e2bb00;
+    background: var(--gold);
     border-radius: 50%;
     margin-right: 8px;
     flex-shrink: 0;
@@ -51,7 +132,7 @@
     font-family: 'Anek Latin', Arial;
     font-size: 16px;
     letter-spacing: 2px;
-    color: #666;
+    color: var(--muted);
   }
   
   .headline {
@@ -59,12 +140,13 @@
     font-size: 40px;
     line-height: 1.1;
     margin: 0 0 6px 0;
+    color: var(--text);
   }
   
   .sub {
     font-size: 0.85rem;
     margin: 0 0 28px 0;
-    color: #666;
+    color: var(--muted);
   }
   
   .field {
@@ -75,7 +157,7 @@
     width: 100%;
     padding: 13px 16px;
     border-radius: 12px;
-    border: 1px solid #2a2a2a;
+    border: 1px solid var(--border);
     background-color: var(--bg);
     color: var(--text);
     font-family: 'Source Code Pro', monospace;
@@ -85,23 +167,23 @@
   }
   
   .field input::placeholder {
-    color: #666;
+    color: var(--muted);
   }
   
   .field input:focus {
-    border-color: #e2bb00;
-    box-shadow: 0 0 0 3px #e2bb0033;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px var(--gold-shadow);
   }
   
   .field input.error {
-    border-color: #e25555;
-    box-shadow: 0 0 0 3px #e2555533;
+    border-color: var(--error);
+    box-shadow: 0 0 0 3px var(--error-shadow);
     animation: shake 0.3s ease;
   }
   
   .error-msg {
     font-size: 0.75rem;
-    color: #e25555;
+    color: var(--error);
     margin-top: 5px;
     padding-left: 4px;
     display: none;
@@ -134,14 +216,14 @@
   }
   
   .btn-primary {
-    background-color: #e2bb00;
+    background-color: var(--gold);
     color: black;
     margin-top: 8px;
   }
   
   .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(226,187,0,0.3);
+    box-shadow: 0 8px 24px var(--gold-glow);
   }
   
   .btn-primary:active { 
@@ -161,7 +243,7 @@
     gap: 12px;
     margin: 16px 0;
     font-size: 0.75rem;
-    color: #666;
+    color: var(--muted);
   }
   
   .divider::before,
@@ -169,18 +251,18 @@
     content: '';
     flex: 1;
     height: 1px;
-    background: #2a2a2a;
+    background: var(--border);
   }
   
   .join-now {
     text-align: center;
     font-size: 0.82rem;
-    color: #666;
+    color: var(--muted);
     margin-top: 20px;
   }
   
   .join-now a {
-    color: #e2bb00;
+    color: var(--gold);
   }
   
   .join-now a:hover {
@@ -197,11 +279,29 @@
   }
     
   span {
-    color: #e2bb00;
+    color: var(--gold);
   }
 </style>
 </head>
 <body>
+
+  <button id="theme-toggle" aria-label="Toggle light/dark mode">
+    <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="4.5"></circle>
+      <line x1="12" y1="1.5" x2="12" y2="4"></line>
+      <line x1="12" y1="20" x2="12" y2="22.5"></line>
+      <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+      <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+      <line x1="1.5" y1="12" x2="4" y2="12"></line>
+      <line x1="20" y1="12" x2="22.5" y2="12"></line>
+      <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+      <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+    </svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+    </svg>
+  </button>
+
   <div class="card">
     <div class="logo">
       <div class="logo-dot"></div>
@@ -230,6 +330,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
   <script src="scripts/setup-router.js"></script>
+  <script src="scripts/theme.js"></script>
   <script>
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');

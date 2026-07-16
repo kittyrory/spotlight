@@ -28,6 +28,7 @@
     :root,
     [data-theme="dark"] {
       --gold: #ffd500;
+      --gold2: #ffd500;
       --white: #ffffff;
       --bg: #000000;
       --muted: rgba(255, 255, 255, 0.35);
@@ -47,8 +48,9 @@
     }
 
     [data-theme="light"] {
-      --gold: #bead12;
-      --white: #111111;
+      --gold: #ffec3f;
+      --gold2: #9d9129;
+      --white: #1e1e1e;
       --bg: #eceaea;
       --muted: rgba(0, 0, 0, 0.35);
       --ticker-border: rgba(0, 0, 0, 0.1);
@@ -116,7 +118,7 @@
     }
 
     .ticker-item.gold {
-      color: var(--gold);
+      color: var(--gold2);
       opacity: 0.85;
     }
 
@@ -145,7 +147,7 @@
       font-size: clamp(0.55rem, 0.8vw, 0.65rem);
       font-weight: 300;
       letter-spacing: 0.6em;
-      color: var(--gold);
+      color: var(--gold2);
       opacity: 0.85;
       text-transform: uppercase;
     }
@@ -211,7 +213,7 @@
 
     .glow-button:hover {
       background-color: var(--gold);
-      color: var(--bg);
+      color: var(--white);
       border-color: var(--gold);
       box-shadow:
         0 0 10px var(--hover-shadow-1),

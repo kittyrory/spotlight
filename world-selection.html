@@ -1,13 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spotlight | Choose Your World</title>
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
 
+    <script>
+      // apply saved theme immediately to avoid a flash of the wrong theme.
+      (function () {
+        var saved = localStorage.getItem('spotlight-theme');
+        if (saved) document.documentElement.setAttribute('data-theme', saved);
+      })();
+    </script>
+
     <style>
-      :root {
+      :root,
+      [data-theme="dark"] {
         --bg: #0e0e0e;
         --surface: #1a1a1a;
         --surface2: #222222;
@@ -22,12 +31,74 @@
         --muted2: #555;
         --danger: #e05555;
         --cw-bg: #111;
+        --toggle-border: rgba(255, 255, 255, 0.25);
+        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      }
+
+      [data-theme="light"] {
+        --bg: #f4f3f1;
+        --surface: #ffffff;
+        --surface2: #f0efe9;
+        --border: rgba(0,0,0,0.08);
+        --border2: rgba(0,0,0,0.13);
+        --accent: #e2bb00;
+        --accent2: rgba(226,187,0,0.5);
+        --accent-dim: rgba(226,187,0,0.12);
+        --accent-glow: rgba(226,187,0,0.25);
+        --text: #1e1e1e;
+        --muted: #6b6b6b;
+        --muted2: #999999;
+        --danger: #e05555;
+        --cw-bg: #efeee9;
+        --toggle-border: rgba(0, 0, 0, 0.25);
+        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      }
+
+      #theme-toggle {
+        flex-shrink: 0;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1.5px solid var(--toggle-border);
+        background-color: transparent;
+        color: var(--text);
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+      }
+
+      #theme-toggle:hover {
+        border-color: var(--accent);
+        box-shadow: 0 0 12px var(--toggle-hover-shadow);
+      }
+
+      #theme-toggle:active {
+        transform: scale(0.92);
+      }
+
+      #theme-toggle svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      [data-theme="dark"] #theme-toggle .icon-moon,
+      [data-theme="light"] #theme-toggle .icon-sun {
+        display: none;
       }
 
       body {
         background: var(--bg);
         color: var(--text);
         font-family: 'Open Sans', Arial;
+        transition: background-color 0.25s ease, color 0.25s ease;
       }
 
       .wrapper {
@@ -885,6 +956,22 @@
         <div class="header">
           <div class="logo">SPOT<span>LIGHT</span></div>
           <div class="header-right">
+            <button id="theme-toggle" aria-label="Toggle light/dark mode">
+              <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="4.5"></circle>
+                <line x1="12" y1="1.5" x2="12" y2="4"></line>
+                <line x1="12" y1="20" x2="12" y2="22.5"></line>
+                <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+                <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+                <line x1="1.5" y1="12" x2="4" y2="12"></line>
+                <line x1="20" y1="12" x2="22.5" y2="12"></line>
+                <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+                <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+              </svg>
+              <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+              </svg>
+            </button>
             <div class="selection" id="selection"><span>0</span> / 3</div>
             <button class="clear">Clear</button>
           </div>
@@ -1025,6 +1112,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
+    <script src="scripts/theme.js"></script>
     <script src="scripts/worlds.js"></script>
     <script src="scripts/world-scripts.js"></script>
   </body>

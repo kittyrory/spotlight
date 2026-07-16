@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <head>
-  <html lang="en">
+  <html lang="en" data-theme="dark">
   <meta charset="UTF-8">
   <title>Spotlight | Fame Path</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,10 +9,103 @@
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+  <script>
+    // apply saved theme immediately to avoid a flash of the wrong theme.
+    (function () {
+      var saved = localStorage.getItem('spotlight-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+
   <style>
+    :root,
+    [data-theme="dark"] {
+      --bg: #000000;
+      --text: #ffffff;
+      --muted: #666666;
+      --card-bg: #1a1a1a;
+      --card-border: #444444;
+      --card-hover-bg: #242424;
+      --card-hover-border: #A38800;
+      --card-selected-bg: #0D0D0D;
+      --card-title: #ffffff;
+      --card-subtitle: #888888;
+      --progress-done: #755C00;
+      --progress-upcoming: #555555;
+      --back-border: #555555;
+      --back-color: #555555;
+      --back-hover-color: #808080;
+      --toggle-border: rgba(255, 255, 255, 0.25);
+      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f3f1;
+      --text: #1e1e1e;
+      --muted: #767676;
+      --card-bg: #ffffff;
+      --card-border: #dcdcdc;
+      --card-hover-bg: #f2f0ea;
+      --card-hover-border: #c9ab4a;
+      --card-selected-bg: #fbf6e4;
+      --card-title: #1e1e1e;
+      --card-subtitle: #767676;
+      --progress-done: #c9ab4a;
+      --progress-upcoming: #dddddd;
+      --back-border: #cccccc;
+      --back-color: #999999;
+      --back-hover-color: #666666;
+      --toggle-border: rgba(0, 0, 0, 0.25);
+      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+    }
+
     body {
-      background-color: black;
-      color: white;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    #theme-toggle {
+      position: fixed;
+      top: clamp(16px, 3vw, 32px);
+      left: clamp(16px, 3vw, 32px);
+      z-index: 20;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1.5px solid var(--toggle-border);
+      background-color: transparent;
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+    }
+
+    #theme-toggle:hover {
+      border-color: #e2bb00;
+      box-shadow: 0 0 12px var(--toggle-hover-shadow);
+    }
+
+    #theme-toggle:active {
+      transform: scale(0.92);
+    }
+
+    #theme-toggle svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    [data-theme="dark"] #theme-toggle .icon-moon,
+    [data-theme="light"] #theme-toggle .icon-sun {
+      display: none;
     }
 
     .p1 {
@@ -22,7 +115,7 @@
 
     .p2 {
       font-family: 'Open Sans', sans-serif;
-      color: #666;
+      color: var(--muted);
       font-size: 14px;
       margin-top: -10px;
     }
@@ -92,9 +185,9 @@
       align-items: center;
       gap: 12px;
       padding: 16px;
-      border: 1px solid #444;
+      border: 1px solid var(--card-border);
       border-radius: 10px;
-      background: #1a1a1a;
+      background: var(--card-bg);
       cursor: pointer;
       margin-bottom: 10px;
       transition: border-color 0.18s, background 0.18s, transform 0.15s;
@@ -109,12 +202,12 @@
     .title {
       font-size: 16px;
       font-weight: bold;
-      color: white;
+      color: var(--card-title);
     }
 
     .subtitle {
       font-size: 13px;
-      color: #888;
+      color: var(--card-subtitle);
     }
 
     .check {
@@ -128,13 +221,13 @@
     }
 
     .option:hover {
-      border-color: #A38800;
-      background: #242424;
+      border-color: var(--card-hover-border);
+      background: var(--card-hover-bg);
       transform: translateY(-1px);
     }
 
     .option.selected {
-      background: #0D0D0D;
+      background: var(--card-selected-bg);
       border-color: #e2bb00;
     }
 
@@ -167,10 +260,10 @@
 
     .back {
       width: 100%;
-      border: 1px solid #555;
+      border: 1px solid var(--back-border);
       border-radius: 10px;
-      background-color: black;
-      color: #555;
+      background-color: var(--bg);
+      color: var(--back-color);
       margin-top: 10px;
       height: 50px;
       align-items: center;
@@ -182,8 +275,8 @@
     }
 
     .back:hover {
-      color: #808080;
-      border: 1px solid #808080;
+      color: var(--back-hover-color);
+      border: 1px solid var(--back-hover-color);
     }
 
     /* fade-in on load */
@@ -218,12 +311,29 @@
 </head>
 
   <body>
+    <button id="theme-toggle" aria-label="Toggle light/dark mode">
+      <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <line x1="12" y1="1.5" x2="12" y2="4"></line>
+        <line x1="12" y1="20" x2="12" y2="22.5"></line>
+        <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+        <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+        <line x1="1.5" y1="12" x2="4" y2="12"></line>
+        <line x1="20" y1="12" x2="22.5" y2="12"></line>
+        <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+        <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+      </svg>
+    </button>
+
     <div class="div1">
       <div class="div2">
         <div class="progress-bar">
-          <div class="progress-step" style="background: #755C00;"></div>
+          <div class="progress-step" style="background: var(--progress-done);"></div>
           <div class="progress-step" style="background: #e2bb00;"></div>
-          <div class="progress-step" style="background: #555;"></div>
+          <div class="progress-step" style="background: var(--progress-upcoming);"></div>
         </div>
 
         <p class="p1">Step 2 of 3 · Fame Path</p>
@@ -302,6 +412,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
+    <script src="scripts/theme.js"></script>
     <script src="scripts/options.js"></script>
     <script>
       // called by options.js right before it navigates to the next page
