@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0a0d;
+    --card: #17181c;
+    --card-border: #26272c;
+    --ink: #f2f1ee;
+    --ink-dim: #a6a5ab;
+    --gold: #f5c451;
+    --easy: #6fcf97;
+    --medium: #f2c265;
+    --hard: #f2685f;
+    --loss: #ff6b6b;
+    --gain: #6fcf97;
+    --tag: #7dd3fc;
+    --choice: #123049;
+    --choice-border: #1c4869;
+    --choice-hover: #163a5c;
+    --choice-selected: #1f5c8c;
+    --risk-safe: #6fcf97;
+    --risk-bold: #f2c265;
+    --risk-wild: #f2685f;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 18px 0 40px;
+  }
+  .phone{
+    width: 100%;
+    max-width: 430px;
+    padding: 0 18px;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 10px 2px 20px;
+  }
+  .icon-btn{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:#1c1d21;
+    border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--ink-dim);
+    cursor:pointer;
+    font-size:18px;
+    transition: background .15s ease, color .15s ease;
+  }
+  .icon-btn:hover{ background:#232428; color:var(--ink); }
+
+  .mode-switch{
+    display:flex;
+    gap:6px;
+    background:#111214;
+    border:1px solid var(--card-border);
+    border-radius:999px;
+    padding:4px;
+  }
+  .mode-btn{
+    border:none;
+    background:transparent;
+    color: var(--ink-dim);
+    font-family:'Sora', sans-serif;
+    font-weight:600;
+    font-size:12.5px;
+    letter-spacing:.02em;
+    padding:7px 13px;
+    border-radius:999px;
+    cursor:pointer;
+    transition: all .18s ease;
+  }
+  .mode-btn.active{ color:#0a0a0d; }
+  .mode-btn[data-mode="easy"].active{ background:var(--easy); }
+  .mode-btn[data-mode="medium"].active{ background:var(--medium); }
+  .mode-btn[data-mode="hard"].active{ background:var(--hard); }
+
+  .mode-sub{
+    text-align:center;
+    color:#6e6d73;
+    font-size:12px;
+    margin: -10px 0 16px;
+  }
+
+  .card{
+    background: linear-gradient(180deg, #1a1b1f 0%, #151519 100%);
+    border:1px solid var(--card-border);
+    border-radius:22px;
+    padding: 22px 20px 24px;
+    position:relative;
+    overflow:hidden;
+    animation: rise .35s ease;
+  }
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(10px) scale(.99); }
+    to{ opacity:1; transform:none; }
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:-40%; right:-20%;
+    width:220px; height:220px;
+    background: radial-gradient(circle, rgba(245,196,81,.08), transparent 70%);
+    pointer-events:none;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .card-tag{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color: var(--ink-dim);
+    font-family:'Sora', sans-serif;
+    font-weight:600;
+    font-size:14px;
+  }
+  .card-tag .emoji{ font-size:17px; }
+  .xp{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:14px;
+    text-align:right;
+  }
+  .xp .range{ display:block; }
+  .xp.easy{ color:var(--easy); }
+  .xp.medium{ color:var(--medium); }
+  .xp.hard{ color:var(--hard); }
+
+  .event-text{
+    font-size: 18px;
+    line-height:1.55;
+    font-weight:500;
+    color: var(--ink);
+  }
+  .event-text .mention{
+    color: var(--tag);
+    font-weight:600;
+  }
+  .event-edit-area{
+    width:100%;
+    background:#101115;
+    border:1px solid var(--card-border);
+    border-radius:12px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:16px;
+    line-height:1.5;
+    padding:12px;
+    resize:vertical;
+    min-height:110px;
+  }
+
+  .action-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin: 16px 2px 22px;
+  }
+  .pill-btn{
+    display:flex; align-items:center; gap:7px;
+    background:#1c1d21;
+    border:1px solid var(--card-border);
+    color: var(--ink-dim);
+    font-family:'Sora', sans-serif;
+    font-weight:600;
+    font-size:13.5px;
+    padding:9px 14px;
+    border-radius:999px;
+    cursor:pointer;
+    transition: background .15s ease, color .15s ease;
+  }
+  .pill-btn:hover{ background:#232428; color:var(--ink); }
+  .pill-group{ display:flex; gap:10px; }
+  .star-btn{
+    width:38px;height:38px;border-radius:50%;
+    background:#1c1d21;border:1px solid var(--card-border);
+    display:flex;align-items:center;justify-content:center;
+    color: var(--ink-dim);
+    font-size:17px;
+    cursor:pointer;
+    transition: color .15s ease, background .15s ease;
+  }
+  .star-btn.active{ color: var(--gold); background:#241f13; border-color:#4a3c15; }
+
+  .choice{
+    display:block;
+    width:100%;
+    text-align:left;
+    background: var(--choice);
+    border:1.5px solid var(--choice-border);
+    color: var(--ink);
+    font-family:'Inter', sans-serif;
+    font-size:15.5px;
+    line-height:1.45;
+    padding:15px 18px 13px;
+    border-radius:16px;
+    margin-bottom:12px;
+    cursor:pointer;
+    transition: background .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .choice:hover{ background: var(--choice-hover); }
+  .choice.selected{
+    background: var(--choice-selected);
+    border-color: #4fa8dd;
+  }
+  .choice-foot{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-top:9px;
+  }
+  .risk-badge{
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    padding:3px 8px;
+    border-radius:999px;
+  }
+  .risk-badge.safe{ color:#0f2418; background: var(--risk-safe); }
+  .risk-badge.bold{ color:#2b2005; background: var(--risk-bold); }
+  .risk-badge.wild{ color:#2b0d0a; background: var(--risk-wild); }
+  .risk-range{
+    font-size:11.5px;
+    color:#8b8a90;
+    font-family:'Sora', sans-serif;
+  }
+
+  .write-own{
+    text-align:center;
+    color:#6db8f5;
+    font-family:'Sora', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    padding: 8px 0 4px;
+    cursor:pointer;
+  }
+  .own-textarea{
+    width:100%;
+    margin-top:10px;
+    background:#101115;
+    border:1px solid var(--choice-border);
+    border-radius:14px;
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    font-size:15.5px;
+    padding:14px;
+    min-height:90px;
+    resize:vertical;
+  }
+
+  .submit-bar{
+    display:flex;
+    justify-content:flex-end;
+    margin-top: 18px;
+  }
+  .submit-btn{
+    background:#2a2b30;
+    color:#7d7c82;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:13px 30px;
+    border-radius:999px;
+    border:none;
+    cursor:not-allowed;
+    transition: background .2s ease, color .2s ease, transform .1s ease;
+  }
+  .submit-btn.ready{
+    background: var(--gold);
+    color:#1a1408;
+    cursor:pointer;
+  }
+  .submit-btn.ready:active{ transform: scale(.97); }
+
+  .toast{
+    text-align:center;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    margin-top:14px;
+    opacity:0;
+    transition: opacity .25s ease;
+  }
+  .toast.show{ opacity:1; }
+  .toast.gain{ color: var(--gain); }
+  .toast.loss{ color: var(--loss); }
+
+  .choice.disabled{
+    opacity:.45;
+    pointer-events:none;
+  }
+  .submit-btn.locked{
+    background:#2a2b30;
+    color:#7d7c82;
+    cursor:not-allowed;
+  }
+  .write-own.disabled{
+    opacity:.4;
+    pointer-events:none;
+  }
+
+  /* ---------- outcome modal ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(5,5,8,.72);
+    backdrop-filter: blur(3px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:50;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity .25s ease;
+  }
+  .modal-overlay.show{ opacity:1; pointer-events:auto; }
+  .modal-card{
+    background: linear-gradient(180deg, #1c1d22 0%, #131317 100%);
+    border:1px solid var(--card-border);
+    border-radius:24px;
+    padding:28px 24px 24px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+    transform: translateY(16px) scale(.95);
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .modal-overlay.show .modal-card{ transform:none; }
+  .modal-label{
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-size:11.5px;
+    color: var(--ink-dim);
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+  }
+  .modal-xp{
+    font-family:'Sora', sans-serif;
+    font-weight:800;
+    font-size:42px;
+    margin: 10px 0 4px;
+  }
+  .modal-xp.gain{ color: var(--gain); }
+  .modal-xp.loss{ color: var(--loss); }
+  .modal-outcome{
+    font-size:15.5px;
+    color: var(--ink);
+    font-weight:500;
+    margin-bottom:18px;
+  }
+  .modal-choice-label{
+    text-align:left;
+    font-size:11.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color: var(--ink-dim);
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    margin-bottom:7px;
+  }
+  .modal-choice{
+    background:#101115;
+    border:1px solid var(--card-border);
+    border-radius:14px;
+    padding:13px 14px;
+    font-size:14.5px;
+    line-height:1.5;
+    color: var(--ink-dim);
+    text-align:left;
+  }
+  .modal-continue{
+    margin-top:20px;
+    width:100%;
+    background: var(--gold);
+    color:#1a1408;
+    border:none;
+    font-family:'Sora', sans-serif;
+    font-weight:700;
+    font-size:15px;
+    padding:14px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .modal-continue:active{ transform: scale(.98); }
+
+  .note{
+    text-align:center;
+    color:#57565c;
+    font-size:12px;
+    margin-top:26px;
+    line-height:1.5;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="topbar">
+    <div class="icon-btn" id="closeBtn">✕</div>
+    <div class="mode-switch" id="modeSwitch">
+      <button class="mode-btn" data-mode="easy">Easy</button>
+      <button class="mode-btn active" data-mode="medium">Medium</button>
+      <button class="mode-btn" data-mode="hard">Hard</button>
+    </div>
+    <div class="icon-btn" id="addBtn">+</div>
+  </div>
+  <div class="mode-sub" id="modeSub"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-tag"><span class="emoji" id="catEmoji">🎭</span><span id="catLabel">Event</span></div>
+      <div class="xp medium" id="xpLabel">+14–36 XP</div>
+    </div>
+    <div class="event-text" id="eventText"></div>
+    <textarea class="event-edit-area" id="editArea" style="display:none;"></textarea>
+  </div>
+
+  <div class="action-row">
+    <div class="pill-group">
+      <div class="pill-btn" id="rerollBtn">🎲 Re-roll</div>
+      <div class="pill-btn" id="editBtn">✎ Edit</div>
+    </div>
+    <div class="star-btn" id="starBtn">☆</div>
+  </div>
+
+  <div id="choicesWrap"></div>
+
+  <div class="write-own" id="writeOwnToggle">Write my own response</div>
+  <textarea class="own-textarea" id="ownTextarea" style="display:none;" placeholder="Type how you'd handle it…"></textarea>
+
+  <div class="submit-bar">
+    <button class="submit-btn" id="submitBtn">Submit</button>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <div class="note">Prototype only — events are placeholder content and will be swapped for feed-driven scenarios later. Risk badges preview each choice's XP range; Wildcard picks swing hardest in both directions.</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card">
+    <div class="modal-label">Outcome</div>
+    <div class="modal-xp" id="modalXP">+0 XP</div>
+    <div class="modal-outcome" id="modalOutcome">Nice.</div>
+    <div class="modal-choice-label">Your response</div>
+    <div class="modal-choice" id="modalChoice"></div>
+    <button class="modal-continue" id="modalContinue">Continue</button>
+  </div>
+</div>
+
+<script>
+/* ---------- brand + persona tags (parody names, not real brands/people) ---------- */
+const BRANDS = ["@Gooci","@Chanoel","@Pradah","@Versaci","@LuiVuittone","@Diorr","@Balenciago","@Nykee","@Adedas","@Supreeme","@Fendii","@Burberri","@Cartierre","@Rolexx","@Tiffanie"];
+const PEOPLE = ["@RivaJax","@NoraNoire","@KaiVelvet","@LumenRae","@DashWilder","@EchoMonroe","@ZaraFlint","@OrionPage"];
+
+/* choice shape: { text, risk: 'safe'|'bold'|'wild', xp: [min, max] } */
+
+const EVENTS = {
+  easy: {
+    sub: "Low stakes. Every option still earns XP — some just earn more than others.",
+    items: [
+      { cat:'Weird', emoji:'🌀', text:"Your smart mirror auto-tags today's fit as 'Business Clown' and won't let you override it before your 10am post.",
+        choices:[
+          {text:"Quietly reset the mirror and re-shoot before anyone notices.", risk:'safe', xp:[6,14]},
+          {text:"Laugh it off and post the glitch caption unedited.", risk:'bold', xp:[8,20]},
+          {text:"Lean in hard — caption it 'new era, no notes.'", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Messy', emoji:'🧻', text:"A blended-berry smoothie erupts all over your cream trench coat two minutes before a rooftop shoot.",
+        choices:[
+          {text:"Change fast and blame the wind for the delay.", risk:'safe', xp:[6,14]},
+          {text:"Turn the stain into a story — 'texture, apparently.'", risk:'bold', xp:[8,20]},
+          {text:"Shoot anyway and let the stain be part of the shot.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Slip-up', emoji:'🎭', text:"You caption a photo 'living my best life' on a post from three years ago you meant to delete, not repost.",
+        choices:[
+          {text:"Delete quietly and hope nobody screenshot it.", risk:'safe', xp:[6,14]},
+          {text:"Turn it into a mini nostalgia post with new context.", risk:'bold', xp:[8,20]},
+          {text:"Own it loudly — 'throwback vibes, no regrets.'", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Weird', emoji:'🌀', text:"Your ring light flickers into a strobe mid-selfie and now it looks like you're at a rave in your kitchen.",
+        choices:[
+          {text:"Reshoot with normal lighting, skip the chaos.", risk:'safe', xp:[6,14]},
+          {text:"Add music and pretend it was intentional.", risk:'bold', xp:[8,20]},
+          {text:"Post it raw with a chaotic all-caps caption.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Brand Drama', emoji:'🏷️', text:BRANDS[0]+" sends a gifted bag in a color that got discontinued last spring, and stan accounts are already screenshotting.",
+        choices:[
+          {text:"Ask your team to clarify with their PR privately first.", risk:'safe', xp:[6,14]},
+          {text:"Thank them publicly and style it your own way.", risk:'bold', xp:[8,20]},
+          {text:"Post it as a 'vintage find' and let people guess.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Funny', emoji:'😂', text:"Autocorrect turns 'partnership' into 'partyship' in your caption, and it's somehow getting more engagement than the actual announcement.",
+        choices:[
+          {text:"Fix the typo and repost clean.", risk:'safe', xp:[6,14]},
+          {text:"Leave it up — the internet loves it more this way.", risk:'bold', xp:[8,20]},
+          {text:"Make a whole joke post riffing on the typo.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Slip-up', emoji:'🎭', text:"You like a three-month-old post by accident while doom-scrolling at 1am.",
+        choices:[
+          {text:"Unlike it immediately and move on.", risk:'safe', xp:[6,14]},
+          {text:"Leave it — it's honestly not that deep.", risk:'bold', xp:[8,20]},
+          {text:"Comment something ridiculous to own the moment.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Weird', emoji:'🌀', text:"A pigeon lands on your head mid-outdoor interview and just... stays there.",
+        choices:[
+          {text:"Gently relocate it and continue, mildly rattled.", risk:'safe', xp:[6,14]},
+          {text:"Keep talking like nothing happened.", risk:'bold', xp:[8,20]},
+          {text:"Name it live on air and adopt it as a bit.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Chaos', emoji:'🌪️', text:"Your assistant double-books you a hair appointment and a podcast recording, and both venues are already expecting you.",
+        choices:[
+          {text:"Reschedule the podcast and keep the hair appointment.", risk:'safe', xp:[6,14]},
+          {text:"Show up to the podcast with damp, half-done hair.", risk:'bold', xp:[8,20]},
+          {text:"Record the podcast from the salon chair on video.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Funny', emoji:'😂', text:"A stranger recognizes you at the grocery store and asks for a photo — while you're holding a family-size bag of chips and nothing else.",
+        choices:[
+          {text:"Set the chips down and take a normal photo.", risk:'safe', xp:[6,14]},
+          {text:"Pose with the chips like they're a prop.", risk:'bold', xp:[8,20]},
+          {text:"Gift them the chips on camera as a bit.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Awkward', emoji:'😬', text:"You accidentally address a room of twelve people as 'the whole team' when it's actually just three interns and a very confused caterer.",
+        choices:[
+          {text:"Correct yourself quickly and laugh it off.", risk:'safe', xp:[6,14]},
+          {text:"Keep going like it was intentional enthusiasm.", risk:'bold', xp:[8,20]},
+          {text:"Give the caterer an honorary team title.", risk:'wild', xp:[4,24]},
+        ]},
+      { cat:'Brand Drama', emoji:'🏷️', text:BRANDS[8]+" tags you in a post you don't remember agreeing to, wearing a hoodie you're pretty sure you never received.",
+        choices:[
+          {text:"Ask your team to check the contract quietly.", risk:'safe', xp:[6,14]},
+          {text:"Comment a playful 'news to me 👀' on the post.", risk:'bold', xp:[8,20]},
+          {text:"Order the hoodie yourself and pretend you planned it.", risk:'wild', xp:[4,24]},
+        ]},
+    ]
+  },
+  medium: {
+    sub: "Moderate stakes. Bold and Wildcard picks can now cost you XP, not just earn it.",
+    items: [
+      { cat:'Brand Drama', emoji:'🏷️', text:BRANDS[1]+"'s team DMs asking, pointedly, why you wore a rival's shoes to their showcase last night.",
+        choices:[
+          {text:"Explain it was a styling mix-up and apologize privately.", risk:'safe', xp:[10,24]},
+          {text:"Stand by your choice — you dress for you, not for brands.", risk:'bold', xp:[-8,32]},
+          {text:"Post publicly that you'll wear whatever you want.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Slip-up', emoji:'🎭', text:"A fan-run account claims your newest look is a direct copy of a smaller creator's, and the screenshots are compelling.",
+        choices:[
+          {text:"Credit the creator publicly and thank them for the inspiration.", risk:'safe', xp:[10,24]},
+          {text:"Post a side-by-side explaining your process.", risk:'bold', xp:[-8,32]},
+          {text:"Stay quiet and let it blow over on its own.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Messy', emoji:'🧻', text:"You're photographed leaving a 2am diner with flour on your cheek and no explanation.",
+        choices:[
+          {text:"Explain it was a late-night baking mishap with friends.", risk:'safe', xp:[10,24]},
+          {text:"Post the photo yourself with a funny caption first.", risk:'bold', xp:[-8,32]},
+          {text:"Ignore it completely and let the mystery ride.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Weird', emoji:'🌀', text:"Your ring light explodes on a livestream and the comments immediately decide it's a 'sign.'",
+        choices:[
+          {text:"Debunk it directly — 'it's just a bad bulb.'", risk:'safe', xp:[10,24]},
+          {text:"Play into the theory for laughs.", risk:'bold', xp:[-8,32]},
+          {text:"Cut the stream abruptly with no explanation.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Funny', emoji:'😂', text:"Your name gets voice-to-texted into a press release as 'a local weather event,' and nobody catches it before it goes out.",
+        choices:[
+          {text:"Request a correction and move on quietly.", risk:'safe', xp:[10,24]},
+          {text:"Make your own joke version before anyone else does.", risk:'bold', xp:[-8,32]},
+          {text:"Repost the typo and lean all the way in.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Brand Drama', emoji:'🏷️', text:BRANDS[2]+"'s stylist quietly uninvites you from the front row after last season's 'creative differences.'",
+        choices:[
+          {text:"Ask your team to smooth things over directly.", risk:'safe', xp:[10,24]},
+          {text:"Post confidently about your own upcoming plans instead.", risk:'bold', xp:[-8,32]},
+          {text:"Call out the snub publicly, tagging their handle.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Slip-up', emoji:'🎭', text:"You're double-booked — a magazine cover shoot and your best friend's engagement brunch, exact same hour.",
+        choices:[
+          {text:"Ask your team to shift the shoot by two hours.", risk:'safe', xp:[10,24]},
+          {text:"Send a gift, stay for the shoot, and video-call in later.", risk:'bold', xp:[-8,32]},
+          {text:"Push the shoot entirely and show up for your friend.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Messy', emoji:'🧻', text:"A collab candle you fronted gets recalled for a labeling mix-up, and #WaxGate is trending by lunch.",
+        choices:[
+          {text:"Post a transparent statement about the recall right away.", risk:'safe', xp:[10,24]},
+          {text:"Address it lightly on your story, then go formal later.", risk:'bold', xp:[-8,32]},
+          {text:"Let the brand issue the statement and stay silent.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Feud', emoji:'🔥', text:PEOPLE[1]+" subtweets what sounds like a dig at your last collection, without naming you directly, and everyone's tagging you anyway.",
+        choices:[
+          {text:"Don't engage — let followers draw their own conclusions.", risk:'safe', xp:[10,24]},
+          {text:"Reply with something light and vague, keeping it playful.", risk:'bold', xp:[-8,32]},
+          {text:"Quote-post it with a pointed comment of your own.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Awkward', emoji:'😬', text:"You mispronounce a major sponsor's name twice during a live Q&A, and the clip is already circulating with captions.",
+        choices:[
+          {text:"Correct yourself on the next mention and move forward.", risk:'safe', xp:[10,24]},
+          {text:"Make a self-deprecating joke about it live.", risk:'bold', xp:[-8,32]},
+          {text:"Ignore it and hope nobody else noticed.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Chaos', emoji:'🌪️', text:"Your team accidentally sends a private strategy memo to a group chat that includes two journalists.",
+        choices:[
+          {text:"Call the journalists directly and ask for discretion.", risk:'safe', xp:[10,24]},
+          {text:"Say nothing and hope it doesn't get picked up.", risk:'bold', xp:[-8,32]},
+          {text:"Get ahead of it by posting your own version first.", risk:'wild', xp:[-16,40]},
+        ]},
+      { cat:'Brand Drama', emoji:'🏷️', text:BRANDS[9]+" quietly drops a line in their newsletter implying your partnership 'underperformed expectations.'",
+        choices:[
+          {text:"Reach out privately to discuss the numbers.", risk:'safe', xp:[10,24]},
+          {text:"Post performance data that tells a different story.", risk:'bold', xp:[-8,32]},
+          {text:"Publicly announce you're ending the partnership first.", risk:'wild', xp:[-16,40]},
+        ]},
+    ]
+  },
+  hard: {
+    sub: "High stakes. Every option can swing hard in either direction — Wildcard picks the hardest.",
+    items: [
+      { cat:'Brand Drama', emoji:'🏷️', text:"A leaked voice note has you sounding dismissive of "+BRANDS[3]+"'s new line, twelve hours before their show. The clip is out of context, but it's already been picked up by two major fashion outlets, and their CEO has gone quiet on your usual group thread.",
+        choices:[
+          {text:"Call their team directly, apologize for the tone, and offer to clarify the context privately before anything escalates further.", risk:'safe', xp:[-10,30]},
+          {text:"Post a measured public statement explaining the full context of the conversation.", risk:'bold', xp:[-30,55]},
+          {text:"Say nothing publicly and let your legal and PR teams handle it entirely, even if it drags on for days.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Scandal', emoji:'🚨', text:"You're accused of taking credit for a concept that was actually your stylist's, and the original mood board — dated weeks before your announcement — just resurfaced online. It's already being framed as a pattern, with two older, unrelated posts dug up as 'evidence.'",
+        choices:[
+          {text:"Publicly credit the stylist in full, no caveats, and acknowledge you should have done it sooner.", risk:'safe', xp:[-10,30]},
+          {text:"Explain that the collaboration was mutual from the start and post messages proving it.", risk:'bold', xp:[-30,55]},
+          {text:"Stay silent for a few days and let your team quietly negotiate a joint statement.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Messy', emoji:'🧻', text:"A wardrobe malfunction happens mid-runway walk, livestreamed to two million people in real time. The clip is already clipped, captioned, and spreading faster than your team can respond, and a rival designer has 'liked' three of the memes.",
+        choices:[
+          {text:"Finish the walk like a professional and address it calmly in a statement afterward.", risk:'safe', xp:[-10,30]},
+          {text:"Laugh about it openly on camera the moment it happens.", risk:'bold', xp:[-30,55]},
+          {text:"Walk off immediately and let your team manage the fallout without your input.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Feud', emoji:'🔥', text:"A host presses you live, on-air, about a rumored falling-out with "+PEOPLE[2]+", listing specific dates and events with unsettling accuracy. The studio audience goes quiet, and the clip is clearly going to outlive the segment.",
+        choices:[
+          {text:"Redirect calmly to your current projects without confirming or denying anything specific.", risk:'safe', xp:[-10,30]},
+          {text:"Address it briefly and honestly, admitting there was tension, then move on.", risk:'bold', xp:[-30,55]},
+          {text:"Push back on the host directly, live, for bringing it up at all.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Scandal', emoji:'🚨', text:PEOPLE[0]+"'s new brand deal drops the same week as yours, and three major outlets are already running side-by-side performance numbers — with yours coming in visibly lower on two of the three metrics.",
+        choices:[
+          {text:"Ignore the comparisons publicly and let your long-term results speak for themselves.", risk:'safe', xp:[-10,30]},
+          {text:"Post something warm acknowledging their launch, reframing it as no rivalry at all.", risk:'bold', xp:[-30,55]},
+          {text:"Push your team to rush out new numbers early, even if the data isn't fully verified yet.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Messy', emoji:'🧻', text:"An old group chat screenshot leaks, and one line — meant as a joke among friends — reads very differently out of context. It's already being quote-tweeted with a tone you never intended, and a few larger accounts have started weighing in.",
+        choices:[
+          {text:"Post the full context yourself immediately, before rumors spread further.", risk:'safe', xp:[-10,30]},
+          {text:"Apologize for the tone without over-explaining the specifics.", risk:'bold', xp:[-30,55]},
+          {text:"Let your team issue a short, clinical statement and say nothing personally.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Weird', emoji:'🌀', text:"A convincing deepfake clip of you 'endorsing' a random supplement brand is already at two million views before your team even wakes up. Comments are split between people who believe it and people demanding you address it now.",
+        choices:[
+          {text:"Post an urgent, clear denial with proof it's fabricated, right away.", risk:'safe', xp:[-10,30]},
+          {text:"Report it to platforms and wait for it to be taken down before commenting.", risk:'bold', xp:[-30,55]},
+          {text:"Address it calmly on your next scheduled livestream instead of reacting immediately.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Slip-up', emoji:'🎭', text:"You accidentally confirm a major collaboration live on-air that your team hasn't actually signed off on yet — naming the partner brand specifically, on record, in front of a large audience.",
+        choices:[
+          {text:"Clarify honestly afterward that it was premature to mention and you got ahead of the paperwork.", risk:'safe', xp:[-10,30]},
+          {text:"Walk it back gently as 'in early talks' without fully denying it.", risk:'bold', xp:[-30,55]},
+          {text:"Let it stand and scramble your team to actually finalize the deal overnight.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Scandal', emoji:'🚨', text:"A former employee posts a lengthy thread alleging you were difficult to work with on set, citing specific, hard-to-verify incidents. It's gaining traction fast, and two other former collaborators have already replied with vague agreement.",
+        choices:[
+          {text:"Respond with a calm, specific statement addressing what you can verify.", risk:'safe', xp:[-10,30]},
+          {text:"Reach out to the former employee privately before responding publicly at all.", risk:'bold', xp:[-30,55]},
+          {text:"Say nothing and let the thread run its course without engagement.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Brand Drama', emoji:'🏷️', text:BRANDS[6]+" quietly pulls your image from their campaign site overnight with no explanation, right as unrelated rumors about your 'reliability' start circulating in industry newsletters.",
+        choices:[
+          {text:"Contact their team directly to understand what happened before saying anything public.", risk:'safe', xp:[-10,30]},
+          {text:"Post about the partnership positively anyway, ignoring the removal entirely.", risk:'bold', xp:[-30,55]},
+          {text:"Publicly ask why your image was pulled, tagging the brand directly.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Feud', emoji:'🔥', text:PEOPLE[4]+" gives an interview implying you 'took an opportunity that wasn't yours to take,' without ever using your name — but the timeline lines up so precisely that nobody's in doubt about who it's about.",
+        choices:[
+          {text:"Stay silent publicly and address it privately if it continues.", risk:'safe', xp:[-10,30]},
+          {text:"Post a calm statement clarifying your side of the timeline.", risk:'bold', xp:[-30,55]},
+          {text:"Give your own interview responding point by point.", risk:'wild', xp:[-50,80]},
+        ]},
+      { cat:'Weird', emoji:'🌀', text:"A viral theory claims your last three posts contain 'hidden messages' about an alleged falling-out within your team, based on nothing but color choices and caption timing — and it's somehow become the top trending topic under your name.",
+        choices:[
+          {text:"Address it directly with a short, dismissive statement and move on.", risk:'safe', xp:[-10,30]},
+          {text:"Ignore it completely and post normally, letting it fizzle out.", risk:'bold', xp:[-30,55]},
+          {text:"Play along with the theory as a joke to defuse it.", risk:'wild', xp:[-50,80]},
+        ]},
+    ]
+  }
+};
+
+/* ---------- state ---------- */
+let mode = 'medium';
+let lastIndex = -1;
+let currentEvent = null;
+let selectedChoice = null;
+let usingOwnText = false;
+let isEditing = false;
+let isFavorited = false;
+let hasSubmitted = false;
+
+const els = {
+  modeSwitch: document.getElementById('modeSwitch'),
+  modeSub: document.getElementById('modeSub'),
+  catEmoji: document.getElementById('catEmoji'),
+  catLabel: document.getElementById('catLabel'),
+  xpLabel: document.getElementById('xpLabel'),
+  eventText: document.getElementById('eventText'),
+  editArea: document.getElementById('editArea'),
+  editBtn: document.getElementById('editBtn'),
+  rerollBtn: document.getElementById('rerollBtn'),
+  starBtn: document.getElementById('starBtn'),
+  choicesWrap: document.getElementById('choicesWrap'),
+  writeOwnToggle: document.getElementById('writeOwnToggle'),
+  ownTextarea: document.getElementById('ownTextarea'),
+  submitBtn: document.getElementById('submitBtn'),
+  toast: document.getElementById('toast'),
+  modalOverlay: document.getElementById('modalOverlay'),
+  modalXP: document.getElementById('modalXP'),
+  modalOutcome: document.getElementById('modalOutcome'),
+  modalChoice: document.getElementById('modalChoice'),
+  modalContinue: document.getElementById('modalContinue'),
+};
+
+function highlightMentions(text){
+  return text.replace(/(@[A-Za-z0-9]+)/g, '<span class="mention">$1</span>');
+}
+
+function fmtXP(n){
+  return (n > 0 ? '+' : '') + n;
+}
+
+function randomInRange(range){
+  const [lo, hi] = range;
+  return Math.floor(lo + Math.random() * (hi - lo + 1));
+}
+
+const OUTCOMES_GAIN = [
+  "Handled like a total pro.",
+  "The internet approves.",
+  "That lands well — momentum's on your side.",
+  "People are here for it.",
+  "Solid read on the room.",
+  "That's the kind of moment fans remember.",
+];
+const OUTCOMES_LOSS = [
+  "Ouch — that didn't land well.",
+  "The internet is not being kind right now.",
+  "That backfired a little.",
+  "Rocky moment, but you'll recover.",
+  "Not your best look, but not the end of the world.",
+  "That one's going to follow you for a bit.",
+];
+
+function randomOutcomeLine(gain){
+  const pool = gain ? OUTCOMES_GAIN : OUTCOMES_LOSS;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function pickEvent(){
+  const pool = EVENTS[mode].items;
+  let idx;
+  do { idx = Math.floor(Math.random() * pool.length); } while (pool.length > 1 && idx === lastIndex);
+  lastIndex = idx;
+  return pool[idx];
+}
+
+function renderXPRange(ev){
+  const mins = ev.choices.map(c => c.xp[0]);
+  const maxs = ev.choices.map(c => c.xp[1]);
+  const lo = Math.min(...mins);
+  const hi = Math.max(...maxs);
+  els.xpLabel.textContent = `${fmtXP(lo)} to ${fmtXP(hi)} XP`;
+  els.xpLabel.className = 'xp ' + (mode);
+}
+
+function riskLabel(risk){
+  return risk === 'safe' ? 'Safe' : risk === 'bold' ? 'Bold' : 'Wildcard';
+}
+
+function renderChoices(choices){
+  els.choicesWrap.innerHTML = '';
+  choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.dataset.index = i;
+    btn.innerHTML = `
+      <div>${c.text}</div>
+      <div class="choice-foot">
+        <span class="risk-badge ${c.risk}">${riskLabel(c.risk)}</span>
+        <span class="risk-range">${fmtXP(c.xp[0])} to ${fmtXP(c.xp[1])} XP</span>
+      </div>
+    `;
+    btn.addEventListener('click', () => selectChoice(i, btn));
+    els.choicesWrap.appendChild(btn);
+  });
+}
+
+function selectChoice(i, btn){
+  if (hasSubmitted) return;
+  usingOwnText = false;
+  els.ownTextarea.style.display = 'none';
+  els.ownTextarea.value = '';
+  document.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedChoice = i;
+  updateSubmitState();
+}
+
+function updateSubmitState(){
+  if (hasSubmitted){
+    els.submitBtn.classList.remove('ready');
+    els.submitBtn.classList.add('locked');
+    els.submitBtn.textContent = 'Submitted';
+    return;
+  }
+  const ready = selectedChoice !== null || (usingOwnText && els.ownTextarea.value.trim().length > 0);
+  els.submitBtn.classList.toggle('ready', ready);
+  els.submitBtn.classList.remove('locked');
+  els.submitBtn.textContent = 'Submit';
+}
+
+function loadEvent(){
+  const ev = pickEvent();
+  currentEvent = ev;
+  hasSubmitted = false;
+  els.catEmoji.textContent = ev.emoji;
+  els.catLabel.textContent = ev.cat;
+  els.eventText.innerHTML = highlightMentions(ev.text);
+  els.editArea.value = ev.text;
+  els.editArea.style.display = 'none';
+  els.eventText.style.display = 'block';
+  isEditing = false;
+  renderXPRange(ev);
+  renderChoices(ev.choices);
+  els.writeOwnToggle.classList.remove('disabled');
+  selectedChoice = null;
+  usingOwnText = false;
+  els.ownTextarea.style.display = 'none';
+  els.ownTextarea.value = '';
+  els.toast.classList.remove('show');
+  updateSubmitState();
+}
+
+function updateModeSub(){
+  els.modeSub.textContent = EVENTS[mode].sub;
+}
+
+/* ---------- events ---------- */
+els.modeSwitch.addEventListener('click', (e) => {
+  const btn = e.target.closest('.mode-btn');
+  if (!btn) return;
+  mode = btn.dataset.mode;
+  [...els.modeSwitch.children].forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  lastIndex = -1;
+  updateModeSub();
+  loadEvent();
+});
+
+els.rerollBtn.addEventListener('click', loadEvent);
+
+els.editBtn.addEventListener('click', () => {
+  isEditing = !isEditing;
+  els.eventText.style.display = isEditing ? 'none' : 'block';
+  els.editArea.style.display = isEditing ? 'block' : 'none';
+  if (!isEditing){
+    els.eventText.innerHTML = highlightMentions(els.editArea.value);
+  }
+});
+
+els.starBtn.addEventListener('click', () => {
+  isFavorited = !isFavorited;
+  els.starBtn.classList.toggle('active', isFavorited);
+  els.starBtn.textContent = isFavorited ? '★' : '☆';
+});
+
+els.writeOwnToggle.addEventListener('click', () => {
+  if (hasSubmitted) return;
+  usingOwnText = true;
+  selectedChoice = null;
+  document.querySelectorAll('.choice').forEach(b => b.classList.remove('selected'));
+  els.ownTextarea.style.display = 'block';
+  els.ownTextarea.focus();
+  updateSubmitState();
+});
+
+els.ownTextarea.addEventListener('input', () => { if (!hasSubmitted) updateSubmitState(); });
+
+els.submitBtn.addEventListener('click', () => {
+  if (hasSubmitted) return;
+  if (!els.submitBtn.classList.contains('ready')) return;
+
+  let xp, choiceText;
+  if (selectedChoice !== null){
+    xp = randomInRange(currentEvent.choices[selectedChoice].xp);
+    choiceText = currentEvent.choices[selectedChoice].text;
+  } else {
+    // custom written response treated as a "bold" risk outcome
+    const lo = mode === 'easy' ? 6 : mode === 'medium' ? -8 : -30;
+    const hi = mode === 'easy' ? 20 : mode === 'medium' ? 32 : 55;
+    xp = randomInRange([lo, hi]);
+    choiceText = els.ownTextarea.value.trim();
+  }
+
+  // lock everything so the button (and choices) can't be spammed for a new roll
+  hasSubmitted = true;
+  updateSubmitState();
+  document.querySelectorAll('.choice').forEach(b => b.classList.add('disabled'));
+  els.writeOwnToggle.classList.add('disabled');
+
+  const gain = xp >= 0;
+  els.modalXP.textContent = `${fmtXP(xp)} XP`;
+  els.modalXP.className = 'modal-xp ' + (gain ? 'gain' : 'loss');
+  els.modalOutcome.textContent = randomOutcomeLine(gain);
+  els.modalChoice.textContent = choiceText;
+  els.modalOverlay.classList.add('show');
+});
+
+els.modalContinue.addEventListener('click', () => {
+  els.modalOverlay.classList.remove('show');
+});
+
+document.getElementById('closeBtn').addEventListener('click', () => {
+  els.toast.textContent = 'Closed (prototype — no navigation wired up).';
+  els.toast.className = 'toast show gain';
+});
+document.getElementById('addBtn').addEventListener('click', () => {
+  els.toast.textContent = 'Power-ups not wired up yet — prototype only.';
+  els.toast.className = 'toast show gain';
+});
+
+/* ---------- init ---------- */
+updateModeSub();
+loadEvent();
+</script>
+</body>
+</html>
