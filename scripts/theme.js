@@ -10,6 +10,13 @@
   const localTheme = localStorage.getItem(STORAGE_KEY) || 'dark';
   applyTheme(localTheme);
 
+  // inherit theme
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_KEY && event.newValue) {
+      applyTheme(event.newValue);
+    }
+  });
+
   // if logged in via Supabase, fetch the saved theme and reconcile
   async function syncFromSupabase() {
     const client = window.supabaseClient;
