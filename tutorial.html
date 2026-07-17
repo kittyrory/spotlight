@@ -328,7 +328,7 @@
       });
     }
 
-    function render() {
+    async function render() {
       const page = pages[pageIndex];
 
       // title / subtitle
@@ -367,6 +367,7 @@
             });
             buttonsEl.appendChild(b);
           });
+          
         } else if (showCTA && page.finalCTA) {
           tapHintEl.style.display = 'none';
           const b = document.createElement('a');
@@ -383,7 +384,7 @@
       updateDots();
     }
 
-    function advance() {
+    async function advance() {
       const page = pages[pageIndex];
       if (page.type === 'confirm') return; // handled by buttons only
       if (showCTA) return; // waiting for CTA click
