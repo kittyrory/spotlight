@@ -253,6 +253,18 @@
   <script src="scripts/theme.js"></script>
 
   <script>
+
+  // marks tutorial as completed
+  async function markTutorialComplete() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+    const { error } = await supabaseClient
+      .from('profiles')
+      .update({ tutorial_complete: true })
+      .eq('id', user.id);
+    if (error) console.error('Failed to mark tutorial complete:', error);
+  }
+
     const pages = [
       {
         type: 'confirm',
@@ -350,19 +362,8 @@
                 chunkIndex = 0;
                 render();
               } else if (btn.action === 'exit') {
+                await markTutorialComplete();
                 window.location.href = EXIT_URL;
-
-                // marks tutorial as completed
-                async function markTutorialComplete() {
-                  const { data: { user } } = await supabaseClient.auth.getUser();
-                  if (user) {
-                    await supabaseClient
-                      .from('profiles')
-                      .update({ tutorial_complete: true })
-                      .eq('id', user.id);
-                  }
-                }
-              }
             });
             buttonsEl.appendChild(b);
           });
@@ -398,17 +399,8 @@
           showCTA = true;
           render();
         } else {
+          await markTutorialComplete();
           window.location.href = NEXT_URL;
-          // marks tutorial as completed
-          async function markTutorialComplete() {
-            const { data: { user } } = await supabaseClient.auth.getUser();
-            if (user) {
-              await supabaseClient
-                .from('profiles')
-                .update({ tutorial_complete: true })
-                .eq('id', user.id);
-            }
-          }
         }
       } else {
         pageIndex++;
