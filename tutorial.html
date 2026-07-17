@@ -354,7 +354,7 @@
             b.href = '#';
             b.className = 'glow-button';
             b.textContent = btn.label;
-            b.addEventListener('click', (e) => {
+            b.addEventListener('click', async (e) => {
               e.preventDefault();
               e.stopPropagation();
               if (btn.action === 'next') {
@@ -364,6 +364,7 @@
               } else if (btn.action === 'exit') {
                 await markTutorialComplete();
                 window.location.href = EXIT_URL;
+              }
             });
             buttonsEl.appendChild(b);
           });
