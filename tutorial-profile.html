@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotlight | Tutorial</title>
+  <title>Spotlight - Tutorial: Your Profile</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap" rel="stylesheet">
@@ -89,7 +89,7 @@
       text-decoration: none;
     }
 
-    /* -- tutorial card -- */
+    /* ── Tutorial card ── */
     .tutorial-wrap {
       display: flex;
       flex-direction: column;
@@ -253,56 +253,95 @@
   <script src="scripts/theme.js"></script>
 
   <script>
-
-  // marks tutorial as completed
-  async function markTutorialComplete() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return;
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({ tutorial_complete: true })
-      .eq('id', user.id);
-    if (error) console.error('Failed to mark tutorial complete:', error);
-  }
-
     const pages = [
       {
-        type: 'confirm',
-        title: null,
-        subtitle: null,
-        chunks: ['Would you like to begin the tutorial?'],
-        buttons: [
-          { label: 'Yes please!', action: 'next' },
-          { label: 'No thanks', action: 'exit' }
-        ]
-      },
-      {
         type: 'standard',
-        title: 'WELCOME TO SPOTLIGHT',
-        titleGold: true,
-        subtitle: 'Where Hollywood is just a tap away',
-        chunks: []
-      },
-      {
-        type: 'standard',
-        title: 'Create your persona',
+        title: 'Now your profile...',
         subtitle: null,
         chunks: [
-          'The page after this will allow you to choose from a selection of traits, origin stories and career paths.',
-          'Whatever you choose will greatly impact the game. Characters will mention your choices in tweets (e.g. If you choose Nepo Baby: “Y/N? Isn’t that the nepo baby?”).',
-          'Events will cater around your choices as well (e.g. If you choose Model: “You accidentally trip and fall during a runway! What do you do?”).',
-          'As of right now, you cannot change your choices without resetting the game, so choose wisely!'
+          'So far, we know your character is a [IDENTITY], who is known as [FAME PATH], and got here via [ORIGIN].',
+          'But what else? If they’re a K-Pop Idol, what group are they in? If they’re a Nepo Baby, who is their parent? Oh, and we can’t forget their name!',
+          'Any extra information will reside here — but don’t worry! You can always come back and change it later.'
         ]
       }
     ];
 
-    // where to go once this file's last page is tapped through
-    // (only used when that page has no finalCTA button).
-    const NEXT_URL = 'identity.html';
-    const EXIT_URL = 'identity.html';
+    const NEXT_URL = 'profile.html';
 
-    const DOT_OFFSET = 0;
+    const DOT_OFFSET = 3;
     const TOTAL_DOTS = 5;
+
+    const IDENTITY_PHRASES = {
+      'singer-rapper': 'a Singer / Rapper',
+      'kpop-idol': 'a K-pop Idol',
+      model: 'a Model',
+      athlete: 'an Athlete',
+      'actor-actress': 'an Actor / Actress',
+      'group-member': 'a Group Member',
+      'content-creator': 'a Content Creator',
+      socialite: 'a Socialite'
+    };
+
+    const FAME_PATH_PHRASES = {
+      'viral-star': 'The Viral Star',
+      'scandalous-one': 'The Scandalous One',
+      'lover-player': 'The Lover Player',
+      'shit-talker': 'The Shit Talker',
+      'mysterious-one': 'The Mysterious One',
+      activist: 'The Activist',
+      'industry-vet': 'The Industry Vet'
+    };
+
+    const ORIGIN_PHRASES = {
+      'viral-moment': 'a viral moment',
+      'industry-plant': 'being an industry plant',
+      'underground-legend': 'being an underground legend',
+      'reality-tv': 'reality TV',
+      'nepotism-baby': 'being a nepotism baby',
+      'self-made': 'being self-made'
+    };
+
+    // pull identity / fame_path / origin from Supabase and drop them into
+    // the placeholders before anything renders.
+    async function loadProfileData() {
+      let identityPhrase = 'a rising star';
+      let famePathPhrase = 'someone people are watching';
+      let originPhrase = 'a story still being written';
+
+      try {
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError || !user) {
+          console.log('Could not load profile data for tutorial:', userError || 'No signed-in user.');
+        } else {
+          const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('identity, fame_path, origin')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.log('Could not load profile data for tutorial:', error);
+          } else if (profile) {
+            if (profile.identity && IDENTITY_PHRASES[profile.identity]) {
+              identityPhrase = IDENTITY_PHRASES[profile.identity];
+            }
+            if (profile.fame_path && FAME_PATH_PHRASES[profile.fame_path]) {
+              famePathPhrase = FAME_PATH_PHRASES[profile.fame_path];
+            }
+            if (profile.origin && ORIGIN_PHRASES[profile.origin]) {
+              originPhrase = ORIGIN_PHRASES[profile.origin];
+            }
+          }
+        }
+      } catch (e) {
+        console.log('Could not load profile data for tutorial:', e);
+      }
+
+      pages[0].chunks[0] = pages[0].chunks[0]
+        .replace('[IDENTITY]', identityPhrase)
+        .replace('[FAME PATH]', famePathPhrase)
+        .replace('[ORIGIN]', originPhrase);
+    }
 
     let pageIndex = 0;
     let chunkIndex = 0;
@@ -328,7 +367,7 @@
       });
     }
 
-    async function render() {
+    function render() {
       const page = pages[pageIndex];
 
       // title / subtitle
@@ -354,7 +393,7 @@
             b.href = '#';
             b.className = 'glow-button';
             b.textContent = btn.label;
-            b.addEventListener('click', async (e) => {
+            b.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
               if (btn.action === 'next') {
@@ -362,14 +401,11 @@
                 chunkIndex = 0;
                 render();
               } else if (btn.action === 'exit') {
-                sessionStorage.removeItem('ref');
-                await markTutorialComplete();
                 window.location.href = EXIT_URL;
               }
             });
             buttonsEl.appendChild(b);
           });
-          
         } else if (showCTA && page.finalCTA) {
           tapHintEl.style.display = 'none';
           const b = document.createElement('a');
@@ -386,7 +422,7 @@
       updateDots();
     }
 
-    async function advance() {
+    function advance() {
       const page = pages[pageIndex];
       if (page.type === 'confirm') return; // handled by buttons only
       if (showCTA) return; // waiting for CTA click
@@ -402,8 +438,6 @@
           showCTA = true;
           render();
         } else {
-          sessionStorage.setItem('ref', 'tutorial');
-          await markTutorialComplete();
           window.location.href = NEXT_URL;
         }
       } else {
@@ -416,7 +450,7 @@
     document.body.addEventListener('click', advance);
 
     buildDots();
-    render();
+    loadProfileData().then(render);
   </script>
 
 </body>

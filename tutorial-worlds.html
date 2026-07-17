@@ -89,7 +89,7 @@
       text-decoration: none;
     }
 
-    /* -- tutorial card -- */
+    /* ── Tutorial card ── */
     .tutorial-wrap {
       display: flex;
       flex-direction: column;
@@ -253,56 +253,49 @@
   <script src="scripts/theme.js"></script>
 
   <script>
-
-  // marks tutorial as completed
-  async function markTutorialComplete() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return;
-    const { error } = await supabaseClient
-      .from('profiles')
-      .update({ tutorial_complete: true })
-      .eq('id', user.id);
-    if (error) console.error('Failed to mark tutorial complete:', error);
-  }
-
     const pages = [
       {
-        type: 'confirm',
-        title: null,
-        subtitle: null,
-        chunks: ['Would you like to begin the tutorial?'],
-        buttons: [
-          { label: 'Yes please!', action: 'next' },
-          { label: 'No thanks', action: 'exit' }
-        ]
-      },
-      {
         type: 'standard',
-        title: 'WELCOME TO SPOTLIGHT',
-        titleGold: true,
-        subtitle: 'Where Hollywood is just a tap away',
-        chunks: []
-      },
-      {
-        type: 'standard',
-        title: 'Create your persona',
+        title: 'And finally: world-building!',
         subtitle: null,
         chunks: [
-          'The page after this will allow you to choose from a selection of traits, origin stories and career paths.',
-          'Whatever you choose will greatly impact the game. Characters will mention your choices in tweets (e.g. If you choose Nepo Baby: “Y/N? Isn’t that the nepo baby?”).',
-          'Events will cater around your choices as well (e.g. If you choose Model: “You accidentally trip and fall during a runway! What do you do?”).',
-          'As of right now, you cannot change your choices without resetting the game, so choose wisely!'
-        ]
+          'I think I’m getting a good idea on what you’re like, [DISPLAY NAME]. But what about the world around you?',
+          'You can choose up to three worlds during setup. But don’t worry — you’ll be able to choose more later.'
+        ],
+        finalCTA: { label: 'Create World', href: 'world-selection.html' }
       }
     ];
 
-    // where to go once this file's last page is tapped through
-    // (only used when that page has no finalCTA button).
-    const NEXT_URL = 'identity.html';
-    const EXIT_URL = 'identity.html';
-
-    const DOT_OFFSET = 0;
+    const DOT_OFFSET = 4;
     const TOTAL_DOTS = 5;
+
+    // pull the player's display name from Supabase and drop it into the
+    // [DISPLAY NAME] placeholder before anything renders.
+    async function loadDisplayName() {
+      let displayName = 'Superstar';
+      try {
+        const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+        if (userError || !user) {
+          console.log('Could not load display name for tutorial:', userError || 'No signed-in user.');
+        } else {
+          const { data: profile, error } = await supabaseClient
+            .from('profiles')
+            .select('display_name')
+            .eq('id', user.id)
+            .single();
+
+          if (error) {
+            console.log('Could not load display name for tutorial:', error);
+          } else if (profile && profile.display_name) {
+            displayName = profile.display_name;
+          }
+        }
+      } catch (e) {
+        console.log('Could not load display name for tutorial:', e);
+      }
+
+      pages[0].chunks[0] = pages[0].chunks[0].replace('[DISPLAY NAME]', displayName);
+    }
 
     let pageIndex = 0;
     let chunkIndex = 0;
@@ -328,7 +321,7 @@
       });
     }
 
-    async function render() {
+    function render() {
       const page = pages[pageIndex];
 
       // title / subtitle
@@ -354,7 +347,7 @@
             b.href = '#';
             b.className = 'glow-button';
             b.textContent = btn.label;
-            b.addEventListener('click', async (e) => {
+            b.addEventListener('click', (e) => {
               e.preventDefault();
               e.stopPropagation();
               if (btn.action === 'next') {
@@ -362,14 +355,11 @@
                 chunkIndex = 0;
                 render();
               } else if (btn.action === 'exit') {
-                sessionStorage.removeItem('ref');
-                await markTutorialComplete();
                 window.location.href = EXIT_URL;
               }
             });
             buttonsEl.appendChild(b);
           });
-          
         } else if (showCTA && page.finalCTA) {
           tapHintEl.style.display = 'none';
           const b = document.createElement('a');
@@ -386,7 +376,7 @@
       updateDots();
     }
 
-    async function advance() {
+    function advance() {
       const page = pages[pageIndex];
       if (page.type === 'confirm') return; // handled by buttons only
       if (showCTA) return; // waiting for CTA click
@@ -402,8 +392,6 @@
           showCTA = true;
           render();
         } else {
-          sessionStorage.setItem('ref', 'tutorial');
-          await markTutorialComplete();
           window.location.href = NEXT_URL;
         }
       } else {

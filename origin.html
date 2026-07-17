@@ -357,6 +357,14 @@
     <script src="scripts/theme.js"></script>
     <script src="scripts/options.js"></script>
     <script>
+      // if user came from the tutorial, send continue-btn to tutorial-profile.html instead of profile.html
+      (function () {
+        if (sessionStorage.getItem('ref') === 'tutorial') {
+          const continueBtn = document.getElementById('continue-btn');
+          if (continueBtn) continueBtn.setAttribute('data-next', 'tutorial-profile.html');
+        }
+      })();
+
       // called by options.js right before it navigates to the next page
       window.onContinueSave = async function (selectedValue) {
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser();

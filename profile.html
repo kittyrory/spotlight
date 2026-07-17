@@ -729,7 +729,9 @@
         return;
       }
 
-      window.location.href = 'world-selection.html';
+      window.location.href = sessionStorage.getItem('ref') === 'tutorial'
+        ? 'tutorial-worlds.html'
+        : 'world-selection.html';
     });
 
     // back button linking
