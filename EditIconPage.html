@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Edit Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+  :root{
+    --bg: #0a0a0d;
+    --card: #17181c;
+    --card-border: #26272c;
+    --ink: #f2f1ee;
+    --ink-dim: #a6a5ab;
+    --ink-faint: #6e6d73;
+    --gold: #f5c451;
+    --easy: #6fcf97;
+    --hard: #f2685f;
+    --tag: #7dd3fc;
+    --verified: #4fa8dd;
+    --track: #26272c;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
+    color: var(--ink);
+    font-family: 'Inter', system-ui, sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding: 0 0 50px;
+  }
+  .phone{
+    width: 100%;
+    max-width: 430px;
+  }
+
+  /* ---------- banner + avatar ---------- */
+  .banner-wrap{
+    position:relative;
+    height:170px;
+    overflow:hidden;
+    background:#151519;
+  }
+  .banner-wrap img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .banner-wrap::after{
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 35%, rgba(10,10,13,.15) 100%);
+  }
+  .banner-topbar{
+    position:absolute;
+    top:14px; left:14px; right:14px;
+    display:flex;
+    justify-content:space-between;
+  }
+  .circle-btn{
+    width:36px; height:36px;
+    border-radius:50%;
+    background:rgba(10,10,13,.55);
+    backdrop-filter: blur(6px);
+    border:1px solid rgba(255,255,255,.12);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff;
+    font-size:15px;
+    cursor:pointer;
+  }
+  .identity-block{ padding: 0 18px; }
+  .avatar-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+  }
+  .avatar{
+    width:92px; height:92px;
+    border-radius:50%;
+    border:4px solid var(--bg);
+    overflow:hidden;
+    position:relative;
+    background:#1c1d21;
+    margin-top:-46px;
+  }
+  .avatar img{
+    width:100%; height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .avatar-edit{
+    position:absolute;
+    bottom:2px; right:2px;
+    width:26px; height:26px;
+    border-radius:50%;
+    background:var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    color:#1a1408;
+    border:2px solid var(--bg);
+    cursor:pointer;
+  }
+  .avatar-edit svg{ width:13px; height:13px; }
+  .edit-profile-btn{
+    background:transparent;
+    border:1.5px solid #4b4c52;
+    color:var(--ink);
+    font-family:'Sora',sans-serif;
+    font-weight:700;
+    font-size:13.5px;
+    padding:5px 10px;
+    border-radius:999px;
+    cursor:pointer;
+    margin-bottom:8px;
+  }
+  .edit-profile-btn:hover{ border-color:#6b6c72; background:#1c1d21; }
+
+  .name-row{
+    display:flex; align-items:center; gap:6px;
+    margin-top:14px;
+  }
+  .name{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:22px;
+  }
+  .verified{
+    width:19px;height:19px;
+    color:var(--verified);
+    flex-shrink:0;
+  }
+  .handle{
+    color: var(--ink-faint);
+    font-size:14.5px;
+    margin-top:2px;
+  }
+  .bio{
+    margin-top:12px;
+    font-size:14.5px;
+    line-height:1.5;
+    color: var(--ink-dim);
+  }
+  .bio.placeholder{ color:#57565c; font-style:italic; cursor:pointer; }
+
+  /* ---------- section shared ---------- */
+  .section{ padding: 26px 18px 0; }
+  .section-title{
+    font-family:'Sora',sans-serif;
+    font-weight:800;
+    font-size:19px;
+    margin-bottom:12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .section-title .count{ color:var(--ink-faint); font-weight:600; font-size:15px; }
+
+  .card{
+    background: linear-gradient(180deg, #1a1b1f 0%, #151519 100%);
+    border:1px solid var(--card-border);
+    border-radius:18px;
+    padding: 18px 18px 20px;
+  }
+</style>
+<body>
+<div class="phone">
+  <div class="banner-wrap">
+    <img id="banner-Img" src="https://picsum.photos/seed/eventsbanner/860/340" alt="">
+    <input id="bannerFile" type="file" accept="image/*" hidden/>
+    <div class="banner-topbar">
+      <div class="circle-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </div>
+      <div class="circle-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="identity-block">
+    <div class="avatar-row">
+      <div class="avatar">
+        <img id="avatar-Img" src="https://picsum.photos/seed/ariavance/200/200" alt="">
+        <input id="avatarFile" type="file" accept="image/*" hidden/>
+        <div class="avatar-edit">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        </div>
+      </div>
+      <button id="edit-profile-btn">Edit Profile</button>
+    </div>
+
+    <div class="name-row">
+        <label class="name-Input">Name</label>
+        <input type="text" id="name-input" placeholder="Enter Name">
+      <svg class="verified" viewBox="0 0 22 22" fill="currentColor"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/><path fill="#0a0a0d" d="M9.3 14.9L5.6 11.2l1.4-1.4 2.3 2.3 5-5 1.4 1.4z"/></svg>
+    </div>
+    <label class="handle-Input">Handle</label>
+    <input type="text" id="handle-input" placeholder="Enter Handle">
+    <label class="bio-Input">Bio</label>
+    <textarea id="bio-input" placeholder="Enter Bio"></textarea>    
+    <button id="saveProfileBtn" type="button">Save</button>
+<a id="cancelProfileLink" href="profile.html">Cancel</a>
+  </div>
+<script>
+    // ---------- JS ---------- //
+    //HTML elements into variables//
+const editProfileBtn = document.getElementById('edit-profile-btn');
+const avatarEditBtn = document.getElementById('avatarFile');
+const avatarImg = document.getElementById('avatar-Img');
+const bannerFile = document.getElementById('bannerFile');
+const bio = document.getElementById('bio-input');
+const handle = document.getElementById('handle-input');
+
+//function to change the banner image//
+const bannerImg = document.getElementById('banner-Img');
+bannerImg.addEventListener('click', () => {
+  bannerFile.click();
+});
+ 
+</script>
+</body>
+</html>
