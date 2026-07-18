@@ -403,8 +403,13 @@
 
     document.body.addEventListener('click', advance);
 
-    buildDots();
-    render();
+    async function init() {
+      buildDots();
+      await loadDisplayName();
+      render();
+    }
+
+    init();
   </script>
 
 </body>
