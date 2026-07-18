@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
 <title>Notifications</title>
 
 <script>
@@ -12,6 +15,7 @@
   (function () {
     var saved = localStorage.getItem('spotlight-theme');
     if (saved) document.documentElement.setAttribute('data-theme', saved);
+    sessionStorage.setItem('spotlight-last-page', 'notifications.html');
   })();
 </script>
 
@@ -59,7 +63,7 @@
     max-width: 520px;
     min-height: 100vh;
     background: var(--bg);
-    padding-bottom: 40px;
+    padding-bottom: 90px;
     border-left: 1px solid var(--divider);
     border-right: 1px solid var(--divider);
   }
@@ -194,6 +198,47 @@
   .notification-container:nth-child(6) { animation-delay: 0.7s; }
   .notification-container:nth-child(7) { animation-delay: 0.85s; }
   .notification-container:nth-child(8) { animation-delay: 1s; }
+
+  /* bottom nav, matches Feed.html */
+  .bottomTab {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+    padding: 10px 20px;
+    background-color: var(--bg);
+    border-top: 1px solid var(--divider);
+    z-index: 100;
+  }
+
+  .bottomTab a {
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--text-primary);
+    font: bold 16px 'Urbanist', Arial, sans-serif;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .bottomTab a:hover,
+  .bottomTab a[aria-current="page"] {
+    color: var(--gold);
+    border-color: rgba(255, 209, 102, 0.5);
+    background-color: rgba(255, 209, 102, 0.08);
+    box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 480px) {
+    .bottomTab { gap: 8px; }
+    .bottomTab a { padding: 6px 8px; font-size: 14px; }
+  }
 </style>
 </head>
 <body>
@@ -311,6 +356,14 @@
     </div>
   </div>
 
+
+  <nav class="bottomTab" aria-label="Primary navigation">
+    <a href="Feed.html">Feed</a>
+    <a href="#" aria-label="Explore (coming soon)">Explore</a>
+    <a href="notifications.html" aria-current="page">Beams</a>
+    <a href="Stage.html">Stage</a>
+    <a href="IconPage.html">Profile</a>
+  </nav>
 </div>
 <script src="scripts/theme.js"></script>
 </body>

@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Profile — Prototype</title>
+<title>Spotlight | Profile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+
 <script>
   // apply saved theme immediately to avoid a flash of the wrong theme.
   (function () {
@@ -14,35 +16,30 @@
     if (saved) document.documentElement.setAttribute('data-theme', saved);
   })();
 </script>
+
 <style>
   :root,
   [data-theme="dark"]{
-    --bg: #000000;
+    --bg: #0a0a0d;
     --bg-glow: #131318;
     --card: #17181c;
-    --card-border: #26272c;
+    --card-border: #2a2620;
     --surface-1: #1c1d21;
-    --surface-1-hover: #232428;
-    --surface-2: #101115;
-    --ink: #ffffff;
+    --surface-2: #151316;
+    --surface-grad-1: #17181c;
+    --surface-grad-2: #131317;
+    --stat-bg: rgba(255,255,255,.03);
+    --ink: #f2f1ee;
     --ink-dim: #a6a5ab;
-    --ink-faint: #6e6d73;
-    --note: #57565c;
-    --gold: #ffd500;
-    --gold-2: #f2a13d;
-    --gold-ink: #1a1408;
-    --gold-glow: rgba(255,213,0,.6);
-    --chip-bg: #241f13;
-    --chip-border: #4a3c15;
+    --ink-faint: #78757c;
+    --gold: #f5c451;
+    --gold-light: #e0b84e;
+    --gold-deep: #c99a2e;
+    --gold-glow: rgba(245,196,81,.18);
     --easy: #6fcf97;
     --hard: #f2685f;
-    --tag: #7dd3fc;
     --verified: #4fa8dd;
-    --track: #26272c;
-    --edit-border: #4b4c52;
-    --edit-border-hover: #6b6c72;
-    --marker: #ffffff;
-    --marker-glow: rgba(255,255,255,.35);
+    --track: #2a2a2f;
   }
   [data-theme="light"]{
     --bg: #eceaea;
@@ -50,556 +47,579 @@
     --card: #ffffff;
     --card-border: rgba(0,0,0,0.1);
     --surface-1: #f2f0ec;
-    --surface-1-hover: #e6e3dd;
-    --surface-2: #f6f4f0;
+    --surface-2: #efece6;
+    --surface-grad-1: #ffffff;
+    --surface-grad-2: #f6f4f0;
+    --stat-bg: rgba(0,0,0,.03);
     --ink: #1e1e1e;
-    --ink-dim: rgba(0,0,0,0.55);
-    --ink-faint: rgba(0,0,0,0.4);
-    --note: rgba(0,0,0,0.4);
-    --gold: #9d9129;
-    --gold-2: #b5811a;
-    --gold-ink: #ffffff;
-    --gold-glow: rgba(157,145,41,.45);
-    --chip-bg: rgba(157,145,41,0.12);
-    --chip-border: rgba(157,145,41,0.35);
+    --ink-dim: rgba(0,0,0,.55);
+    --ink-faint: rgba(0,0,0,.4);
+    --gold: #9d8420;
+    --gold-light: #b89a30;
+    --gold-deep: #7a6418;
+    --gold-glow: rgba(157,132,32,.14);
     --easy: #6fcf97;
     --hard: #f2685f;
-    --tag: #2a86b8;
-    --verified: #2a86b8;
-    --track: #e2dfd9;
-    --edit-border: rgba(0,0,0,0.25);
-    --edit-border-hover: rgba(0,0,0,0.4);
-    --marker: #1e1e1e;
-    --marker-glow: rgba(0,0,0,.3);
+    --verified: #4fa8dd;
+    --track: #e0ddd3;
   }
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
-  body{
-    background: radial-gradient(ellipse at top, var(--bg-glow) 0%, var(--bg) 55%);
-    color: var(--ink);
-    font-family: 'Inter', system-ui, sans-serif;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    padding: 0 0 50px;
-    transition: background-color .25s ease, color .25s ease;
+
+  .bg-glow{
+    position:fixed; inset:0; z-index:0;
+    overflow:hidden; pointer-events:none;
   }
-  .phone{
-    width: 100%;
-    max-width: 430px;
+  .bg-glow span{
+    position:absolute; border-radius:50%;
+    filter: blur(80px); opacity:.28;
+    animation: drift 26s ease-in-out infinite alternate;
+  }
+  .bg-glow span:nth-child(1){ width:420px; height:420px; background: radial-gradient(circle, #f5c451, transparent 70%); top:-140px; left:-100px; animation-duration:29s; }
+  .bg-glow span:nth-child(2){ width:360px; height:360px; background: radial-gradient(circle, #b98b2c, transparent 70%); bottom:-100px; right:-80px; animation-duration:33s; animation-delay:-6s; }
+  .bg-glow span:nth-child(3){ width:300px; height:300px; background: radial-gradient(circle, #6b5320, transparent 70%); top:35%; right:8%; animation-duration:23s; animation-delay:-3s; }
+  @keyframes drift{
+    0%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(30px,-25px) scale(1.12); }
+    100%{ transform: translate(-20px,20px) scale(0.96); }
   }
 
-  /* ---------- banner + avatar ---------- */
-  .banner-wrap{
-    position:relative;
-    height:170px;
-    overflow:hidden;
-    background:var(--surface-2);
+  body{
+    background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
+    position:relative; overflow-x:hidden;
+    color: var(--ink);
+    font-family:'Inter', system-ui, sans-serif;
+    min-height:100vh;
+    display:flex; justify-content:center;
+    padding: 20px 0 90px;
   }
-  .banner-wrap img{
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .banner-wrap::after{
-    content:"";
-    position:absolute; inset:0;
-    background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 35%, rgba(10,10,13,.15) 100%);
-  }
-  .banner-topbar{
-    position:absolute;
-    top:14px; left:14px; right:14px;
-    display:flex;
-    justify-content:space-between;
+  .phone{ width:100%; max-width:430px; padding:0 18px; position:relative; z-index:1; }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
   }
   .circle-btn{
-    width:36px; height:36px;
-    border-radius:50%;
-    background:rgba(10,10,13,.55);
-    backdrop-filter: blur(6px);
-    border:1px solid rgba(255,255,255,.12);
+    width:38px; height:38px; border-radius:50%;
+    background:#1c1d21; border:1px solid var(--card-border);
     display:flex; align-items:center; justify-content:center;
-    color:#fff;
-    font-size:15px;
-    cursor:pointer;
+    color: var(--ink-dim); cursor:pointer;
   }
-  .identity-block{ padding: 0 18px; }
-  .avatar-row{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-  }
-  .avatar{
-    width:92px; height:92px;
-    border-radius:50%;
-    border:4px solid var(--bg);
-    overflow:hidden;
-    position:relative;
-    background:var(--surface-1);
-    margin-top:-46px;
-  }
-  .avatar img{
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .avatar-edit{
-    position:absolute;
-    bottom:2px; right:2px;
-    width:26px; height:26px;
-    border-radius:50%;
-    background:var(--gold);
-    display:flex; align-items:center; justify-content:center;
-    color:var(--gold-ink);
-    border:2px solid var(--bg);
-    cursor:pointer;
-  }
-  .avatar-edit svg{ width:13px; height:13px; }
-  .edit-profile-btn{
-    background:transparent;
-    border:1.5px solid var(--edit-border);
-    color:var(--ink);
-    font-family:'Sora',sans-serif;
-    font-weight:700;
-    font-size:13.5px;
-    padding:5px 10px;
-    border-radius:999px;
-    cursor:pointer;
-    margin-bottom:8px;
-  }
-  .edit-profile-btn:hover{ border-color:var(--edit-border-hover); background:var(--surface-1); }
 
-  .name-row{
-    display:flex; align-items:center; gap:6px;
-    margin-top:14px;
+  /* ---------- fame card ---------- */
+  .fame-card{
+    position:relative;
+    border-radius:28px;
+    background: linear-gradient(165deg, #1c1a13 0%, #19170f 60%, #16140d 100%);
+    border:1.5px solid rgba(245,196,81,.28);
+    box-shadow: 0 12px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(245,196,81,.05) inset;
+    overflow:hidden;
+    animation: cardRise .5s cubic-bezier(.2,.9,.3,1.15);
   }
-  .name{
-    font-family:'Sora',sans-serif;
-    font-weight:800;
-    font-size:22px;
+  @keyframes cardRise{
+    from{ opacity:0; transform:translateY(14px) scale(.97); }
+    to{ opacity:1; transform:none; }
   }
-  .verified{
-    width:19px;height:19px;
-    color:var(--verified);
-    flex-shrink:0;
+  .fame-card::after{
+    content:"";
+    position:absolute; top:-60%; left:-40%;
+    width:55%; height:220%;
+    background: linear-gradient(75deg, transparent 35%, rgba(245,220,160,.14) 48%, transparent 60%);
+    transform: rotate(8deg);
+    animation: shine 10s ease-in-out;
+    pointer-events:none;
   }
-  .handle{
-    color: var(--ink-faint);
-    font-size:14.5px;
-    margin-top:2px;
+  @keyframes shine{
+    0%{ left:-60%; }
+    35%{ left:130%; }
+    100%{ left:130%; }
   }
-  .bio{
+  .sparkle{
+    position:absolute; border-radius:50%;
+    background: #f5c451;
+    box-shadow: 0 0 6px 1px rgba(245,196,81,.7);
+    animation: twinkle 3.2s ease-in-out infinite;
+  }
+  @keyframes twinkle{
+    0%,100%{ opacity:.15; transform:scale(.7); }
+    50%{ opacity:1; transform:scale(1.15); }
+  }
+
+  .fame-banner{
+    position:relative;
+    height:130px;
+    background:#1c1a13;
+    overflow:hidden;
+    border-radius:26.5px 26.5px 0 0;
+  }
+  .fame-banner img{
+    width:100%; height:100%; object-fit:cover; display:block;
+  }
+  .fame-banner::after{
+    content:"";
+    position:absolute; inset:0;
+    background: linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,.05) 55%, rgba(10,9,6,.35) 100%);
+  }
+  .fame-banner-top{
+    position:absolute; top:12px; left:14px; right:14px;
+    display:flex; justify-content:space-between; align-items:center;
+    z-index:2;
+  }
+  .fame-banner-edit{
+    position:absolute; bottom:10px; right:12px; z-index:2;
+    width:30px; height:30px; border-radius:50%;
+    background:rgba(10,9,6,.55); backdrop-filter: blur(4px);
+    border:1px solid rgba(245,196,81,.25);
+    display:flex; align-items:center; justify-content:center;
+    color:#f5e6bf; cursor:pointer;
+  }
+
+  .fame-body{
+    padding: 18px 22px 20px;
+    position:relative; z-index:1;
+    text-align:center;
+  }
+  .tier-chip, .level-chip{
+    font-family:'Sora',sans-serif; font-weight:700; font-size:11px;
+    letter-spacing:.05em; text-transform:uppercase;
+    padding:6px 11px; border-radius:999px;
+  }
+  .tier-chip{ background:rgba(10,9,6,.55); color: var(--gold); border:1px solid rgba(245,196,81,.35); backdrop-filter: blur(4px); }
+  .level-chip{ background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color:#1a1408; }
+
+  .fame-main{
+    display:flex; flex-direction:column; align-items:center;
+    margin-top:18px; position:relative; z-index:1;
+  }
+  .ring-avatar{ position:relative; width:88px; height:88px; flex-shrink:0; }
+  .ring-avatar svg{ position:absolute; inset:0; transform:rotate(-90deg); }
+  .ring-avatar .ring-track{ fill:none; stroke:#2a2620; stroke-width:5; }
+  .ring-avatar .ring-fill{ fill:none; stroke:url(#ringGrad); stroke-width:5; stroke-linecap:round; stroke-dasharray:220; stroke-dashoffset:220; transition: stroke-dashoffset 1.1s cubic-bezier(.3,.8,.3,1); }
+  .avatar-photo{
+    position:absolute; top:8px; left:8px; width:72px; height:72px;
+    border-radius:50%; overflow:hidden; border:3px solid #17140d;
+  }
+  .avatar-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ring-pct{
+    position:absolute; bottom:-2px; right:-4px;
+    background: var(--gold-deep); color:#1a1408;
+    font-family:'Sora',sans-serif; font-weight:700; font-size:10px;
+    padding:2px 6px; border-radius:999px; border:2px solid #17140d;
+  }
+
+  .fame-id{ margin-top:12px; }
+  .fame-name-row{ display:flex; align-items:center; justify-content:center; gap:5px; }
+  .fame-name{ font-family:'Sora',sans-serif; font-weight:800; font-size:19px; }
+  .verified{ width:16px; height:16px; color:var(--verified); flex-shrink:0; }
+  .fame-handle{ color:var(--ink-faint); font-size:13.5px; margin-top:2px; }
+  .fame-edit-btn{
     margin-top:12px;
-    font-size:14.5px;
-    line-height:1.5;
-    color: var(--ink-dim);
+    display:inline-flex; align-items:center; gap:5px;
+    background:transparent; border:1.5px solid rgba(245,196,81,.4);
+    color:var(--gold); font-family:'Sora',sans-serif; font-weight:700;
+    font-size:11.5px; padding:7px 14px; border-radius:999px; cursor:pointer;
   }
-  .bio.placeholder{ color:var(--note); font-style:italic; cursor:pointer; }
+  .fame-edit-btn:hover{ background: var(--gold-glow); }
 
-  .stats-row{
-    display:flex;
-    gap:20px;
-    margin-top:14px;
-    align-items:center;
+  .fame-bio{
+    margin-top:16px; font-size:14px; line-height:1.55;
+    color: var(--ink-dim); position:relative; z-index:1;
+    max-width:320px; margin-left:auto; margin-right:auto;
   }
-  .stat{ font-size:14px; color:var(--ink-dim); }
-  .stat b{ color:var(--ink); font-family:'Sora',sans-serif; font-weight:700; }
-  .rank-chip{
-    display:flex; align-items:center; gap:5px;
-    background:var(--chip-bg);
-    border:1px solid var(--chip-border);
-    color: var(--gold);
-    font-family:'Sora',sans-serif;
-    font-weight:700;
-    font-size:12.5px;
-    padding:5px 11px;
-    border-radius:999px;
-  }
-  .delta{ color: var(--easy); font-weight:600; }
 
-  /* ---------- section shared ---------- */
-  .section{ padding: 26px 18px 0; }
-  .section-title{
-    font-family:'Sora',sans-serif;
-    font-weight:800;
-    font-size:19px;
-    margin-bottom:12px;
-    display:flex; align-items:center; gap:8px;
+  .fame-stats-row{
+    display:flex; gap:8px; margin-top:18px; position:relative; z-index:1;
   }
-  .section-title .count{ color:var(--ink-faint); font-weight:600; font-size:15px; }
+  .fame-stat{
+    flex:1; background:rgba(255,255,255,.03);
+    border:1px solid var(--card-border); border-radius:14px;
+    padding:10px 6px; text-align:center;
+  }
+  .fame-stat b{
+    display:block; font-family:'Sora',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
+  }
+  .fame-stat span{ font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
 
-  .card{
-    background: var(--card);
+  /* ---------- segmented tabs ---------- */
+  .tabs{
+    display:flex; gap:6px; margin-top:24px;
+    background:#151316; border:1px solid var(--card-border);
+    border-radius:999px; padding:4px;
+  }
+  .tab-btn{
+    flex:1; border:none; background:transparent;
+    font-family:'Sora',sans-serif; font-weight:700; font-size:13.5px;
+    color: var(--ink-faint); padding:10px 0; border-radius:999px; cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .tab-btn.active{ background: var(--gold-glow); color:var(--gold); }
+
+  .tab-panel{ display:none; margin-top:20px; }
+  .tab-panel.active{ display:block; animation: fadeIn .35s ease; }
+  @keyframes fadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+
+  /* ---------- overview: radial gauges ---------- */
+  .gauge-row{ display:flex; justify-content:space-between; gap:10px; }
+  .gauge{
+    flex:1; background: linear-gradient(180deg, #17181c 0%, #131317 100%);
     border:1px solid var(--card-border);
-    border-radius:18px;
-    padding: 18px 18px 20px;
+    border-radius:20px; padding:16px 8px 14px; text-align:center;
   }
+  .gauge svg{ transform:rotate(-90deg); }
+  .gauge-track{ fill:none; stroke:var(--track); stroke-width:8; }
+  .gauge-fill{ fill:none; stroke-width:8; stroke-linecap:round; transition: stroke-dashoffset 1s cubic-bezier(.3,.8,.3,1), stroke .3s ease; }
+  .gauge-wrap{ position:relative; width:78px; height:78px; margin:0 auto; }
+  .gauge-value{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:'Sora',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
+  }
+  .gauge-label{ margin-top:10px; font-family:'Sora',sans-serif; font-weight:700; font-size:12.5px; color:var(--ink); }
+  .gauge-delta{ font-size:11px; margin-top:2px; font-weight:600; }
+  .gauge-caption{ font-size:11.5px; color:var(--ink-faint); margin-top:6px; line-height:1.4; }
 
-  /* ---------- socialite stats ---------- */
-  .stat-block + .stat-block{ margin-top:18px; }
-  .stat-head{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:8px;
+  /* ---------- circle: horizontal carousel ---------- */
+  .circle-scroll{
+    display:flex; gap:12px; overflow-x:auto;
+    padding: 2px 2px 12px;
+    scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch;
   }
-  .stat-head-left{ display:flex; align-items:center; gap:8px; font-family:'Sora',sans-serif; font-weight:700; font-size:15px; }
-  .bar-track{
-    height:9px;
-    background: var(--track);
-    border-radius:999px;
-    overflow:hidden;
-  }
-  .bar-fill{
-    height:100%;
-    border-radius:999px;
-    background: linear-gradient(90deg, var(--gold), var(--gold-2));
-    width:0%;
-    transition: width 1s cubic-bezier(.34,1.56,.64,1), box-shadow .45s ease;
-  }
-  .bar-fill.pulse{ box-shadow: 0 0 10px 2px var(--gold-glow); }
-  .stat-pct{
-    color: var(--easy);
-    font-family:'Sora',sans-serif;
-    font-weight:700;
-    font-size:14px;
-    display:inline-block;
-    transition: color .35s ease;
-  }
-  .stat-pct.up{ color: var(--easy); }
-  .stat-pct.down{ color: var(--hard); }
-  .stat-pct.bump{ animation: bump .55s cubic-bezier(.34,1.56,.64,1); }
-  @keyframes bump{
-    0%{ transform: scale(1); }
-    35%{ transform: scale(1.35); }
-    100%{ transform: scale(1); }
-  }
-  .stat-caption{
-    margin-top:9px;
-    font-size:13.5px;
-    color: var(--ink-dim);
-  }
-
-  /* ---------- relationships ---------- */
-  .rel-card{
-    background: var(--card);
+  .circle-scroll::-webkit-scrollbar{ height:5px; }
+  .circle-scroll::-webkit-scrollbar-thumb{ background: var(--card-border); border-radius:999px; }
+  .circle-card{
+    scroll-snap-align:start;
+    flex-shrink:0; width:158px;
+    background: linear-gradient(180deg, #17181c 0%, #131317 100%);
     border:1px solid var(--card-border);
-    border-radius:18px;
-    padding:16px 16px 18px;
-    margin-bottom:12px;
+    border-radius:18px; padding:14px;
   }
-  .rel-top{
-    display:flex; align-items:center; gap:12px;
-  }
-  .rel-avatar{
-    width:46px; height:46px;
-    border-radius:50%;
+  .circle-top{ display:flex; align-items:center; gap:9px; }
+  .circle-avatar{
+    width:38px; height:38px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    font-family:'Sora',sans-serif;
-    font-weight:800;
-    font-size:15px;
-    color:#0e0e11;
+    font-family:'Sora',sans-serif; font-weight:800; font-size:12.5px; color:#0e0e11;
     flex-shrink:0;
   }
-  .rel-info{ flex:1; min-width:0; }
-  .rel-name-row{ display:flex; align-items:center; gap:5px; }
-  .rel-name{ font-family:'Sora',sans-serif; font-weight:700; font-size:15.5px; }
-  .rel-verified{ width:15px; height:15px; color:var(--verified); flex-shrink:0; }
-  .rel-handle{ color:var(--ink-faint); font-size:13px; margin-top:1px; }
-  .rel-chevron{ color:var(--ink-faint); font-size:20px; }
-
-  .rel-meter{
-    display:flex; align-items:center; gap:12px;
-    margin-top:14px;
-  }
-  .rel-track{
-    flex:1;
-    height:8px;
-    background: var(--track);
-    border-radius:999px;
-    position:relative;
-    overflow:hidden;
-  }
-  .rel-fill{
-    height:100%;
-    border-radius:999px;
-    width:0%;
-    transition: width 2s cubic-bezier(.34,1.56,.64,1), background-color .4s ease, box-shadow .45s ease;
-  }
-  .rel-fill.pulse{ box-shadow: 0 0 10px 2px var(--marker-glow); }
-  .rel-marker{
-    position:absolute;
-    top:-2px;
-    width:3px; height:12px;
-    border-radius:2px;
-    background:var(--marker);
-    left:4%;
-    transition: left 1s cubic-bezier(.34,1.56,.64,1);
-  }
-  .rel-pct{
-    font-family:'Sora',sans-serif;
-    font-weight:700;
-    font-size:14px;
-    white-space:nowrap;
-    display:inline-block;
-    transition: color .35s ease;
-  }
-  .rel-pct.bump{ animation: bump .55s cubic-bezier(.34,1.56,.64,1); }
-
-  .rel-caption{
-    margin-top:10px;
-    font-size:13.5px;
-    line-height:1.5;
-    color: var(--ink-dim);
-  }
-  .rel-caption b{ font-weight:700; }
-  .rel-caption.pos b{ color: var(--easy); }
-  .rel-caption.neg b{ color: var(--hard); }
+  .circle-name{ font-family:'Sora',sans-serif; font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); }
+  .circle-handle{ font-size:11px; color:var(--ink-faint); }
+  .circle-meter{ margin-top:12px; display:flex; align-items:center; gap:8px; }
+  .circle-track{ flex:1; height:6px; background:var(--track); border-radius:999px; overflow:hidden; position:relative; }
+  .circle-fill{ height:100%; border-radius:999px; transition: width 1s cubic-bezier(.3,.8,.3,1), background-color .3s ease; }
+  .circle-pct{ font-family:'Sora',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; transition: color .3s ease; }
+  .circle-caption{ margin-top:9px; font-size:11px; line-height:1.45; color:var(--ink-dim); }
+  .circle-caption b{ font-weight:700; }
 
   .note{
+    text-align:center; color:var(--ink-faint); font-size:12px;
+    margin: 26px 4px 0; line-height:1.5;
+  }
+
+  /* ---------- bottom nav ---------- */
+  .bottomTab{
+    position:fixed;
+    left:0; bottom:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:40px;
+    width:100%;
+    padding:10px 20px;
+    background-color: var(--bg);
+    border-top:1px solid var(--card-border);
+    z-index:9999;
+  }
+  .bottomTab a{
+    padding:6px 14px;
+    border:1px solid transparent;
+    border-radius:10px;
+    color:var(--ink);
+    font: bold 16px 'Urbanist', Arial, sans-serif;
     text-align:center;
-    color:var(--note);
-    font-size:12px;
-    margin: 28px 18px 0;
-    line-height:1.5;
+    text-decoration:none;
+    transition: all 0.25s ease;
+  }
+  .bottomTab a:hover,
+  .bottomTab a[aria-current="page"]{
+    color:#ffd166;
+    border-color: rgba(255, 209, 102, 0.5);
+    background-color: rgba(255, 209, 102, 0.08);
+    box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
+    transform: translateY(-2px);
+  }
+  @media (max-width:480px){
+    .bottomTab{ gap:8px; }
+    .bottomTab a{ padding:6px 8px; font-size:14px; }
   }
 </style>
 </head>
 <body>
+<div class="bg-glow"><span></span><span></span><span></span></div>
 <div class="phone">
 
-  <div class="banner-wrap" id="bannerWrap">
-    <img id="bannerImg" src="" alt="" style="display:none;">
-    <div class="banner-topbar">
-      <div class="circle-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+  <div class="topbar">
+    <button class="circle-btn" id="backBtn" aria-label="Go back" type="button">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="circle-btn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+  </div>
+
+  <div class="fame-card" id="fameCard">
+    <div class="fame-banner">
+      <img src="https://picsum.photos/seed/ariavancecover/860/400" alt="">
+      <div class="fame-banner-top">
+        <div class="tier-chip">Rising Star</div>
+        <div class="level-chip">LV 12</div>
       </div>
-      <div class="circle-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <div class="fame-banner-edit">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </div>
+    </div>
+
+    <div class="fame-body">
+      <div class="fame-main">
+        <div class="ring-avatar">
+          <svg viewBox="0 0 88 88">
+            <defs>
+              <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#f0cf7e"/>
+                <stop offset="100%" stop-color="#c99a2e"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-track" cx="44" cy="44" r="37"/>
+            <circle class="ring-fill" id="avatarRing" cx="44" cy="44" r="37"/>
+          </svg>
+          <div class="avatar-photo"><img src="https://picsum.photos/seed/ariavance/160/160" alt=""></div>
+          <div class="ring-pct" id="ringPctLabel">68%</div>
+        </div>
+        <div class="fame-id">
+          <div class="fame-name-row">
+            <span class="fame-name">Aria Vance</span>
+            <svg class="verified" viewBox="0 0 22 22" fill="currentColor"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/><path fill="#0e0e11" d="M9.3 14.9L5.6 11.2l1.4-1.4 2.3 2.3 5-5 1.4 1.4z"/></svg>
+          </div>
+          <div class="fame-handle">@ariavance</div>
+          <button class="fame-edit-btn">Edit Profile</button>
+        </div>
+      </div>
+
+      <div class="fame-bio">Creator, chaos coordinator, professionally unbothered — your favorite main character.</div>
+
+      <div class="fame-stats-row">
+        <div class="fame-stat"><b id="statFollowers">0</b><span>Followers</span></div>
+        <div class="fame-stat"><b id="statFollowing">0</b><span>Following</span></div>
+        <div class="fame-stat"><b>#7</b><span>Rank</span></div>
       </div>
     </div>
   </div>
 
-  <div class="identity-block">
-    <div class="avatar-row">
-      <div class="avatar">
-        <img id="avatarImg" src="" alt="" style="display:none;">
-        <div class="avatar-edit">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-        </div>
-      </div>
-      <button class="edit-profile-btn">Edit Profile</button>
-    </div>
-
-    <div class="name-row">
-      <span class="name" id="profileName">Aria Vance</span>
-      <svg class="verified" viewBox="0 0 22 22" fill="currentColor"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/><path fill="#0a0a0d" d="M9.3 14.9L5.6 11.2l1.4-1.4 2.3 2.3 5-5 1.4 1.4z"/></svg>
-    </div>
-    <div class="handle" id="profileHandle">@ariavance</div>
-
-    <div class="bio" id="profileBio">Creator, chaos coordinator, professionally unbothered — your favorite main character</div>
-
-    <div class="stats-row">
-      <div class="stat"><b>892</b> Following</div>
-      <div class="stat"><b>128.4K</b> Followers</div>
-      <div class="rank-chip">#7</div>
-    </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="circle">Inner Circle</button>
   </div>
 
-  <div class="section">
-    <div class="section-title">Socialite</div>
-    <div class="card">
-      <div class="stat-block">
-        <div class="stat-head">
-          <div class="stat-head-left">Humor</div>
-          <div class="stat-pct up" id="pct-humor">+1%</div>
-        </div>
-        <div class="bar-track"><div class="bar-fill" id="bar-humor" style="width:0%;"></div></div>
-        <div class="stat-caption">You're comedy gold!</div>
-      </div>
-      <div class="stat-block">
-        <div class="stat-head">
-          <div class="stat-head-left">Aura</div>
-          <div class="stat-pct up" id="pct-aura">+2%</div>
-        </div>
-        <div class="bar-track"><div class="bar-fill" id="bar-aura" style="width:0%;"></div></div>
-        <div class="stat-caption">You have a captivating presence!</div>
-      </div>
-      <div class="stat-block">
-        <div class="stat-head">
-          <div class="stat-head-left">Chaos</div>
-          <div class="stat-pct up" id="pct-chaos">+3%</div>
-        </div>
-        <div class="bar-track"><div class="bar-fill" id="bar-chaos" style="width:0%;"></div></div>
-        <div class="stat-caption">You attract main-character energy.</div>
-      </div>
-    </div>
+  <div class="tab-panel active" id="panel-overview">
+    <div class="gauge-row" id="gaugeRow"></div>
   </div>
 
-  <div class="section" id="relSection">
-    <div class="section-title">Relationships <span class="count">(8)</span></div>
-    <div id="relList"></div>
+  <div class="tab-panel" id="panel-circle">
+    <div class="circle-scroll" id="circleScroll"></div>
   </div>
 
-  <div class="note">Prototype only — names, handles, and photos are placeholder content and will be replaced by feed-driven data later.</div>
+  <div class="note">Prototype only — all data shown is placeholder and will be replaced by real player and feed data later.</div>
+
+  <nav class="bottomTab" aria-label="Primary navigation">
+    <a href="Feed.html">Feed</a>
+    <a href="events.html">Explore</a>
+    <a href="notifications.html">Beams</a>
+    <a href="Stage.html">Stage</a>
+    <a href="IconPage.html" aria-current="page">Profile</a>
+  </nav>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="scripts/supabase.js"></script>
-<script src="themes.js"></script>
+<script src="scripts/theme.js"></script>
 <script>
+  /* ---------- back button: return to whichever page the user came from ---------- */
+  document.getElementById('backBtn').addEventListener('click', () => {
+    const lastPage = sessionStorage.getItem('spotlight-last-page') || 'Feed.html';
+    window.location.href = lastPage;
+  });
+
+  /* ---------- sparkles inside fame card ---------- */
+  const fameCard = document.getElementById('fameCard');
+  const sparklePositions = [
+    {top:'58%', left:'88%', size:4, delay:'0s'},
+    {top:'74%', left:'8%', size:3, delay:'.8s'},
+    {top:'90%', left:'70%', size:5, delay:'1.6s'},
+    {top:'66%', left:'50%', size:3, delay:'2.2s'},
+  ];
+  sparklePositions.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'sparkle';
+    el.style.top = s.top; el.style.left = s.left;
+    el.style.width = s.size+'px'; el.style.height = s.size+'px';
+    el.style.animationDelay = s.delay;
+    fameCard.appendChild(el);
+  });
+
+  /* ---------- avatar progress ring ---------- */
+  const AVATAR_R = 37, AVATAR_C = 2*Math.PI*AVATAR_R;
+  const avatarRing = document.getElementById('avatarRing');
+  avatarRing.style.strokeDasharray = AVATAR_C;
+  function setAvatarRing(pct){
+    const offset = AVATAR_C * (1 - pct/100);
+    avatarRing.style.strokeDashoffset = offset;
+  }
+  requestAnimationFrame(() => setTimeout(() => setAvatarRing(68), 150));
+
+  /* ---------- count-up stats ---------- */
+  function countUp(el, target, suffix){
+    const duration = 900;
+    const t0 = performance.now();
+    function tick(now){
+      const p = Math.min(1, (now - t0) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      const val = target * eased;
+      el.textContent = (target >= 1000 ? val.toFixed(1) : Math.round(val)) + suffix;
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = target + suffix;
+    }
+    requestAnimationFrame(tick);
+  }
+  countUp(document.getElementById('statFollowers'), 128.4, 'K');
+  countUp(document.getElementById('statFollowing'), 892, '');
+
+  /* ---------- tabs ---------- */
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ---------- overview radial gauges ---------- */
+  const STATS = [
+    { id:'humor', label:'Humor', value:24, delta:1, color:'#f5c451', caption:"You're comedy gold." },
+    { id:'aura', label:'Aura', value:29, delta:2, color:'#6fcf97', caption:'Captivating presence.' },
+    { id:'chaos', label:'Chaos', value:41, delta:3, color:'#f2685f', caption:'Main-character energy.' },
+  ];
+  const G_R = 32, G_C = 2*Math.PI*G_R;
+  const gaugeRow = document.getElementById('gaugeRow');
+  STATS.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'gauge';
+    el.innerHTML = `
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 78 78" width="78" height="78">
+          <circle class="gauge-track" cx="39" cy="39" r="${G_R}"/>
+          <circle class="gauge-fill" id="fill-${s.id}" cx="39" cy="39" r="${G_R}" stroke="${s.color}" stroke-dasharray="${G_C}" stroke-dashoffset="${G_C}"/>
+        </svg>
+        <div class="gauge-value" id="val-${s.id}">0%</div>
+      </div>
+      <div class="gauge-label">${s.label}</div>
+      <div class="gauge-delta" id="delta-${s.id}" style="color:${s.color};">+${s.delta}%</div>
+      <div class="gauge-caption">${s.caption}</div>
+    `;
+    gaugeRow.appendChild(el);
+  });
+
+  function setGauge(s, animate){
+    const fillEl = document.getElementById('fill-' + s.id);
+    const valEl = document.getElementById('val-' + s.id);
+    const deltaEl = document.getElementById('delta-' + s.id);
+    const offset = G_C * (1 - Math.max(0, Math.min(100, s.value)) / 100);
+    fillEl.style.strokeDashoffset = offset;
+    valEl.textContent = Math.round(s.value) + '%';
+    deltaEl.textContent = (s.delta >= 0 ? '+' : '') + s.delta + '%';
+    deltaEl.style.color = s.delta >= 0 ? '#6fcf97' : '#f2685f';
+    if (animate){
+      valEl.style.transition = 'none';
+      valEl.style.transform = 'scale(1.25)';
+      requestAnimationFrame(() => {
+        valEl.style.transition = 'transform .4s cubic-bezier(.34,1.56,.64,1)';
+        valEl.style.transform = 'scale(1)';
+      });
+    }
+  }
+
+  requestAnimationFrame(() => setTimeout(() => STATS.forEach(s => setGauge(s)), 150));
+
+  setInterval(() => {
+    const s = STATS[Math.floor(Math.random() * STATS.length)];
+    const delta = (Math.random() * 6) - 2;
+    s.value = Math.max(6, Math.min(94, s.value + delta));
+    s.delta = Math.round(delta * 10) / 10;
+    setGauge(s, true);
+  }, 3400);
+
+  /* ---------- inner circle carousel ---------- */
   const RELATIONSHIPS = [
-    { name:"Kai Velvet", handle:"@KaiVelvet", initials:"KV", color:"#f5c451", pct:4.9, delta:1.9, caption:"Sends you voice notes about conspiracy theories at 2am — you kind of love it." },
-    { name:"Nora Noire", handle:"@NoraNoire", initials:"NN", color:"#7dd3fc", pct:4.9, delta:1.0, caption:"Thinks your chaos era is 'iconic content,' not concerning." },
-    { name:"Lumen Rae", handle:"@LumenRae", initials:"LR", color:"#6fcf97", pct:22.9, delta:0.8, caption:"Your ride-or-die since day one — chaos is a shared language." },
-    { name:"Dash Wilder", handle:"@DashWilder", initials:"DW", color:"#f2685f", pct:-1.9, delta:-1.0, caption:"Hates when the spotlight isn't on him for five minutes." },
-    { name:"Echo Monroe", handle:"@EchoMonroe", initials:"EM", color:"#c792ea", pct:9.4, delta:0.4, caption:"Keeps liking your posts at suspiciously specific hours." },
-    { name:"Zara Flint", handle:"@ZaraFlint", initials:"ZF", color:"#f2a13d", pct:15.2, delta:1.3, caption:"Your go-to for brutally honest fit checks." },
-    { name:"Orion Page", handle:"@OrionPage", initials:"OP", color:"#8ab4f8", pct:-3.1, delta:-0.6, caption:"Still hasn't forgiven you for missing his launch party." },
-    { name:"Riva Jax", handle:"@RivaJax", initials:"RJ", color:"#f582ae", pct:6.7, delta:0.2, caption:"Slides into the comments with cryptic emojis, never elaborates." },
+    { name:"Kai Velvet", handle:"@KaiVelvet", initials:"KV", color:"#f5c451", pct:4.9, delta:1.9, caption:"Loves a good sleep joke, even about you." },
+    { name:"Nora Noire", handle:"@NoraNoire", initials:"NN", color:"#4fa8dd", pct:4.9, delta:1.0, caption:"Thinks your chaos era is iconic content." },
+    { name:"Lumen Rae", handle:"@LumenRae", initials:"LR", color:"#6fcf97", pct:22.9, delta:0.8, caption:"Your ride-or-die since day one." },
+    { name:"Dash Wilder", handle:"@DashWilder", initials:"DW", color:"#f2685f", pct:-1.9, delta:-1.0, caption:"Hates sharing the spotlight." },
+    { name:"Echo Monroe", handle:"@EchoMonroe", initials:"EM", color:"#c792ea", pct:9.4, delta:0.4, caption:"Likes your posts at odd hours." },
+    { name:"Zara Flint", handle:"@ZaraFlint", initials:"ZF", color:"#f2a13d", pct:15.2, delta:1.3, caption:"Your go-to for honest fit checks." },
+    { name:"Orion Page", handle:"@OrionPage", initials:"OP", color:"#8ab4f8", pct:-3.1, delta:-0.6, caption:"Still salty about the missed launch." },
+    { name:"Riva Jax", handle:"@RivaJax", initials:"RJ", color:"#f582ae", pct:6.7, delta:0.2, caption:"Cryptic comment-section emoji energy." },
   ];
 
-  const verifiedSVG = `<svg class="rel-verified" viewBox="0 0 22 22" fill="currentColor"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/><path fill="#0a0a0d" d="M9.3 14.9L5.6 11.2l1.4-1.4 2.3 2.3 5-5 1.4 1.4z"/></svg>`;
+  const verifiedSVG = `<svg width="12" height="12" viewBox="0 0 22 22" fill="currentColor" style="color:#4fa8dd;"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/></svg>`;
 
   function scaleToBar(pct){
-    // maps a meter value (-30..40) onto a 4%-96% visual bar width
     const clamped = Math.max(-30, Math.min(40, pct));
     return Math.max(4, Math.min(96, ((clamped + 30) / 70) * 100));
   }
 
-  const wrap = document.getElementById('relList');
+  const circleScroll = document.getElementById('circleScroll');
   RELATIONSHIPS.forEach((r, i) => {
-    r.uid = 'rel-' + i;
+    r.uid = 'circ-' + i;
     const el = document.createElement('div');
-    el.className = 'rel-card';
+    el.className = 'circle-card';
     el.innerHTML = `
-      <div class="rel-top">
-        <div class="rel-avatar" style="background:${r.color};">${r.initials}</div>
-        <div class="rel-info">
-          <div class="rel-name-row"><span class="rel-name">${r.name}</span>${verifiedSVG}</div>
-          <div class="rel-handle">${r.handle}</div>
+      <div class="circle-top">
+        <div class="circle-avatar" style="background:${r.color};">${r.initials}</div>
+        <div>
+          <div class="circle-name">${r.name} ${verifiedSVG}</div>
+          <div class="circle-handle">${r.handle}</div>
         </div>
-        <div class="rel-chevron">›</div>
       </div>
-      <div class="rel-meter">
-        <div class="rel-track">
-          <div class="rel-fill" id="fill-${r.uid}" style="width:0%;"></div>
-          <div class="rel-marker" id="marker-${r.uid}" style="left:4%;"></div>
-        </div>
-        <div class="rel-pct" id="pct-${r.uid}">${r.pct > 0 ? '+' : ''}${r.pct.toFixed(1)}%</div>
+      <div class="circle-meter">
+        <div class="circle-track"><div class="circle-fill" id="fill-${r.uid}" style="width:0%;"></div></div>
+        <div class="circle-pct" id="pct-${r.uid}">${r.pct > 0 ? '+' : ''}${r.pct.toFixed(1)}%</div>
       </div>
-      <div class="rel-caption ${r.delta >= 0 ? 'pos' : 'neg'}"><b>${r.delta > 0 ? '+' : ''}${r.delta}%</b> ${r.caption}</div>
+      <div class="circle-caption"><b style="color:${r.delta>=0?'#6fcf97':'#f2685f'};">${r.delta>0?'+':''}${r.delta}%</b> ${r.caption}</div>
     `;
-    wrap.appendChild(el);
+    circleScroll.appendChild(el);
   });
 
-  function applyRelBar(r, opts){
-    opts = opts || {};
+  function setCircle(r, animate){
     const pos = r.pct >= 0;
-    const fillColor = pos ? '#6fcf97' : '#f2685f';
+    const color = pos ? '#6fcf97' : '#f2685f';
     const width = scaleToBar(r.pct);
     const fillEl = document.getElementById('fill-' + r.uid);
-    const markerEl = document.getElementById('marker-' + r.uid);
     const pctEl = document.getElementById('pct-' + r.uid);
     fillEl.style.width = width + '%';
-    fillEl.style.background = fillColor;
-    markerEl.style.left = 'calc(' + width + '% - 2px)';
+    fillEl.style.background = color;
     pctEl.textContent = (r.pct > 0 ? '+' : '') + r.pct.toFixed(1) + '%';
-    pctEl.style.color = fillColor;
-    if (opts.animate){
-      fillEl.classList.add('pulse');
-      pctEl.classList.remove('bump'); void pctEl.offsetWidth; pctEl.classList.add('bump');
-      setTimeout(() => fillEl.classList.remove('pulse'), 500);
+    pctEl.style.color = color;
+    if (animate){
+      pctEl.style.transform = 'scale(1.3)';
+      setTimeout(() => { pctEl.style.transition='transform .4s cubic-bezier(.34,1.56,.64,1)'; pctEl.style.transform='scale(1)'; }, 20);
     }
   }
-
-  function applySocialiteBar(id, width, pct, opts){
-    opts = opts || {};
-    const barEl = document.getElementById('bar-' + id);
-    const pctEl = document.getElementById('pct-' + id);
-    barEl.style.width = width + '%';
-    pctEl.textContent = (pct >= 0 ? '+' : '') + pct + '%';
-    pctEl.classList.toggle('up', pct >= 0);
-    pctEl.classList.toggle('down', pct < 0);
-    if (opts.animate){
-      barEl.classList.add('pulse');
-      pctEl.classList.remove('bump'); void pctEl.offsetWidth; pctEl.classList.add('bump');
-      setTimeout(() => barEl.classList.remove('pulse'), 500);
-    }
-  }
-
-  const SOCIALITE = [
-    { id:'humor', width:24, pct:1 },
-    { id:'aura', width:29, pct:2 },
-    { id:'chaos', width:41, pct:3 },
-  ];
-
-  // ---- entrance animation: fill bars in from 0 shortly after paint ----
-  requestAnimationFrame(() => {
-    setTimeout(() => {
-      SOCIALITE.forEach(s => applySocialiteBar(s.id, s.width, s.pct));
-      RELATIONSHIPS.forEach(r => applyRelBar(r));
-    }, 120);
-  });
-
-  // ---- ongoing subtle fluctuation so the meters feel alive ----
-  function nudge(value, min, max, step){
-    const delta = (Math.random() * step * 2) - step;
-    return Math.max(min, Math.min(max, value + delta));
-  }
-
-  setInterval(() => {
-    const s = SOCIALITE[Math.floor(Math.random() * SOCIALITE.length)];
-    s.width = nudge(s.width, 8, 92, 9);
-    s.pct = Math.round(nudge(s.pct, -2, 6, 1.4));
-    applySocialiteBar(s.id, Math.round(s.width), s.pct, { animate: true });
-  }, 3200);
-
+  requestAnimationFrame(() => setTimeout(() => RELATIONSHIPS.forEach(r => setCircle(r)), 150));
   setInterval(() => {
     const r = RELATIONSHIPS[Math.floor(Math.random() * RELATIONSHIPS.length)];
-    r.pct = nudge(r.pct, -25, 35, 3.5);
-    applyRelBar(r, { animate: true });
-  }, 2600);
-
-  // ---- pull the logged-in user's profile (from profile setup) onto this page ----
-  const bannerImgEl = document.getElementById('bannerImg');
-  const avatarImgEl = document.getElementById('avatarImg');
-  const nameEl = document.getElementById('profileName');
-  const handleEl = document.getElementById('profileHandle');
-  const bioEl = document.getElementById('profileBio');
-
-  async function loadIconProfile(){
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user){
-      console.log('Could not load profile:', userError || 'No signed-in user.');
-      return;
-    }
-
-    const { data: profile, error } = await supabaseClient
-      .from('profiles')
-      .select('display_name, handle, bio, avatar_url, header_url')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !profile){
-      if (error) console.error('Could not load profile:', error);
-      return;
-    }
-
-    if (profile.display_name) nameEl.textContent = profile.display_name;
-    if (profile.handle) handleEl.textContent = `@${profile.handle.replace(/^@/, '')}`;
-    if (profile.bio) bioEl.textContent = profile.bio;
-
-    if (profile.avatar_url){
-      avatarImgEl.src = profile.avatar_url;
-      avatarImgEl.style.display = 'block';
-    }
-    if (profile.header_url){
-      bannerImgEl.src = profile.header_url;
-      bannerImgEl.style.display = 'block';
-    }
-  }
-
-  loadIconProfile();
-
+    const delta = (Math.random() * 7) - 3.5;
+    r.pct = Math.max(-25, Math.min(35, r.pct + delta));
+    r.delta = Math.round(delta * 10) / 10;
+    setCircle(r, true);
+  }, 2800);
 </script>
 </body>
 </html>
