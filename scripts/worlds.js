@@ -326,6 +326,13 @@ const worlds = [
     tags: ["Meme-heavy", "Comfort"],
     category: "Anime & Film/TV"
   },
+  {
+    title: "Love Island",
+    image: "banners/loveisland.jpg",
+    description: "Bombshells, recouplings, and villa drama under the Mallorca sun — messy situationships, chaotic Casa Amor twists, and iconic one-liners that live forever as reaction gifs. Toxic trait: watching for the drama, staying for the chaos.",
+    tags: ["Drama", "Romance"],
+    category: "Anime & Film/TV"
+  },
 
   // FANTASY
   {
