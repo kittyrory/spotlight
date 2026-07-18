@@ -27,8 +27,7 @@ function attachClickListeners() {
 
     const isSelected = (window.getSelected ? window.getSelected() : [])
       .some(function (w) { return w.id === world.id; });
-    btn.style.borderColor = isSelected ? '#e2bb00' : '';
-    btn.style.background  = isSelected ? '#0D0D0D' : '';
+    btn.classList.toggle('selected', isSelected);
 
     btn.addEventListener('click', function () {
       window.handleWorldClick(world);
@@ -107,8 +106,7 @@ attachClickListeners();
   function updateCardStyles() {
     container.querySelectorAll('.world-btn').forEach(function (btn) {
       const isSelected = selected.some(function (w) { return w.id == btn.dataset.id; });
-      btn.style.borderColor = isSelected ? '#e2bb00' : '';
-      btn.style.background  = isSelected ? '#0D0D0D' : '';
+      btn.classList.toggle('selected', isSelected);
     });
   }
 

@@ -33,6 +33,7 @@
         --cw-bg: #111;
         --toggle-border: rgba(255, 255, 255, 0.25);
         --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+        --card-selected-bg: #0D0D0D;
       }
 
       [data-theme="light"] {
@@ -52,6 +53,7 @@
         --cw-bg: #efeee9;
         --toggle-border: rgba(0, 0, 0, 0.25);
         --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+        --card-selected-bg: var(--accent-dim);
       }
 
       #theme-toggle {
@@ -417,6 +419,11 @@
         background: var(--surface2);
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      }
+
+      .world-btn.selected {
+        border-color: #e2bb00;
+        background: var(--card-selected-bg);
       }
 
       /* stagger world cards in on load, same idea as the postCard stagger on the feed */
