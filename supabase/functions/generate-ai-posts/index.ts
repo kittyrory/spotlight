@@ -1,5 +1,3 @@
-// supabase/functions/generate-ai-posts/index.ts
-//
 // Edge function that generates 3 AI posts using Gemini Flash and inserts
 // them into the `posts` table, PRIVATELY scoped to one user. The Gemini
 // API key lives only in this function's environment (set via
@@ -20,9 +18,6 @@
 //   like_count / dislike_count / repost_count (int, default 0)
 //   created_at (timestamptz, default now())
 //   is_ai_generated (bool, default false)
-//
-// Expects 5 bot profiles already existing in `profiles` (placeholders,
-// see instructions for what to fill in and where).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -30,9 +25,6 @@ const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-// PLACEHOLDER: replace these 5 with your actual bot profile ids from the
-// `profiles` table (see instructions — you'll insert 5 rows and paste
-// their ids here). The function cycles through them round-robin per post.
 const BOT_PROFILE_IDS = [
   "9c99876a-cef5-4f3c-b379-5e59bf6039b3",
   "698b21a4-238c-46b8-856d-171ff94ac60f",
@@ -84,15 +76,32 @@ async function callGemini(): Promise<{ content: string }[]> {
   return parsed.posts.slice(0, POST_COUNT);
 }
 
+// CORS: browsers send a preflight OPTIONS request before the real POST from
+// the browser (invoked via supabaseClient.functions.invoke). Without
+// responding to OPTIONS and attaching these headers to every response, the
+// browser blocks the whole request before our code even runs.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return new Response(
       JSON.stringify({ error: "Missing required environment variables/secrets" }),
-      { status: 500 }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -100,18 +109,26 @@ Deno.serve(async (req) => {
   try {
     body = await req.json();
   } catch {
-    return new Response(JSON.stringify({ error: "Invalid JSON body" }), { status: 400 });
+    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
+
+  console.log("Received body:", JSON.stringify(body));
 
   const userId = body.user_id;
   if (!userId) {
-    return new Response(JSON.stringify({ error: "user_id is required" }), { status: 400 });
+    return new Response(JSON.stringify({ error: "user_id is required" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   if (BOT_PROFILE_IDS.some((id) => id.startsWith("REPLACE_WITH_"))) {
     return new Response(
       JSON.stringify({ error: "BOT_PROFILE_IDS placeholders were never filled in" }),
-      { status: 500 }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
@@ -136,29 +153,41 @@ Deno.serve(async (req) => {
       if (Date.now() - lastGeneratedAt < COOLDOWN_MS) {
         return new Response(
           JSON.stringify({ error: "Cooldown active, try again shortly" }),
-          { status: 429 }
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
     }
 
     const posts = await callGemini();
 
+    // shuffle a copy of BOT_PROFILE_IDS and take the first POST_COUNT so we
+    // get 3 different random bots each time instead of always the same
+    // fixed order
+    const shuffledBots = [...BOT_PROFILE_IDS].sort(() => Math.random() - 0.5);
+
     const rows = posts.map((p, i) => ({
-      bot_user_id: BOT_PROFILE_IDS[i % BOT_PROFILE_IDS.length],
+      bot_user_id: shuffledBots[i % shuffledBots.length],
       ai_owner_id: userId,
       content: p.content,
       is_ai_generated: true,
     }));
 
+    console.log("Rows to insert:", JSON.stringify(rows));
+
     const { data, error } = await supabase.from("posts").insert(rows).select();
     if (error) throw error;
 
+    console.log("Inserted result:", JSON.stringify(data));
+
     return new Response(JSON.stringify({ inserted: data }), {
-      headers: { "Content-Type": "application/json" },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (err) {
     console.error(err);
-    return new Response(JSON.stringify({ error: String(err) }), { status: 500 });
+    return new Response(JSON.stringify({ error: String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

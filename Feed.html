@@ -750,6 +750,9 @@
     async function loadUserPosts(currentUser) {
       if (!currentUser) return;
 
+      // this feed is entirely private per user: only the logged-in user's
+      // own posts, plus the AI posts generated privately for them
+      // (ai_owner_id = them). nobody else's posts show up here at all.
       const { data: posts, error } = await supabaseClient
         .from('posts')
         .select('id, user_id, bot_user_id, content, image_urls, like_count, dislike_count, repost_count, created_at, is_ai_generated, ai_owner_id')
@@ -841,15 +844,16 @@
       )));
     }
 
-    const AI_POST_COOLDOWN_MS = 60 * 1000; // 1 minute
+    const AI_POST_COOLDOWN_MS = 60 * 1000;
     let lastAiPostGenerationAt = 0;
 
     // calls the supabase edge function that generates AI posts via gemini
-    // and inserts them into the posts table, scoped to currentUser so only
-    // they can ever see them. the function itself decides how many posts to
-    // make (3) and does the actual gemini call server-side so the api key
-    // never touches the client. also enforced server-side (see edge
-    // function) since a client-side check alone can be bypassed.
+    // and inserts them into the posts table. 
+
+    // the function itself decides how many posts to make (3) and does the 
+    // actual gemini call server-side so the api key never touches the client
+
+    // also enforced server-side since a client-side check alone can be bypassed
     async function generateAiPosts(reason, currentUser) {
       if (!currentUser) return;
 
@@ -877,7 +881,7 @@
 
     // per-user (not app-wide) "has this ever run for THIS user" check,
     // backed by a column on profiles. so logging in on a new device never
-    // re-triggers it, but it's scoped to the individual account, not shared.
+    // re-triggers it
     async function maybeRunFirstLoadAiPosts(currentUser) {
       if (!currentUser) return;
 
