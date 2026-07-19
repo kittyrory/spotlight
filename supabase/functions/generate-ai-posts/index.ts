@@ -121,6 +121,7 @@ async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{
           { role: "user", content: userMessage },
         ],
         temperature: 1,
+        max_tokens: 500,
         response_format: { type: "json_object" },
       }),
     }
