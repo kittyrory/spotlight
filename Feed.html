@@ -8,6 +8,17 @@
   <title>Spotlight | Feed</title>
 
   <script>
+    // TEMPORARY DEBUG: surfaces any JS error as an on-screen alert so it
+    // can be seen on a phone without devtools access. remove once the
+    // mobile generation issue is diagnosed.
+    window.addEventListener('error', function (e) {
+      alert('DEBUG ERROR: ' + e.message + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      alert('DEBUG PROMISE REJECTION: ' + (e.reason?.message || e.reason));
+    });
+  </script>
+  <script>
     // apply saved theme immediately to avoid a flash of the wrong theme.
     (function () {
       var saved = localStorage.getItem('spotlight-theme');
@@ -896,10 +907,12 @@
     // also enforced server-side since a client-side check alone can be bypassed
     async function generateAiPosts(reason, currentUser) {
       if (!currentUser) return;
+      alert('DEBUG: generateAiPosts called, reason=' + reason);
 
       const now = Date.now();
       if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
         console.log('AI post generation skipped: cooldown active');
+        alert('DEBUG: skipped due to cooldown');
         return;
       }
       lastAiPostGenerationAt = now;
@@ -914,9 +927,12 @@
           .single();
         if (profileError) {
           console.error('Could not load profile context:', profileError);
+          alert('DEBUG: profile fetch error: ' + JSON.stringify(profileError));
         }
+        alert('DEBUG: profile fetched ok, about to resolve worlds');
 
         const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
+        alert('DEBUG: worlds resolved, count=' + worlds.length + ', about to invoke edge function');
 
         const { error } = await supabaseClient.functions.invoke('generate-ai-posts', {
           body: {
@@ -933,6 +949,7 @@
             worlds,
           }
         });
+        alert('DEBUG: invoke returned, error=' + JSON.stringify(error));
         if (error) {
           console.error('Could not generate AI posts:', error);
           return;
@@ -941,6 +958,7 @@
         await loadUserPosts(currentUser);
       } catch (error) {
         console.error('Could not generate AI posts:', error);
+        alert('DEBUG: caught exception: ' + (error?.message || error));
       }
     }
 
@@ -957,8 +975,10 @@
         .single();
       if (error) {
         console.error('Could not check profile ai_posts_seeded:', error);
+        alert('DEBUG: ai_posts_seeded check error: ' + JSON.stringify(error));
         return;
       }
+      alert('DEBUG: ai_posts_seeded = ' + data?.ai_posts_seeded);
       if (data?.ai_posts_seeded) return;
 
       // flip the flag first so two tabs loading at the same moment
