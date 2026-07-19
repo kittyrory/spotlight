@@ -19,6 +19,7 @@
   (function () {
     var saved = localStorage.getItem('spotlight-theme');
     if (saved) document.documentElement.setAttribute('data-theme', saved);
+    sessionStorage.setItem('spotlight-last-page', 'Stage.html');
   })();
 </script>
 </head>
@@ -187,7 +188,7 @@
     flex-direction: column;
     align-items: center;
     gap: 20px;
-    padding-bottom: 48px;
+    padding-bottom: 90px;
     width: 100%;
   }
  
@@ -800,6 +801,47 @@
   .perk-name.locked-name { color: #444; }
   .perk-name.soon-name { color: var(--soon-text); }
   .lock-badge { position: absolute; top: 7px; right: 7px; color: #444; font-size: 12px; }
+  /* ── BOTTOM NAV ── */
+  .bottomTab {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+    padding: 10px 20px;
+    background-color: var(--bg);
+    border-top: 1px solid var(--subtle-border);
+    z-index: 9999;
+  }
+
+  .bottomTab a {
+    padding: 6px 14px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--text-primary);
+    font: bold 16px 'Urbanist', Arial, sans-serif;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.25s ease;
+  }
+
+  .bottomTab a:hover,
+  .bottomTab a[aria-current="page"] {
+    color: var(--gold);
+    border-color: rgba(255, 209, 102, 0.5);
+    background-color: rgba(255, 209, 102, 0.08);
+    box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 480px) {
+    .bottomTab { gap: 8px; }
+    .bottomTab a { padding: 6px 8px; font-size: 14px; }
+  }
+
   .legend { display: flex; gap: 16px; align-items: center; }
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: #666; }
   .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -1200,6 +1242,14 @@
   </div>
  </div>
  </main>
+
+  <nav class="bottomTab" aria-label="Primary navigation">
+    <a href="Feed.html">Feed</a>
+    <a href="events.html">Explore</a>
+    <a href="notifications.html">Beams</a>
+    <a href="Stage.html" aria-current="page">Stage</a>
+    <a href="IconPage.html">Profile</a>
+  </nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>

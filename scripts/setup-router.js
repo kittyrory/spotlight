@@ -1,7 +1,5 @@
-// figures out how far a user has gotten through onboarding and returns
-// the page they should be sent to next
-
 const SETUP_STEPS = [
+  { page: 'tutorial.html',       field: 'tutorial_complete', type: 'boolean' },
   { page: 'identity.html',       field: 'identity' },
   { page: 'fame-path.html',      field: 'fame_path' },
   { page: 'origin.html',         field: 'origin' },
@@ -18,7 +16,7 @@ window.getPostLoginDestination = async function () {
 
   const { data: profile, error } = await supabaseClient
     .from('profiles')
-    .select('identity, fame_path, origin, display_name, selected_worlds')
+    .select('tutorial_complete, identity, fame_path, origin, display_name, selected_worlds')
     .eq('id', user.id)
     .single();
 
@@ -29,6 +27,12 @@ window.getPostLoginDestination = async function () {
 
   for (const step of SETUP_STEPS) {
     const value = profile[step.field];
+
+    if (step.type === 'boolean') {
+      if (!value) return step.page;
+      continue;
+    }
+
     const isEmpty =
       value === null ||
       value === undefined ||

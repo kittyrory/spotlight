@@ -403,6 +403,14 @@
   <script src="scripts/theme.js"></script>
   <script src="scripts/options.js"></script>
   <script>
+    // if user came from the tutorial, changed back-btn from login.html to tutorial.html
+    (function () {
+      if (sessionStorage.getItem('ref') === 'tutorial') {
+        const backBtn = document.getElementById('back-btn');
+        if (backBtn) backBtn.setAttribute('data-prev', 'tutorial.html');
+      }
+    })();
+
     // called by options.js right before it navigates to the next page
     window.onContinueSave = async function (selectedValue) {
       const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
@@ -413,8 +421,8 @@
         return false;
       }
 
-      // A profile may not exist yet when the database's signup trigger has
-      // not created it. Include the required username so this upsert can
+      // a profile may not exist yet when the database's signup trigger has
+      // not created it. include the required username so this upsert can
       // safely create the initial row as well as update an existing one.
       const username = user.user_metadata?.username || user.email?.split('@')[0];
 
