@@ -6,6 +6,18 @@
   <!-- these fonts were referenced but not imported -->
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
   <title>Spotlight | Feed</title>
+
+  <script>
+    // TEMPORARY DEBUG: surfaces any JS error as an on-screen alert so it
+    // can be seen on a phone without devtools access. remove once the
+    // mobile generation issue is diagnosed.
+    window.addEventListener('error', function (e) {
+      alert('DEBUG ERROR: ' + e.message + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      alert('DEBUG PROMISE REJECTION: ' + (e.reason?.message || e.reason));
+    });
+  </script>
   <script>
     // apply saved theme immediately to avoid a flash of the wrong theme.
     (function () {
@@ -577,7 +589,7 @@
 
     function renderReplyItem(reply, profile) {
       const item = document.createElement('div');
-      item.className = 'replyItem';
+      item.className = reply.is_ai_generated ? 'replyItem aiReply' : 'replyItem';
       const avatar = document.createElement('img');
       avatar.className = 'avatar';
       avatar.src = profile?.avatar_url || 'https://placehold.co/26x26/png';
@@ -596,7 +608,7 @@
       return item;
     }
 
-    function renderUserPost(post, profile, currentUser, myReactions, replies, profileById) {
+    function renderUserPost(post, profile, currentUser, myReactions, replies, profileById, botProfileById) {
       const card = document.createElement('article');
       card.className = post.is_ai_generated ? 'postCard aiPost' : 'postCard';
       card.dataset.postId = post.id;
@@ -659,7 +671,10 @@
 
       const replyList = document.createElement('div');
       replyList.className = 'replyList';
-      replies.forEach((reply) => replyList.appendChild(renderReplyItem(reply, profileById.get(reply.user_id))));
+      replies.forEach((reply) => replyList.appendChild(renderReplyItem(
+        reply,
+        reply.bot_user_id ? botProfileById.get(reply.bot_user_id) : profileById.get(reply.user_id)
+      )));
 
       const replyForm = document.createElement('div');
       replyForm.className = 'replyForm';
@@ -689,11 +704,44 @@
         }
         replyList.appendChild(renderReplyItem(data, profileById.get(currentUser.id)));
         textarea.value = '';
+        triggerBotReplies('user_replied');
       });
       replyForm.append(textarea, submitBtn);
       replySection.append(replyForm, replyList);
 
-      replyBtn.addEventListener('click', () => replySection.classList.toggle('open'));
+      // bot replies: triggered two ways -- (1) first time this thread is
+      // opened with zero replies, 3 random bots reply to the post itself,
+      // (2) every time the user submits their own reply, bots (chosen by
+      // @ mention if present, else random, capped at 3 replies per bot
+      // per thread) reply again to the thread. both calls hit a separate
+      // edge function so the caps/mentions logic stays isolated from the
+      // ai-post generation logic.
+      let hasTriggeredInitialBotReplies = replies.length > 0;
+      async function triggerBotReplies(reason) {
+        try {
+          const { data: result, error } = await supabaseClient.functions.invoke('generate-bot-replies', {
+            body: { post_id: post.id, reason }
+          });
+          if (error) {
+            console.error('Could not generate bot replies:', error);
+            return;
+          }
+          (result?.inserted || []).forEach((reply) => {
+            const bot = botProfileById.get(reply.bot_user_id);
+            replyList.appendChild(renderReplyItem(reply, bot));
+          });
+        } catch (error) {
+          console.error('Could not generate bot replies:', error);
+        }
+      }
+
+      replyBtn.addEventListener('click', () => {
+        replySection.classList.toggle('open');
+        if (replySection.classList.contains('open') && !hasTriggeredInitialBotReplies) {
+          hasTriggeredInitialBotReplies = true;
+          triggerBotReplies('reply_opened');
+        }
+      });
 
       card.append(meta, content, replySection);
       return card;
@@ -784,7 +832,7 @@
 
       const { data: replies, error: repliesError } = await supabaseClient
         .from('post_replies')
-        .select('id, post_id, user_id, content, created_at')
+        .select('id, post_id, user_id, bot_user_id, content, is_ai_generated, created_at')
         .in('post_id', postIds)
         .order('created_at', { ascending: true });
       if (repliesError) console.error('Could not load replies:', repliesError);
@@ -802,7 +850,7 @@
 
       const userIds = [...new Set([
         ...posts.map((post) => post.user_id).filter(Boolean),
-        ...(replies || []).map((reply) => reply.user_id)
+        ...(replies || []).map((reply) => reply.user_id).filter(Boolean)
       ])];
       const { data: profiles, error: profileError } = await supabaseClient
         .from('profiles')
@@ -849,7 +897,8 @@
         currentUser,
         reactionsByPost.get(post.id) || new Set(),
         repliesByPost.get(post.id) || [],
-        profileById
+        profileById,
+        botProfileById
       )));
     }
 
@@ -900,7 +949,7 @@
       const now = Date.now();
       if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
         console.log('AI post generation skipped: cooldown active');
-        alert('Slow down, you're on cooldown!');
+        alert('DEBUG: skipped due to cooldown');
         return;
       }
       lastAiPostGenerationAt = now;
@@ -917,8 +966,10 @@
           console.error('Could not load profile context:', profileError);
           alert('DEBUG: profile fetch error: ' + JSON.stringify(profileError));
         }
+        alert('DEBUG: profile fetched ok, about to resolve worlds');
 
         const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
+        alert('DEBUG: worlds resolved, count=' + worlds.length + ', about to invoke edge function');
 
         const { error } = await supabaseClient.functions.invoke('generate-ai-posts', {
           body: {
@@ -964,6 +1015,7 @@
         alert('DEBUG: ai_posts_seeded check error: ' + JSON.stringify(error));
         return;
       }
+      alert('DEBUG: ai_posts_seeded = ' + data?.ai_posts_seeded);
       if (data?.ai_posts_seeded) return;
 
       // flip the flag first so two tabs loading at the same moment
