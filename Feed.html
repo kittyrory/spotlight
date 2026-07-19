@@ -946,7 +946,7 @@
       const now = Date.now();
       if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
         console.log('AI post generation skipped: cooldown active');
-        alert('Slow down, you're on cooldown!');
+        alert("Slow down, you're on cooldown!");
         return;
       }
       lastAiPostGenerationAt = now;
