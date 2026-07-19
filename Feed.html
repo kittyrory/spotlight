@@ -1,20 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- these fonts were referenced but not imported -->
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
   <title>Spotlight | Feed</title>
+
+  <script>
+    // apply saved theme immediately to avoid a flash of the wrong theme.
+    (function () {
+      var saved = localStorage.getItem('spotlight-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+
   <style>
     /* added repeated colors to root 
     you can bring back the old colors if you want */
-    :root {
+    :root,
+    [data-theme="dark"] {
       --bg: #0e0e0e; /* softer black (was #000 */
+      --text: #ffffff;
+      --surface: #1a1a1a;
       --color-border: #333;
       --color-muted: #888;
       --color-accent: #e2bb00; /* changed to fit the same accent as the other pages (was: #dd991b) */
-      --color-accent-rgb: 221, 153, 27;
+      --color-accent-rgb: 226, 187, 0; /* was 221, 153, 27, left over from the old accent hex above */
+      --toggle-border: rgba(255, 255, 255, 0.25);
+      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+    }
+
+    [data-theme="light"] {
+      --bg: #f4f3f1;
+      --text: #1e1e1e;
+      --surface: #ffffff;
+      --color-border: #dcdcdc;
+      --color-muted: #767676;
+      --color-accent: #e2bb00;
+      --color-accent-rgb: 226, 187, 0;
+      --toggle-border: rgba(0, 0, 0, 0.25);
+      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
     }
 
     * {
@@ -24,9 +50,53 @@
     body {
       margin: 0;
       background-color: var(--bg);
-      color: white;
+      color: var(--text);
       font-family: Arial, sans-serif;
       padding-bottom: 88px;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    #theme-toggle {
+      position: absolute;
+      top: 12px;
+      right: 20px;
+      z-index: 101;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      border: 1.5px solid var(--toggle-border);
+      background-color: transparent;
+      color: var(--text);
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
+    }
+
+    #theme-toggle:hover {
+      border-color: var(--color-accent);
+      box-shadow: 0 0 12px var(--toggle-hover-shadow);
+    }
+
+    #theme-toggle:active {
+      transform: scale(0.92);
+    }
+
+    #theme-toggle svg {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    [data-theme="dark"] #theme-toggle .icon-moon,
+    [data-theme="light"] #theme-toggle .icon-sun {
+      display: none;
     }
 
     .Feed {
@@ -44,7 +114,7 @@
 
     .toppage {
       display: block;
-      color: white;
+      color: var(--text);
       font-weight: bold;
       /* fixed positioning so Feed / For You / Following / Blazing stay on top while scrolling */
       position: fixed;
@@ -214,7 +284,7 @@
     .likes:hover { color: greenyellow }
     .retweets:hover { color: var(--color-accent);; }
     .reply:hover {
-      color: white;
+      color: var(--text);
     }
     .dislikes:hover { color: red; }
 
@@ -245,10 +315,10 @@
       resize: none;
       min-height: 38px;
       max-height: 100px;
-      background: #1a1a1a;
+      background: var(--surface);
       border: 1px solid var(--color-border);
       border-radius: 10px;
-      color: white;
+      color: var(--text);
       font: inherit;
       padding: 8px 10px;
     }
@@ -298,7 +368,7 @@
     }
 
     .replyItem .replyMeta .displayName {
-      color: white;
+      color: var(--text);
       font-weight: 600;
     }
 
@@ -349,7 +419,7 @@
       padding: 6px 14px;
       border: 1px solid transparent;
       border-radius: 10px;
-      color: white;
+      color: var(--text);
       font: bold 16px 'Urbanist', Arial, sans-serif;
       text-align: center;
       text-decoration: none;
@@ -406,6 +476,22 @@
 
   <nav>
     <div class="toppage">
+      <button id="theme-toggle" aria-label="Toggle light/dark mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="4.5"></circle>
+          <line x1="12" y1="1.5" x2="12" y2="4"></line>
+          <line x1="12" y1="20" x2="12" y2="22.5"></line>
+          <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+          <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+          <line x1="1.5" y1="12" x2="4" y2="12"></line>
+          <line x1="20" y1="12" x2="22.5" y2="12"></line>
+          <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+          <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+        </svg>
+      </button>
       <!-- "light" wrapped in .logoAccent for the yellow accent color -->
       <span class="Feed">Spot<span class="logoAccent">Light</span> Feed</span>
       <div class="connectedPages">
@@ -549,6 +635,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
+  <script src="scripts/theme.js"></script>
   <script>
     // maps a footer button's class to the reaction_type value stored in post_reactions
     const REACTION_TYPE_BY_CLASS = { likes: 'like', dislikes: 'dislike', retweets: 'repost' };

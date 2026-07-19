@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8" />
     <meta
@@ -9,8 +9,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
     <title>Spotlight | Tweet Tab</title>
+
+    <script>
+      // apply saved theme immediately to avoid a flash of the wrong theme.
+      // (this page has no toggle button of its own - it just follows
+      // whatever was last picked from Feed.html)
+      (function () {
+        var saved = localStorage.getItem('spotlight-theme');
+        if (saved) document.documentElement.setAttribute('data-theme', saved);
+      })();
+    </script>
+
     <style>
-        :root{
+        :root,
+        [data-theme="dark"]{
+            --bg:#0e0e0e;
+            --card-bg:#1a1a1a;
+            --border:#2a2a2a;
+            --text-primary:#f0f0f0;
+            --text-secondary:#8a8a8a;
+            --text-tertiary:#5c5c5c;
+            --accent:#f0f0f0;
+            --accent-contrast:#111111;
+            --pill-bg:#242424;
+            --danger:#e25555;
+            --menu-bg:#1a1a1a;
+            --menu-shadow: rgba(0,0,0,0.6);
+            --hover-bg:#242424;
+            --active-bg:#2c2c2c;
+            --highlight-hover-bg:#202020;
+            --highlight-hover-border:#3a3a3a;
+        }
+
+        [data-theme="light"]{
             --bg:#ffffff;
             --card-bg:#f4f4f4;
             --border:#e2e2e2;
@@ -18,8 +49,15 @@
             --text-secondary:#7a7a7a;
             --text-tertiary:#9c9c9c;
             --accent:#1a1a1a;
+            --accent-contrast:#ffffff;
             --pill-bg:#efefef;
             --danger:#c0392b;
+            --menu-bg:#ffffff;
+            --menu-shadow: rgba(0,0,0,0.08);
+            --hover-bg:#eaeaea;
+            --active-bg:#dedede;
+            --highlight-hover-bg:#ececec;
+            --highlight-hover-border:#bdbdbd;
         }
 
         body {
@@ -29,6 +67,7 @@
             color: var(--text-primary);
             display: flex;
             justify-content: center;
+            transition: background-color 0.25s ease, color 0.25s ease;
         }
 
         .phone{
@@ -69,7 +108,7 @@
  
   .post-btn{
     background: var(--accent);
-    color: #ffffff;
+    color: var(--accent-contrast);
     font-weight: 700;
     font-size: 1rem;
     padding: 9px 22px;
@@ -168,10 +207,10 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    background: #ffffff;
+    background: var(--menu-bg);
     border: 1px solid var(--border);
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    box-shadow: 0 8px 24px var(--menu-shadow);
     width: 220px;
     overflow: hidden;
     z-index: 10;
@@ -354,11 +393,11 @@
   }
  
   .media-btn:hover{
-    background: #eaeaea;
+    background: var(--hover-bg);
   }
  
   .media-btn:active{
-    background: #dedede;
+    background: var(--active-bg);
   }
  
   .media-btn svg{
@@ -442,8 +481,8 @@
   }
  
   .highlight-card:hover{
-    border-color: #bdbdbd;
-    background: #ececec;
+    border-color: var(--highlight-hover-border);
+    background: var(--highlight-hover-bg);
     transform: translateY(-2px);
   }
  
@@ -598,6 +637,7 @@
  
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="scripts/supabase.js"></script>
+<script src="scripts/theme.js"></script>
 <script>
   const composeInput = document.getElementById('composeInput');
   const wordCount = document.getElementById('wordCount');

@@ -398,7 +398,7 @@ window.saveWorldsAndContinue = async function () {
     return;
   }
 
-  window.location.href = 'Feed.html';
+  window.location.href = 'loadingpage.html';
 };
 
 //------------------

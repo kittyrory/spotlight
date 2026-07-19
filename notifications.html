@@ -1,11 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Notifications</title>
+
+<script>
+  // apply saved theme immediately to avoid a flash of the wrong theme.
+  // (this page has no toggle button of its own - it just follows
+  // whatever was last picked from Feed.html)
+  (function () {
+    var saved = localStorage.getItem('spotlight-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
+
 <style>
-  :root{
+  :root,
+  [data-theme="dark"]{
     --bg: #0e0e0e;
     --card-bg: #0b0b0b;
     --divider: #232327;
@@ -14,6 +26,19 @@
     --accent-blue: #1d9bf0;
     --bell-bg: #1e2732;
     --gold: #ffd166;
+    --tag-blue: #76c4ff;
+  }
+
+  [data-theme="light"]{
+    --bg: #f4f3f1;
+    --card-bg: #ffffff;
+    --divider: #e5e3dd;
+    --text-primary: #1e1e1e;
+    --text-secondary: #6b7580;
+    --accent-blue: #1d9bf0;
+    --bell-bg: #eaf1f9;
+    --gold: #ffd166;
+    --tag-blue: #1478c8;
   }
 
   * { box-sizing: border-box; }
@@ -108,7 +133,7 @@
 
   .reply{
     font-size: 15px;
-    color: #e7e9ea;
+    color: var(--text-primary);
     margin: 0;
     line-height: 1.5;
     display: block;
@@ -116,7 +141,7 @@
 
   .handle{
     font-weight: 800;
-    color: #f7f9fa;
+    color: var(--text-primary);
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -124,12 +149,12 @@
   }
 
   .mention{
-    color: #ffffff;
+    color: var(--text-primary);
     text-decoration: none;
   }
 
   .tag{
-    color: #76c4ff;
+    color: var(--tag-blue);
     font-weight: 700;
     font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   }
@@ -287,5 +312,6 @@
   </div>
 
 </div>
+<script src="scripts/theme.js"></script>
 </body>
 </html>

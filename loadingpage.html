@@ -1,6 +1,6 @@
 <!DOCTYPE html>
+<html lang="en" data-theme="dark">
 <head>
-  <html lang="en">
   <meta charset="UTF-8">
   <title>Spotlight | Fame Path</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +9,36 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <script>
+    // apply saved theme immediately to avoid a flash of the wrong theme.
+    (function () {
+      var saved = localStorage.getItem('spotlight-theme');
+      if (saved) document.documentElement.setAttribute('data-theme', saved);
+    })();
+  </script>
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap');
  
   * { margin: 0; padding: 0; box-sizing: border-box; }
  
-  :root {
+  :root,
+  [data-theme="dark"] {
+    --paper: #000000;
+    --ink: #f4efe4;
+    --gold-dark: #d1a53a;
+    --gold: #e8b23f;
+    --gold-bright: #ffcf4d;
+    --gold-glow: #e0a83c;
+    --dust: #ffd873;
+    --track-bg: rgba(255, 255, 255, 0.08);
+    --track-inset: rgba(232, 178, 63, 0.35);
+    --status-text: rgba(244, 239, 228, 0.72);
+    --tip-color: rgba(244, 239, 228, 0.68);
+  }
+
+  [data-theme="light"] {
     --paper: #ffffff;
     --ink: #17130a;
     --gold-dark: #a3760f;
@@ -22,6 +46,10 @@
     --gold-bright: #e8a622;
     --gold-glow: #b8860b;
     --dust: #d6a12f;
+    --track-bg: rgba(23, 19, 10, 0.07);
+    --track-inset: rgba(184, 134, 11, 0.3);
+    --status-text: rgba(23, 19, 10, 0.72);
+    --tip-color: rgba(23, 19, 10, 0.68);
   }
  
   html, body {
@@ -30,6 +58,7 @@
     background: var(--paper);
     overflow: hidden;
     font-family: 'DM Mono', monospace;
+    transition: background-color 0.25s ease;
   }
  
   .screen {
@@ -41,6 +70,7 @@
     justify-content: center;
     flex-direction: column;
     background: var(--paper);
+    transition: background-color 0.25s ease;
   }
  
   /* ---------- STAGE GLOW (spotlight over the content, not the whole screen) ---------- */
@@ -193,10 +223,10 @@
     position: relative;
     width: 100%;
     height: 8px;
-    background: rgba(23, 19, 10, 0.07);
+    background: var(--track-bg);
     border-radius: 4px;
     overflow: visible;
-    box-shadow: inset 0 0 0 1px rgba(184, 134, 11, 0.3);
+    box-shadow: inset 0 0 0 1px var(--track-inset);
   }
  
   .bar-fill {
@@ -237,7 +267,7 @@
   }
  
   .bar-status {
-    color: rgba(23, 19, 10, 0.72);
+    color: var(--status-text);
     text-transform: uppercase;
     font-size: 11px;
     letter-spacing: 0.14em;
@@ -261,7 +291,7 @@
   }
  
   .tip-text {
-    color: rgba(23, 19, 10, 0.68);
+    color: var(--tip-color);
     font-family: Georgia, 'Times New Roman', serif;
     font-style: italic;
     font-size: 15px;
@@ -412,6 +442,9 @@
  
 <div class="fade-out" id="fadeOut"></div>
  
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="scripts/supabase.js"></script>
+<script src="scripts/theme.js"></script>
 <script>
   // ---------- DUST PARTICLES ----------
   const dustLayer = document.getElementById('dustLayer');
@@ -542,7 +575,7 @@
     if (!enterBtn.classList.contains('shown')) return;
     fadeOut.classList.add('active');
     setTimeout(() => {
-      window.location.href = 'your-game-page.html'; // <-- swap with your actual game page URL
+      window.location.href = 'Feed.html';
     }, 1000);
   });
 </script>
