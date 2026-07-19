@@ -884,6 +884,14 @@
         repost_count: baseReposts
       });
       if (error) throw error;
+
+      // fire off private ai post generation for this user (cooldown is
+      // enforced server-side in the edge function, so this is safe to call
+      // every time without spamming gemini). don't block the redirect on it.
+      supabaseClient.functions.invoke('generate-ai-posts', {
+        body: { reason: 'new_post', user_id: user.id }
+      }).catch((err) => console.error('Could not generate AI posts:', err));
+
       localStorage.removeItem(DRAFT_KEY);
       window.location.href = 'Feed.html';
     } catch (error) {

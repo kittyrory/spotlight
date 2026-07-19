@@ -143,13 +143,25 @@
     .connectedPages {
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 40px;
     }
 
     .connectedPages > div {
+      display: flex;
+      align-items: center;
       padding: 6px 14px;
       border-radius: 10px;
       border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    /* on narrow screens the three tabs + gap can overflow and wrap;
+    shrink the gap a bit so everything fits on one line */
+    @media (max-width: 480px) {
+      .connectedPages {
+        gap: 16px;
+      }
     }
 
     /* removed a leftover .connectedPages:hover rule that shrank the
@@ -500,120 +512,8 @@
   </nav>
 
   <div class="posts">
-    <!-- fix: each post had an unused wrapper class (Zendaya, RM, Nicki Minaj)
-    that nothing in the CSS referenced. removed that redundant nesting and used
-    one consistent postCard class per post instead. -->
-    <div class="postCard">
-      <div class="userMeta">
-        <img class="avatar" src="https://placehold.co/36x36/png" alt="Zendaya avatar">
-        <span class="displayName">Zendaya</span>
-        <span class="username">@ZendayaReal</span>
-        <span class="postTime">2m</span>
-      </div>
-      <div class="postContent">
-        <p>not gonna say who but someone on this app has been on their villain era lately and honestly? respect it.</p>
-        <!-- since the tags were sharing the same class, they both
-        underlined when hovered. fixed that by giving them separate
-        but identical classes -->
-        <div class="tagRow">
-          <span class="tag1">#NoContext</span>
-          <span class="tag2">#SpotlightGala2025</span>
-        </div>
-        <div class="footerSpan">
-          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>48.2k</button>
-          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>1.2k</button>
-          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>842</button>
-          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="postCard">
-      <div class="userMeta">
-        <img class="avatar" src="https://placehold.co/36x36/png" alt="RM avatar">
-        <span class="displayName">RM</span>
-        <span class="username">@RM_Kimjoon</span>
-        <span class="postTime">14m</span>
-      </div>
-      <div class="postContent">
-        <p>the energy at last night's show was something else entirely. thank you to
-          everyone who came an everyone who watched. we see you.💜</p>
-        <div class="tagRow">
-          <span class="tag1">#ARMY</span>
-        </div>
-        <div class="footerSpan">
-          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>201k</button>
-          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>88.4k</button>
-          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>204</button>
-          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="postCard">
-      <div class="userMeta">
-        <img class="avatar" src="https://placehold.co/36x36/png" alt="Nicki Minaj avatar">
-        <span class="displayName">Nicki Minaj</span>
-        <span class="username">@NICKIMINAJ</span>
-        <span class="postTime">31m</span>
-      </div>
-      <div class="postContent">
-        <p>some of y'all really thought being relevant for 5 minutes was the same as being iconic for 15 years. Real cute.</p>
-        <div class="tagRow">
-          <span class="tag1">#BardzArePermanent</span>
-        </div>
-        <div class="footerSpan">
-          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>92.7k</button>
-          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>31.2k</button>
-          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>15.8k</button>
-          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="postCard">
-      <div class="userMeta">
-        <img class="avatar" src="https://placehold.co/36x36/png" alt="yourname_daily avatar">
-        <span class="displayName">yourname_daily</span>
-        <span class="username">@yourname_daily</span>
-        <span class="postTime">45m</span>
-      </div>
-      <div class="postContent">
-        <p>okay can we talk about how @yourhandle has been EATING lately?? the era we didn't know we needed. STREAM EVERYTHING</p>
-        <div class="tagRow">
-          <span class="tag1">#YourNameApologetic</span>
-        </div>
-        <div class="footerSpan">
-          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>3.4k</button>
-          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>891</button>
-          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>23</button>
-          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="postCard">
-      <div class="userMeta">
-        <img class="avatar" src="https://placehold.co/36x36/png" alt="sasuke_real avatar">
-        <span class="displayName">sasuke_real</span>
-        <span class="username">@sasuke_real</span>
-        <span class="postTime">2h</span>
-      </div>
-      <div class="postContent">
-        <p>I don't follow trends. Trends follow me.</p>
-        <div class="tagRow">
-          <span class="tag1">#Uchicha</span>
-          <span class="tag2">#NoContext</span>
-        </div>
-        <div class="footerSpan">
-          <button class="reaction likes" aria-label="Like this post"><svg><use href="#icon-like" /></svg>67.1k</button>
-          <button class="reaction retweets" aria-label="Retweet this post"><svg><use href="#icon-retweet" /></svg>22.8k</button>
-          <button class="reaction dislikes" aria-label="Dislike this post"><svg><use href="#icon-dislike" /></svg>1.2k</button>
-          <button class="reaction reply" aria-label="Reply to this post"><svg><use href="#icon-reply" /></svg>Reply</button>
-        </div>
-      </div>
-    </div>
-
+    <!-- static filler posts removed: posts are now loaded from supabase,
+    including AI-generated ones created via a supabase edge function -->
   </div>
 
   <a class="composeButton" href="tweet-tab.html" aria-label="Create a post">
@@ -689,7 +589,7 @@
 
     function renderUserPost(post, profile, currentUser, myReactions, replies, profileById) {
       const card = document.createElement('article');
-      card.className = 'postCard';
+      card.className = post.is_ai_generated ? 'postCard aiPost' : 'postCard';
       card.dataset.postId = post.id;
 
       const meta = document.createElement('div');
@@ -847,19 +747,27 @@
       return parseInt(text, 10) || 0;
     }
 
-    async function loadUserPosts() {
+    async function loadUserPosts(currentUser) {
+      if (!currentUser) return;
+
       const { data: posts, error } = await supabaseClient
         .from('posts')
-        .select('id, user_id, content, image_urls, like_count, dislike_count, repost_count, created_at')
+        .select('id, user_id, bot_user_id, content, image_urls, like_count, dislike_count, repost_count, created_at, is_ai_generated, ai_owner_id')
+        .or(`user_id.eq.${currentUser.id},ai_owner_id.eq.${currentUser.id}`)
         .order('created_at', { ascending: false })
         .limit(25);
       if (error) {
         console.error('Could not load posts:', error);
         return;
       }
+
+      // clear out whatever's currently rendered before re-rendering, since
+      // this can now be called again after generating new AI posts
+      const feedEl = document.querySelector('.posts');
+      feedEl.innerHTML = '';
+
       if (!posts?.length) return;
 
-      const { data: { user: currentUser } } = await supabaseClient.auth.getUser();
       const postIds = posts.map((post) => post.id);
 
       const { data: replies, error: repliesError } = await supabaseClient
@@ -881,7 +789,7 @@
       }
 
       const userIds = [...new Set([
-        ...posts.map((post) => post.user_id),
+        ...posts.map((post) => post.user_id).filter(Boolean),
         ...(replies || []).map((reply) => reply.user_id)
       ])];
       const { data: profiles, error: profileError } = await supabaseClient
@@ -890,6 +798,25 @@
         .in('id', userIds);
       if (profileError) console.error('Could not load post profiles:', profileError);
       const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
+
+      // bot authors live in a separate table since they aren't real
+      // auth users. fetch those for any AI posts and fold them into the
+      // same lookup keyed by post id (not user id, since bot ids and real
+      // profile ids come from different tables and could theoretically clash)
+      const botUserIds = [...new Set(posts.map((post) => post.bot_user_id).filter(Boolean))];
+      let botProfileById = new Map();
+      if (botUserIds.length) {
+        const { data: botProfiles, error: botProfileError } = await supabaseClient
+          .from('bot_profiles')
+          .select('id, display_name, handle, avatar_url')
+          .in('id', botUserIds);
+        if (botProfileError) console.error('Could not load bot profiles:', botProfileError);
+        botProfileById = new Map((botProfiles || []).map((profile) => [profile.id, profile]));
+      }
+      const authorByPostId = new Map(posts.map((post) => [
+        post.id,
+        post.bot_user_id ? botProfileById.get(post.bot_user_id) : profileById.get(post.user_id)
+      ]));
 
       const repliesByPost = new Map();
       (replies || []).forEach((reply) => {
@@ -906,7 +833,7 @@
       const feed = document.querySelector('.posts');
       posts.reverse().forEach((post) => feed.prepend(renderUserPost(
         post,
-        profileById.get(post.user_id),
+        authorByPostId.get(post.id),
         currentUser,
         reactionsByPost.get(post.id) || new Set(),
         repliesByPost.get(post.id) || [],
@@ -914,7 +841,78 @@
       )));
     }
 
-    loadUserPosts();
+    const AI_POST_COOLDOWN_MS = 60 * 1000; // 1 minute
+    let lastAiPostGenerationAt = 0;
+
+    // calls the supabase edge function that generates AI posts via gemini
+    // and inserts them into the posts table, scoped to currentUser so only
+    // they can ever see them. the function itself decides how many posts to
+    // make (3) and does the actual gemini call server-side so the api key
+    // never touches the client. also enforced server-side (see edge
+    // function) since a client-side check alone can be bypassed.
+    async function generateAiPosts(reason, currentUser) {
+      if (!currentUser) return;
+
+      const now = Date.now();
+      if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
+        console.log('AI post generation skipped: cooldown active');
+        return;
+      }
+      lastAiPostGenerationAt = now;
+
+      try {
+        const { error } = await supabaseClient.functions.invoke('generate-ai-posts', {
+          body: { reason, user_id: currentUser.id }
+        });
+        if (error) {
+          console.error('Could not generate AI posts:', error);
+          return;
+        }
+        // pull in whatever got inserted so the feed reflects it without a full reload
+        await loadUserPosts(currentUser);
+      } catch (error) {
+        console.error('Could not generate AI posts:', error);
+      }
+    }
+
+    // per-user (not app-wide) "has this ever run for THIS user" check,
+    // backed by a column on profiles. so logging in on a new device never
+    // re-triggers it, but it's scoped to the individual account, not shared.
+    async function maybeRunFirstLoadAiPosts(currentUser) {
+      if (!currentUser) return;
+
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('ai_posts_seeded')
+        .eq('id', currentUser.id)
+        .single();
+      if (error) {
+        console.error('Could not check profile ai_posts_seeded:', error);
+        return;
+      }
+      if (data?.ai_posts_seeded) return;
+
+      // flip the flag first so two tabs loading at the same moment
+      // can't both pass this check before the update lands
+      const { error: updateError } = await supabaseClient
+        .from('profiles')
+        .update({ ai_posts_seeded: true })
+        .eq('id', currentUser.id)
+        .eq('ai_posts_seeded', false);
+      if (updateError) {
+        console.error('Could not set ai_posts_seeded flag:', updateError);
+        return;
+      }
+      await generateAiPosts('first_load', currentUser);
+    }
+
+    async function initFeed() {
+      const { data: { user: currentUser } } = await supabaseClient.auth.getUser();
+      await loadUserPosts(currentUser);
+      await maybeRunFirstLoadAiPosts(currentUser);
+    }
+
+    initFeed();
   </script>
 </body>
 </html>
