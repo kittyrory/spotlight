@@ -6,18 +6,6 @@
   <!-- these fonts were referenced but not imported -->
   <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
   <title>Spotlight | Feed</title>
-
-  <script>
-    // TEMPORARY DEBUG: surfaces any JS error as an on-screen alert so it
-    // can be seen on a phone without devtools access. remove once the
-    // mobile generation issue is diagnosed.
-    window.addEventListener('error', function (e) {
-      alert('DEBUG ERROR: ' + e.message + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
-    });
-    window.addEventListener('unhandledrejection', function (e) {
-      alert('DEBUG PROMISE REJECTION: ' + (e.reason?.message || e.reason));
-    });
-  </script>
   <script>
     // apply saved theme immediately to avoid a flash of the wrong theme.
     (function () {
