@@ -1,5 +1,3 @@
-// supabase/functions/generate-bot-replies/index.ts
-//
 // Edge function that generates bot replies to a post's reply thread.
 // Triggered two ways from the client:
 //   1. reason: "reply_opened" -- user pressed the Reply button for the
@@ -11,12 +9,6 @@
 //      generate up to MAX_REPLIES_PER_BOT_PER_THREAD replies total in a
 //      given post's thread -- once a bot hits that cap it just stops
 //      being eligible, other bots keep going.
-//
-// Bot replies are PUBLIC (not privacy-scoped like AI posts) since they're
-// replying to a post that may itself be visible to others depending on
-// your posts RLS -- this function does not add any owner-scoping of its
-// own. If post_replies needs the same private-per-user treatment as
-// posts/ai_owner_id, that's a separate change to make deliberately.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
