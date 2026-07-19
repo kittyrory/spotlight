@@ -6,8 +6,7 @@
 <title>Spotlight | Profile</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script>
   // apply saved theme immediately to avoid a flash of the wrong theme.
@@ -88,7 +87,7 @@
     background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
     position:relative; overflow-x:hidden;
     color: var(--ink);
-    font-family:'Inter', system-ui, sans-serif;
+    font-family:'Urbanist', system-ui, sans-serif;
     min-height:100vh;
     display:flex; justify-content:center;
     padding: 20px 0 90px;
@@ -173,6 +172,7 @@
     display:flex; align-items:center; justify-content:center;
     color:#f5e6bf; cursor:pointer;
   }
+  .fame-banner-edit:hover{ background:rgba(10,9,6,.75); }
 
   .fame-body{
     padding: 18px 22px 20px;
@@ -180,7 +180,7 @@
     text-align:center;
   }
   .tier-chip, .level-chip{
-    font-family:'Sora',sans-serif; font-weight:700; font-size:11px;
+    font-family:'Urbanist',sans-serif; font-weight:700; font-size:11px;
     letter-spacing:.05em; text-transform:uppercase;
     padding:6px 11px; border-radius:999px;
   }
@@ -203,20 +203,20 @@
   .ring-pct{
     position:absolute; bottom:-2px; right:-4px;
     background: var(--gold-deep); color:#1a1408;
-    font-family:'Sora',sans-serif; font-weight:700; font-size:10px;
+    font-family:'Urbanist',sans-serif; font-weight:700; font-size:10px;
     padding:2px 6px; border-radius:999px; border:2px solid #17140d;
   }
 
   .fame-id{ margin-top:12px; }
   .fame-name-row{ display:flex; align-items:center; justify-content:center; gap:5px; }
-  .fame-name{ font-family:'Sora',sans-serif; font-weight:800; font-size:19px; }
+  .fame-name{ font-family:'Urbanist',sans-serif; font-weight:800; font-size:19px; }
   .verified{ width:16px; height:16px; color:var(--verified); flex-shrink:0; }
   .fame-handle{ color:var(--ink-faint); font-size:13.5px; margin-top:2px; }
   .fame-edit-btn{
     margin-top:12px;
     display:inline-flex; align-items:center; gap:5px;
     background:transparent; border:1.5px solid rgba(245,196,81,.4);
-    color:var(--gold); font-family:'Sora',sans-serif; font-weight:700;
+    color:var(--gold); font-family:'Urbanist',sans-serif; font-weight:700;
     font-size:11.5px; padding:7px 14px; border-radius:999px; cursor:pointer;
   }
   .fame-edit-btn:hover{ background: var(--gold-glow); }
@@ -236,7 +236,7 @@
     padding:10px 6px; text-align:center;
   }
   .fame-stat b{
-    display:block; font-family:'Sora',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
+    display:block; font-family:'Urbanist',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
   }
   .fame-stat span{ font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
 
@@ -248,7 +248,7 @@
   }
   .tab-btn{
     flex:1; border:none; background:transparent;
-    font-family:'Sora',sans-serif; font-weight:700; font-size:13.5px;
+    font-family:'Urbanist',sans-serif; font-weight:700; font-size:13.5px;
     color: var(--ink-faint); padding:10px 0; border-radius:999px; cursor:pointer;
     transition: background .2s ease, color .2s ease;
   }
@@ -271,9 +271,9 @@
   .gauge-wrap{ position:relative; width:78px; height:78px; margin:0 auto; }
   .gauge-value{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-family:'Sora',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
+    font-family:'Urbanist',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
   }
-  .gauge-label{ margin-top:10px; font-family:'Sora',sans-serif; font-weight:700; font-size:12.5px; color:var(--ink); }
+  .gauge-label{ margin-top:10px; font-family:'Urbanist',sans-serif; font-weight:700; font-size:12.5px; color:var(--ink); }
   .gauge-delta{ font-size:11px; margin-top:2px; font-weight:600; }
   .gauge-caption{ font-size:11.5px; color:var(--ink-faint); margin-top:6px; line-height:1.4; }
 
@@ -297,15 +297,15 @@
   .circle-avatar{
     width:38px; height:38px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    font-family:'Sora',sans-serif; font-weight:800; font-size:12.5px; color:#0e0e11;
+    font-family:'Urbanist',sans-serif; font-weight:800; font-size:12.5px; color:#0e0e11;
     flex-shrink:0;
   }
-  .circle-name{ font-family:'Sora',sans-serif; font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); }
+  .circle-name{ font-family:'Urbanist',sans-serif; font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); }
   .circle-handle{ font-size:11px; color:var(--ink-faint); }
   .circle-meter{ margin-top:12px; display:flex; align-items:center; gap:8px; }
   .circle-track{ flex:1; height:6px; background:var(--track); border-radius:999px; overflow:hidden; position:relative; }
   .circle-fill{ height:100%; border-radius:999px; transition: width 1s cubic-bezier(.3,.8,.3,1), background-color .3s ease; }
-  .circle-pct{ font-family:'Sora',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; transition: color .3s ease; }
+  .circle-pct{ font-family:'Urbanist',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; transition: color .3s ease; }
   .circle-caption{ margin-top:9px; font-size:11px; line-height:1.45; color:var(--ink-dim); }
   .circle-caption b{ font-weight:700; }
 
@@ -350,6 +350,75 @@
     .bottomTab{ gap:8px; }
     .bottomTab a{ padding:6px 8px; font-size:14px; }
   }
+
+  /* ---------- edit profile modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:10000;
+    background:rgba(0,0,0,.55);
+    display:none; align-items:flex-end; justify-content:center;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-sheet{
+    width:100%; max-width:430px;
+    background: var(--card);
+    border:1px solid var(--card-border);
+    border-radius:24px 24px 0 0;
+    padding:22px 20px 26px;
+    max-height:88vh; overflow-y:auto;
+    animation: sheetUp .3s cubic-bezier(.2,.9,.3,1.1);
+  }
+  @keyframes sheetUp{ from{ transform:translateY(24px); opacity:0; } to{ transform:none; opacity:1; } }
+  .modal-header{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .modal-title{ font-family:'Urbanist',sans-serif; font-weight:800; font-size:16px; }
+  .modal-close{
+    width:30px; height:30px; border-radius:50%;
+    background: var(--surface-1); border:1px solid var(--card-border);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--ink-dim); cursor:pointer;
+  }
+  .modal-field{ margin-bottom:14px; }
+  .modal-field label{
+    display:block; font-family:'Urbanist',sans-serif; font-weight:700;
+    font-size:11.5px; letter-spacing:.04em; text-transform:uppercase;
+    color: var(--ink-faint); margin-bottom:6px;
+  }
+  .modal-field input[type="text"],
+  .modal-field textarea{
+    width:100%; background: var(--surface-1); border:1px solid var(--card-border);
+    border-radius:12px; padding:10px 12px; color: var(--ink);
+    font-family:'Urbanist',sans-serif; font-size:13.5px; resize:vertical;
+  }
+  .modal-field textarea{ min-height:70px; line-height:1.5; }
+  .modal-field input[type="text"]:focus,
+  .modal-field textarea:focus{ outline:none; border-color: var(--gold); }
+  .modal-upload-row{ display:flex; gap:12px; align-items:center; }
+  .modal-upload-preview{
+    width:52px; height:52px; border-radius:50%; overflow:hidden;
+    flex-shrink:0; border:1px solid var(--card-border); background:var(--surface-1);
+  }
+  .modal-upload-preview.header-preview{ width:100%; height:70px; border-radius:12px; }
+  .modal-upload-preview img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .modal-upload-btn{
+    font-family:'Urbanist',sans-serif; font-weight:700; font-size:12px;
+    background: var(--surface-1); border:1px solid var(--card-border);
+    color: var(--ink); padding:8px 12px; border-radius:999px; cursor:pointer;
+  }
+  .modal-save-btn{
+    width:100%; margin-top:6px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+    color:#1a1408; font-family:'Urbanist',sans-serif; font-weight:800; font-size:14px;
+    border:none; border-radius:14px; padding:13px 0; cursor:pointer;
+  }
+  .modal-save-btn:disabled{ opacity:.6; cursor:default; }
+  .modal-status{
+    text-align:center; font-size:12px; margin-top:10px; min-height:16px;
+    color: var(--ink-faint);
+  }
+  .modal-status.error{ color: var(--hard); }
+  .modal-status.success{ color: var(--easy); }
 </style>
 </head>
 <body>
@@ -367,14 +436,15 @@
 
   <div class="fame-card" id="fameCard">
     <div class="fame-banner">
-      <img src="https://picsum.photos/seed/ariavancecover/860/400" alt="">
+      <img id="fameHeaderImg" src="https://picsum.photos/seed/ariavancecover/860/400" alt="">
       <div class="fame-banner-top">
         <div class="tier-chip">Rising Star</div>
         <div class="level-chip">LV 12</div>
       </div>
-      <div class="fame-banner-edit">
+      <div class="fame-banner-edit" id="headerCameraBtn" role="button" aria-label="Change header image">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </div>
+      <input type="file" id="headerCameraInput" accept="image/*" style="display:none;">
     </div>
 
     <div class="fame-body">
@@ -390,20 +460,20 @@
             <circle class="ring-track" cx="44" cy="44" r="37"/>
             <circle class="ring-fill" id="avatarRing" cx="44" cy="44" r="37"/>
           </svg>
-          <div class="avatar-photo"><img src="https://picsum.photos/seed/ariavance/160/160" alt=""></div>
+          <div class="avatar-photo"><img id="fameAvatarImg" src="https://picsum.photos/seed/ariavance/160/160" alt=""></div>
           <div class="ring-pct" id="ringPctLabel">68%</div>
         </div>
         <div class="fame-id">
           <div class="fame-name-row">
-            <span class="fame-name">Aria Vance</span>
+            <span class="fame-name" id="fameDisplayName">Aria Vance</span>
             <svg class="verified" viewBox="0 0 22 22" fill="currentColor"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/><path fill="#0e0e11" d="M9.3 14.9L5.6 11.2l1.4-1.4 2.3 2.3 5-5 1.4 1.4z"/></svg>
           </div>
-          <div class="fame-handle">@ariavance</div>
-          <button class="fame-edit-btn">Edit Profile</button>
+          <div class="fame-handle" id="fameHandle">@ariavance</div>
+          <button class="fame-edit-btn" id="editProfileBtn">Edit Profile</button>
         </div>
       </div>
 
-      <div class="fame-bio">Creator, chaos coordinator, professionally unbothered — your favorite main character.</div>
+      <div class="fame-bio" id="fameBio">Creator, chaos coordinator, professionally unbothered — your favorite main character.</div>
 
       <div class="fame-stats-row">
         <div class="fame-stat"><b id="statFollowers">0</b><span>Followers</span></div>
@@ -427,6 +497,46 @@
   </div>
 
   <div class="note">Prototype only — all data shown is placeholder and will be replaced by real player and feed data later.</div>
+
+  <div class="modal-overlay" id="editModalOverlay">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <div class="modal-title">Edit Profile</div>
+        <button class="modal-close" id="editModalClose" type="button" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-field">
+        <label>Avatar</label>
+        <div class="modal-upload-row">
+          <div class="modal-upload-preview" id="avatarPreviewWrap">
+            <img id="avatarPreviewImg" src="" alt="">
+          </div>
+          <label class="modal-upload-btn" for="avatarFileInput">Change Avatar</label>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label>Display Name</label>
+        <input type="text" id="editDisplayName" maxlength="40" placeholder="Your name">
+      </div>
+
+      <div class="modal-field">
+        <label>Handle</label>
+        <input type="text" id="editHandle" maxlength="30" placeholder="yourhandle">
+      </div>
+
+      <div class="modal-field">
+        <label>Bio</label>
+        <textarea id="editBio" maxlength="160" placeholder="Tell people about yourself"></textarea>
+      </div>
+
+      <button class="modal-save-btn" id="editSaveBtn" type="button">Save Changes</button>
+      <div class="modal-status" id="editStatus"></div>
+    </div>
+  </div>
 
   <nav class="bottomTab" aria-label="Primary navigation">
     <a href="Feed.html">Feed</a>
@@ -620,6 +730,177 @@
     r.delta = Math.round(delta * 10) / 10;
     setCircle(r, true);
   }, 2800);
+
+  /* ---------- load real profile data ---------- */
+  let currentProfile = null;
+
+  async function loadIconProfile() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('display_name, handle, bio, avatar_url, header_url')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !profile) {
+      if (error) console.error('Could not load profile:', error);
+      return;
+    }
+
+    currentProfile = profile;
+    applyProfileToDOM(profile);
+  }
+
+  function applyProfileToDOM(profile) {
+    const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
+    document.getElementById('fameHandle').textContent = handle;
+    document.getElementById('fameDisplayName').textContent = profile.display_name || handle;
+
+    if (profile.bio) {
+      document.getElementById('fameBio').textContent = profile.bio;
+    }
+    if (profile.avatar_url) {
+      document.getElementById('fameAvatarImg').src = profile.avatar_url;
+    }
+    if (profile.header_url) {
+      document.getElementById('fameHeaderImg').src = profile.header_url;
+    }
+  }
+
+  loadIconProfile();
+
+  /* ---------- header camera button: direct upload ---------- */
+  const headerCameraBtn = document.getElementById('headerCameraBtn');
+  const headerCameraInput = document.getElementById('headerCameraInput');
+  const fameHeaderImg = document.getElementById('fameHeaderImg');
+
+  headerCameraBtn.addEventListener('click', () => headerCameraInput.click());
+
+  headerCameraInput.addEventListener('change', async function () {
+    const file = this.files[0];
+    if (!file) return;
+
+    const dataUrl = await readFileAsDataUrl(file);
+    fameHeaderImg.src = dataUrl;
+
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      console.log('Could not save header image:', userError || 'No signed-in user.');
+      return;
+    }
+
+    const { data: updated, error } = await supabaseClient
+      .from('profiles')
+      .update({ header_url: dataUrl })
+      .eq('id', user.id)
+      .select('display_name, handle, bio, avatar_url, header_url')
+      .single();
+
+    if (error) {
+      console.log('Could not save header image:', error);
+      return;
+    }
+    currentProfile = updated;
+  });
+
+  /* ---------- edit profile modal ---------- */
+  const editModalOverlay = document.getElementById('editModalOverlay');
+  const editProfileBtn = document.getElementById('editProfileBtn');
+  const editModalClose = document.getElementById('editModalClose');
+  const editDisplayName = document.getElementById('editDisplayName');
+  const editHandle = document.getElementById('editHandle');
+  const editBio = document.getElementById('editBio');
+  const avatarPreviewImg = document.getElementById('avatarPreviewImg');
+  const avatarFileInput = document.getElementById('avatarFileInput');
+  const editSaveBtn = document.getElementById('editSaveBtn');
+  const editStatus = document.getElementById('editStatus');
+
+  let pendingAvatarDataUrl = null;
+
+  function openEditModal() {
+    const p = currentProfile || {};
+    editDisplayName.value = p.display_name || '';
+    editHandle.value = (p.handle || '').replace(/^@/, '');
+    editBio.value = p.bio || '';
+    avatarPreviewImg.src = p.avatar_url || document.getElementById('fameAvatarImg').src;
+    pendingAvatarDataUrl = null;
+    editStatus.textContent = '';
+    editStatus.className = 'modal-status';
+    editModalOverlay.classList.add('open');
+  }
+
+  function closeEditModal() {
+    editModalOverlay.classList.remove('open');
+  }
+
+  editProfileBtn.addEventListener('click', openEditModal);
+  editModalClose.addEventListener('click', closeEditModal);
+  editModalOverlay.addEventListener('click', (e) => {
+    if (e.target === editModalOverlay) closeEditModal();
+  });
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  avatarFileInput.addEventListener('change', async function () {
+    const file = this.files[0];
+    if (!file) return;
+    pendingAvatarDataUrl = await readFileAsDataUrl(file);
+    avatarPreviewImg.src = pendingAvatarDataUrl;
+  });
+
+  editSaveBtn.addEventListener('click', async () => {
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      editStatus.textContent = 'You need to be signed in to save changes.';
+      editStatus.className = 'modal-status error';
+      return;
+    }
+
+    const handleRaw = editHandle.value.trim().replace(/^@/, '');
+    const updates = {
+      display_name: editDisplayName.value.trim(),
+      handle: handleRaw,
+      bio: editBio.value.trim(),
+    };
+    if (pendingAvatarDataUrl) updates.avatar_url = pendingAvatarDataUrl;
+
+    editSaveBtn.disabled = true;
+    editSaveBtn.textContent = 'Saving...';
+    editStatus.textContent = '';
+    editStatus.className = 'modal-status';
+
+    const { data: updated, error } = await supabaseClient
+      .from('profiles')
+      .update(updates)
+      .eq('id', user.id)
+      .select('display_name, handle, bio, avatar_url, header_url')
+      .single();
+
+    editSaveBtn.disabled = false;
+    editSaveBtn.textContent = 'Save Changes';
+
+    if (error) {
+      console.error('Could not save profile:', error);
+      editStatus.textContent = 'Could not save changes. Try again.';
+      editStatus.className = 'modal-status error';
+      return;
+    }
+
+    currentProfile = updated;
+    applyProfileToDOM(updated);
+    editStatus.textContent = 'Saved!';
+    editStatus.className = 'modal-status success';
+    setTimeout(closeEditModal, 600);
+  });
 </script>
 </body>
 </html>
