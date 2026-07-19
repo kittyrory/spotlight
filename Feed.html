@@ -900,7 +900,7 @@
       const now = Date.now();
       if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
         console.log('AI post generation skipped: cooldown active');
-        alert('DEBUG: skipped due to cooldown');
+        alert('Slow down, you're on cooldown!');
         return;
       }
       lastAiPostGenerationAt = now;
@@ -917,10 +917,8 @@
           console.error('Could not load profile context:', profileError);
           alert('DEBUG: profile fetch error: ' + JSON.stringify(profileError));
         }
-        alert('DEBUG: profile fetched ok, about to resolve worlds');
 
         const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
-        alert('DEBUG: worlds resolved, count=' + worlds.length + ', about to invoke edge function');
 
         const { error } = await supabaseClient.functions.invoke('generate-ai-posts', {
           body: {
@@ -966,7 +964,6 @@
         alert('DEBUG: ai_posts_seeded check error: ' + JSON.stringify(error));
         return;
       }
-      alert('DEBUG: ai_posts_seeded = ' + data?.ai_posts_seeded);
       if (data?.ai_posts_seeded) return;
 
       // flip the flag first so two tabs loading at the same moment
