@@ -82,7 +82,7 @@ function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]
   }
 
   if (worlds?.length) {
-    lines.push("Worlds this user follows/is into:");
+    lines.push("You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are a bystander to the plot:");
     worlds.forEach((w) => {
       const parts = [w.title, w.category, w.description].filter(Boolean);
       if (w.tags?.length) parts.push(`tags: ${w.tags.join(", ")}`);
@@ -94,9 +94,8 @@ function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]
     return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
   }
 
-  return `Here is context about the user these posts are privately for. Use it to make the ` +
-    `posts feel personal and relevant to their interests and identity, referencing their ` +
-    `worlds/fandoms naturally where it fits, without being forced or repetitive about it:\n\n` +
+  return `Here is context about the user these posts are  for. You are encourage to make ` +
+    `posts feel personal and relevant to their interests and identity, without being repetitive \n\n` +
     lines.join("\n") +
     `\n\nGenerate ${POST_COUNT} posts now.`;
 }
