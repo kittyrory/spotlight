@@ -22,6 +22,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+const GEMINI_API_KEY_FALLBACK = Deno.env.get("GEMINI_API_KEY_FALLBACK");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -36,44 +37,137 @@ const BOT_PROFILE_IDS = [
 const POST_COUNT = 3;
 const COOLDOWN_MS = 60 * 1000; // 1 minute, enforced server-side too
 
-const SYSTEM_PROMPT = `You are generating short, realistic social media posts for a 
+const BASE_SYSTEM_PROMPT = `You are generating short, realistic social media posts for a 
 fictional social app called Spotlight. Write posts the way real users write: casual, 
 lowercase-leaning, sometimes using slang, occasionally with a hashtag. Keep each post 
-under 220 characters. Do not use quotation marks around the post text. Return ONLY valid 
+under 220 characters. Do not use quotation marks around the post text. Avoid contractions 
+with apostrophes (write "dont" instead of "don't", "its" instead of "it's") since 
+apostrophes can break JSON formatting. Return ONLY valid 
 JSON, no markdown fences, no preamble, in this exact shape:
 {"posts": [{"content": "..."}, {"content": "..."}, {"content": "..."}]}`;
 
-async function callGemini(): Promise<{ content: string }[]> {
+type ProfileContext = {
+  origin?: string;
+  fame_path?: string;
+  identity?: string;
+  display_name?: string;
+  handle?: string;
+  bio?: string;
+} | null;
+
+type WorldContext = {
+  title?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  characters?: string[];
+  drama?: string;
+  cross_universe?: boolean;
+};
+
+// builds a user-message describing this specific user's onboarding choices
+// and chosen worlds, so posts reference their actual context instead of
+// being generic. kept separate from the system prompt so the formatting
+// rules stay stable and only the user context section changes per call.
+function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]): string {
+  const lines: string[] = [];
+
+  if (profile) {
+    if (profile.display_name) lines.push(`Display name: ${profile.display_name}`);
+    if (profile.handle) lines.push(`Handle: @${profile.handle} (you can @ mention this user by handle in a post occasionally)`);
+    if (profile.origin) lines.push(`Origin: ${profile.origin}`);
+    if (profile.fame_path) lines.push(`Fame path: ${profile.fame_path}`);
+    if (profile.identity) lines.push(`Identity: ${profile.identity}`);
+    if (profile.bio) lines.push(`Bio: ${profile.bio}`);
+  }
+
+  if (worlds?.length) {
+    lines.push("Worlds this user follows/is into:");
+    worlds.forEach((w) => {
+      const parts = [w.title, w.category, w.description].filter(Boolean);
+      if (w.tags?.length) parts.push(`tags: ${w.tags.join(", ")}`);
+      lines.push(`- ${parts.join(" — ")}`);
+    });
+  }
+
+  if (!lines.length) {
+    return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
+  }
+
+  return `Here is context about the user these posts are privately for. Use it to make the ` +
+    `posts feel personal and relevant to their interests and identity, referencing their ` +
+    `worlds/fandoms naturally where it fits, without being forced or repetitive about it:\n\n` +
+    lines.join("\n") +
+    `\n\nGenerate ${POST_COUNT} posts now.`;
+}
+
+// OpenRouter uses an OpenAI-compatible chat completions endpoint: Bearer
+// token auth (not ?key=), and the response text lives at
+// choices[0].message.content instead of Gemini's native
+// candidates[0].content.parts[0].text shape.
+async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`,
+    "https://openrouter.ai/api/v1/chat/completions",
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+      },
       body: JSON.stringify({
-        contents: [
-          { role: "user", parts: [{ text: `Generate ${POST_COUNT} posts now.` }] },
+        model: "google/gemini-flash-2.5",
+        messages: [
+          { role: "system", content: BASE_SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
         ],
-        systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        generationConfig: {
-          temperature: 1,
-          responseMimeType: "application/json",
-        },
+        temperature: 1,
+        response_format: { type: "json_object" },
       }),
     }
   );
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errText}`);
+    throw new Error(`OpenRouter API error (${response.status}): ${errText}`);
   }
 
   const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) throw new Error("Gemini returned no content");
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) throw new Error("OpenRouter returned no content");
 
-  const parsed = JSON.parse(text);
-  if (!Array.isArray(parsed.posts)) throw new Error("Gemini response missing posts array");
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    // log the raw text so we can see exactly what broke the parse (usually
+    // an unescaped quote/apostrophe inside a post's content string)
+    console.error("Failed to parse model output as JSON. Raw text:", text);
+    throw new Error(`Model returned malformed JSON: ${err}`);
+  }
+  if (!Array.isArray(parsed.posts)) throw new Error("Model response missing posts array");
   return parsed.posts.slice(0, POST_COUNT);
+}
+
+// tries the primary gemini key first; if that call fails for any reason
+// (rate limit, account restriction, network error, malformed response),
+// automatically retries once with the fallback key before giving up.
+async function callGemini(profile: ProfileContext, worlds: WorldContext[]): Promise<{ content: string }[]> {
+  if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
+
+  const userMessage = buildUserContextMessage(profile, worlds);
+
+  try {
+    return await callGeminiWithKey(GEMINI_API_KEY, userMessage);
+  } catch (primaryError) {
+    console.error("Primary Gemini key failed:", primaryError);
+
+    if (!GEMINI_API_KEY_FALLBACK) {
+      throw primaryError;
+    }
+
+    console.log("Retrying with fallback Gemini key...");
+    return await callGeminiWithKey(GEMINI_API_KEY_FALLBACK, userMessage);
+  }
 }
 
 // CORS: browsers send a preflight OPTIONS request before the real POST from
@@ -105,7 +199,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  let body: { reason?: string; user_id?: string };
+  let body: { reason?: string; user_id?: string; profile?: ProfileContext; worlds?: WorldContext[] };
   try {
     body = await req.json();
   } catch {
@@ -158,7 +252,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const posts = await callGemini();
+    const posts = await callGemini(body.profile ?? null, body.worlds ?? []);
 
     // shuffle a copy of BOT_PROFILE_IDS and take the first POST_COUNT so we
     // get 3 different random bots each time instead of always the same

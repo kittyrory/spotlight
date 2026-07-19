@@ -534,6 +534,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
   <script src="scripts/theme.js"></script>
+  <script src="scripts/worlds.js"></script>
+  <script>
+    // worlds.js defines a plain `const worlds` array with no window
+    // assignment of its own (that normally happens in world-scripts.js,
+    // which also does DOM setup that doesn't apply on this page). mirror
+    // just the id-assignment part here so resolveSelectedWorlds() can look
+    // pregen worlds up by the same ids saved in profiles.selected_worlds.
+    worlds.forEach((world, i) => { world.id = i; });
+    window.WORLDS = worlds;
+  </script>
   <script>
     // maps a footer button's class to the reaction_type value stored in post_reactions
     const REACTION_TYPE_BY_CLASS = { likes: 'like', dislikes: 'dislike', retweets: 'repost' };
@@ -847,6 +857,36 @@
     const AI_POST_COOLDOWN_MS = 60 * 1000;
     let lastAiPostGenerationAt = 0;
 
+    // pregen world ids are plain array indices (small numbers), custom
+    // world ids are Date.now() timestamps (always > 1,000,000) -- see
+    // world-scripts.js where each is assigned. use that to know which
+    // source to resolve each selected world against.
+    async function resolveSelectedWorlds(selectedWorlds) {
+      if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
+
+      const pregenIds = selectedWorlds.filter((w) => w.id < 1000000).map((w) => w.id);
+      const customIds = selectedWorlds.filter((w) => w.id >= 1000000).map((w) => w.id);
+
+      const pregenResolved = (window.WORLDS || [])
+        .filter((w) => pregenIds.includes(w.id))
+        .map((w) => ({ title: w.title, description: w.description || w.descripton || '', tags: w.tags || [], category: w.category }));
+
+      let customResolved = [];
+      if (customIds.length) {
+        const { data: customWorlds, error } = await supabaseClient
+          .from('custom_worlds')
+          .select('title, description, category, tags, characters, drama, cross_universe')
+          .in('id', customIds);
+        if (error) {
+          console.error('Could not load custom worlds:', error);
+        } else {
+          customResolved = customWorlds || [];
+        }
+      }
+
+      return [...pregenResolved, ...customResolved];
+    }
+
     // calls the supabase edge function that generates AI posts via gemini
     // and inserts them into the posts table. 
 
@@ -865,8 +905,33 @@
       lastAiPostGenerationAt = now;
 
       try {
+        // pull the profile fields that give the model context about this
+        // specific user, so generated posts feel personal instead of generic
+        const { data: profile, error: profileError } = await supabaseClient
+          .from('profiles')
+          .select('origin, fame_path, identity, display_name, handle, bio, selected_worlds')
+          .eq('id', currentUser.id)
+          .single();
+        if (profileError) {
+          console.error('Could not load profile context:', profileError);
+        }
+
+        const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
+
         const { error } = await supabaseClient.functions.invoke('generate-ai-posts', {
-          body: { reason, user_id: currentUser.id }
+          body: {
+            reason,
+            user_id: currentUser.id,
+            profile: profile ? {
+              origin: profile.origin,
+              fame_path: profile.fame_path,
+              identity: profile.identity,
+              display_name: profile.display_name,
+              handle: profile.handle,
+              bio: profile.bio,
+            } : null,
+            worlds,
+          }
         });
         if (error) {
           console.error('Could not generate AI posts:', error);
