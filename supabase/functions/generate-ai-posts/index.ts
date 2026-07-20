@@ -1,7 +1,13 @@
 // Edge function that generates 3 AI posts using Gemini Flash and inserts
-// them into the `posts` table, PRIVATELY scoped to one user. The Gemini
-// API key lives only in this function's environment (set via
-// `supabase secrets set`), never in the client HTML.
+// them into the `posts` table, PRIVATELY scoped to one user. Keys live
+// only in this function's environment (set via `supabase secrets set`),
+// never in the client HTML.
+//
+// MODEL PROVIDER:
+// Primary calls go straight to Gemini's native API (generativelanguage.
+// googleapis.com) using GEMINI_API_KEY, so usage draws down Google's free
+// tier first. If that call fails for any reason (quota exhausted, network
+// error, malformed response), it falls back once to OpenRouter
 //
 // PRIVACY MODEL:
 // Each inserted post gets `ai_owner_id` set to the requesting user's id.
@@ -99,11 +105,57 @@ function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]
     `\n\nGenerate ${POST_COUNT} posts now.`;
 }
 
-// OpenRouter uses an OpenAI-compatible chat completions endpoint: Bearer
-// token auth (not ?key=), and the response text lives at
-// choices[0].message.content instead of Gemini's native
-// candidates[0].content.parts[0].text shape.
-async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
+// primary path: calls Gemini's own native API directly (not OpenRouter).
+// key goes in the ?key= query param, request/response shape is Gemini's
+// native format (contents/parts in, candidates[0].content.parts[0].text out).
+async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        system_instruction: {
+          parts: [{ text: BASE_SYSTEM_PROMPT }],
+        },
+        contents: [
+          { role: "user", parts: [{ text: userMessage }] },
+        ],
+        generationConfig: {
+          temperature: 1,
+          maxOutputTokens: 500,
+          responseMimeType: "application/json",
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Gemini API error (${response.status}): ${errText}`);
+  }
+
+  const data = await response.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error("Gemini returned no content");
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch (err) {
+    // log the raw text so we can see exactly what broke the parse (usually
+    // an unescaped quote/apostrophe inside a post's content string)
+    console.error("Failed to parse model output as JSON. Raw text:", text);
+    throw new Error(`Model returned malformed JSON: ${err}`);
+  }
+  if (!Array.isArray(parsed.posts)) throw new Error("Model response missing posts array");
+  return parsed.posts.slice(0, POST_COUNT);
+}
+
+// fallback path: OpenRouter's OpenAI-compatible chat completions endpoint.
+// Bearer token auth (not ?key=), response text lives at
+// choices[0].message.content instead of Gemini's native shape.
+async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
   const response = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",
     {
@@ -138,8 +190,6 @@ async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    // log the raw text so we can see exactly what broke the parse (usually
-    // an unescaped quote/apostrophe inside a post's content string)
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
@@ -147,9 +197,10 @@ async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{
   return parsed.posts.slice(0, POST_COUNT);
 }
 
-// tries the primary gemini key first; if that call fails for any reason
-// (rate limit, account restriction, network error, malformed response),
-// automatically retries once with the fallback key before giving up.
+// tries native Gemini first (runs off Gemini's own free-tier credits); if
+// that call fails for any reason (rate limit, account restriction, network
+// error, malformed response), falls back once to OpenRouter using
+// GEMINI_API_KEY_FALLBACK, which holds an OpenRouter key.
 async function callGemini(profile: ProfileContext, worlds: WorldContext[]): Promise<{ content: string }[]> {
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
 
@@ -160,16 +211,16 @@ async function callGemini(profile: ProfileContext, worlds: WorldContext[]): Prom
   console.log("Full prompt sent to model:", userMessage);
 
   try {
-    return await callGeminiWithKey(GEMINI_API_KEY, userMessage);
+    return await callGeminiNative(GEMINI_API_KEY, userMessage);
   } catch (primaryError) {
-    console.error("Primary Gemini key failed:", primaryError);
+    console.error("Primary Gemini call failed:", primaryError);
 
     if (!GEMINI_API_KEY_FALLBACK) {
       throw primaryError;
     }
 
-    console.log("Retrying with fallback Gemini key...");
-    return await callGeminiWithKey(GEMINI_API_KEY_FALLBACK, userMessage);
+    console.log("Retrying with OpenRouter fallback...");
+    return await callOpenRouter(GEMINI_API_KEY_FALLBACK, userMessage);
   }
 }
 
