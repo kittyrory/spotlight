@@ -558,6 +558,50 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="scripts/supabase.js"></script>
 <script src="scripts/theme.js"></script>
+
+<script>
+   /* ---------- load real profile data ---------- */
+   // moved up so it loads faster
+  let currentProfile = null;
+
+  async function loadIconProfile() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('display_name, handle, bio, avatar_url, header_url')
+      .eq('id', user.id)
+      .single();
+
+    if (error || !profile) {
+      if (error) console.error('Could not load profile:', error);
+      return;
+    }
+
+    currentProfile = profile;
+    applyProfileToDOM(profile);
+  }
+
+  function applyProfileToDOM(profile) {
+    const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
+    document.getElementById('fameHandle').textContent = handle;
+    document.getElementById('fameDisplayName').textContent = profile.display_name || handle;
+
+    if (profile.bio) {
+      document.getElementById('fameBio').textContent = profile.bio;
+    }
+    if (profile.avatar_url) {
+      document.getElementById('fameAvatarImg').src = profile.avatar_url;
+    }
+    if (profile.header_url) {
+      document.getElementById('fameHeaderImg').src = profile.header_url;
+    }
+  }
+
+  loadIconProfile();
+</script>
+
 <script>
   /* ---------- back button: return to whichever page the user came from ---------- */
   document.getElementById('backBtn').addEventListener('click', () => {
@@ -733,63 +777,12 @@
   requestAnimationFrame(() => setTimeout(() => RELATIONSHIPS.forEach(r => setCircle(r)), 150));
   setInterval(() => {
     const r = RELATIONSHIPS[Math.floor(Math.random() * RELATIONSHIPS.length)];
-<<<<<<< HEAD
-    r.pct = nudge(r.pct, -25, 35, 3.5);
-    applyRelBar(r, { animate: true });
-  }, 2600);
-<<<<<<< HEAD
-=======
-=======
     const delta = (Math.random() * 7) - 3.5;
     r.pct = Math.max(-25, Math.min(35, r.pct + delta));
     r.delta = Math.round(delta * 10) / 10;
     setCircle(r, true);
   }, 2800);
->>>>>>> 6652c286e5a824b3b6b0be9e80de934b8d456a83
 
-  /* ---------- load real profile data ---------- */
-  let currentProfile = null;
-
-  async function loadIconProfile() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return;
-
-    const { data: profile, error } = await supabaseClient
-      .from('profiles')
-      .select('display_name, handle, bio, avatar_url, header_url')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !profile) {
-      if (error) console.error('Could not load profile:', error);
-      return;
-    }
-
-    currentProfile = profile;
-    applyProfileToDOM(profile);
-  }
-
-  function applyProfileToDOM(profile) {
-    const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
-    document.getElementById('fameHandle').textContent = handle;
-    document.getElementById('fameDisplayName').textContent = profile.display_name || handle;
-
-    if (profile.bio) {
-      document.getElementById('fameBio').textContent = profile.bio;
-    }
-    if (profile.avatar_url) {
-      document.getElementById('fameAvatarImg').src = profile.avatar_url;
-    }
-    if (profile.header_url) {
-      document.getElementById('fameHeaderImg').src = profile.header_url;
-    }
-  }
-
-  loadIconProfile();
-
-<<<<<<< HEAD
->>>>>>> 8640a293421afbc204fea34d21a83bb983f5d4bf
-=======
   /* ---------- header camera button: direct upload ---------- */
   const headerCameraBtn = document.getElementById('headerCameraBtn');
   const headerCameraInput = document.getElementById('headerCameraInput');
@@ -920,7 +913,6 @@
     editStatus.className = 'modal-status success';
     setTimeout(closeEditModal, 600);
   });
->>>>>>> 6652c286e5a824b3b6b0be9e80de934b8d456a83
 </script>
 </body>
 </html>
