@@ -93,9 +93,8 @@ function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]
   if (!lines.length) {
     return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
   }
-
   return `Here is context about the user these posts are  for. You are encourage to make ` +
-    `posts feel personal and relevant to their interests and identity, without being repetitive \n\n` +
+    `posts feel personal and relevant to their interests and identity, without being repetitive. Tag the users handle when replying \n\n` +
     lines.join("\n") +
     `\n\nGenerate ${POST_COUNT} posts now.`;
 }
@@ -114,7 +113,7 @@ async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{
         "Authorization": `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-flash-lite",
         messages: [
           { role: "system", content: BASE_SYSTEM_PROMPT },
           { role: "user", content: userMessage },
@@ -155,6 +154,10 @@ async function callGemini(profile: ProfileContext, worlds: WorldContext[]): Prom
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
 
   const userMessage = buildUserContextMessage(profile, worlds);
+
+  console.log("Profile context received:", JSON.stringify(profile));
+  console.log("Worlds context received:", JSON.stringify(worlds));
+  console.log("Full prompt sent to model:", userMessage);
 
   try {
     return await callGeminiWithKey(GEMINI_API_KEY, userMessage);

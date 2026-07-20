@@ -97,7 +97,7 @@ async function callGeminiWithKey(apiKey: string, userMessage: string): Promise<{
       "Authorization": `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "google/gemini-2.5-flash-lite",
       messages: [
         { role: "system", content: BASE_SYSTEM_PROMPT },
         { role: "user", content: userMessage },
