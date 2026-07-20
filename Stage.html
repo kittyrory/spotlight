@@ -22,6 +22,20 @@
     sessionStorage.setItem('spotlight-last-page', 'Stage.html');
   })();
 </script>
+
+<script>
+  // read the cached profile synchronously (shared with the other pages),
+  // same trick as the theme script above. painted onto the DOM further
+  // down, before any other page script runs, so it renders as fast as
+  // the theme swap instead of waiting on a network round trip.
+  window.__cachedProfile = null;
+  (function () {
+    try {
+      var cached = localStorage.getItem('spotlight-profile');
+      if (cached) window.__cachedProfile = JSON.parse(cached);
+    } catch (e) {}
+  })();
+</script>
 </head>
 <style>
   :root,
@@ -929,6 +943,182 @@
       <span class="hero-handle" id="stage-hero-handle">@yourhandle</span>
       <span class="hero-role" id="stage-hero-role">✦ Singer</span>
     </div>
+
+<script>
+  // ── accomplishment card content, keyed by the profile fields that drive them ──
+  // origin -> "Who You Are" card, identity -> "What You Do" card,
+  // fame_path -> "How You're Known" card. tags here are fixed per option —
+  // they never jitter or randomize, each choice always shows the same stats.
+  const ORIGIN_CONTENT = {
+    'nepotism-baby': {
+      title: 'The Nepo Baby',
+      desc: 'Born into the industry. Doors open differently for you — but so does the scrutiny. Every move is watched, every mistake amplified.',
+      tags: [['positive', '+20% Brand Deals'], ['negative', '+30% Hate Comments'], ['positive', 'Industry Access Early']]
+    },
+    'self-made': {
+      title: 'Self-Made',
+      desc: 'Nobody handed you anything. Every follower, every deal, every ounce of clout — you built it from nothing.',
+      tags: [['positive', '+25% Fan Loyalty'], ['positive', 'Underdog Story Bonus'], ['negative', 'Slower Early Growth']]
+    },
+    'reality-tv': {
+      title: 'Reality TV',
+      desc: 'The whole country watched you before you dropped a single post.',
+      tags: [['positive', '+500 Starting Followers'], ['negative', 'Mixed Public Opinion'], ['negative', 'Drama Events']]
+    },
+    'viral-moment': {
+      title: 'The Viral Moment',
+      desc: 'One clip changed everything. You went from nobody to everywhere overnight — and now everyone expects a repeat.',
+      tags: [['positive', '+40% Overnight Reach'], ['negative', 'One-Hit Pressure'], ['negative', 'Short Attention Span Audience']]
+    },
+    'industry-plant': {
+      title: 'The Industry Plant',
+      desc: 'Quietly backed from day one. The rollout looked organic — it wasn\u2019t.',
+      tags: [['positive', 'Guaranteed Playlist Placement'], ['negative', '+20% Plant Accusations'], ['positive', 'Label Resources']]
+    },
+    'underground-legend': {
+      title: 'Underground Legend',
+      desc: 'Respected before you were known. The scene knew your name years before the mainstream caught up.',
+      tags: [['positive', 'Day-One Fan Loyalty'], ['positive', 'Critical Respect'], ['negative', 'Slow Mainstream Crossover']]
+    }
+  };
+
+  const IDENTITY_CONTENT = {
+    'singer-rapper': {
+      title: 'Singer / Rapper',
+      desc: 'Bars, hooks, and studio sessions that stretch past 3 AM. Your voice is the whole brand.',
+      tags: [['positive', 'Streaming Revenue'], ['negative', 'Tour Burnout Risk'], ['positive', 'Feature Requests Flooding In']]
+    },
+    'kpop-idol': {
+      title: 'K-pop Idol',
+      desc: 'Trained for years to make it look effortless. Comeback season means no days off.',
+      tags: [['positive', '+30% Fandom Devotion'], ['negative', 'Company Control'], ['negative', 'Zero Privacy']]
+    },
+    model: {
+      title: 'Model',
+      desc: 'Runway, campaigns, and a face that sells before you say a word.',
+      tags: [['positive', 'Brand Campaign Access'], ['negative', 'Image Pressure'], ['positive', 'Fashion Week Invites']]
+    },
+    athlete: {
+      title: 'Athlete',
+      desc: 'The body is the resume. Every highlight clip is a new follower spike.',
+      tags: [['positive', 'Sponsorship Deals'], ['negative', 'Injury Risk'], ['positive', 'Highlight Reel Virality']]
+    },
+    'actor-actress': {
+      title: 'Actor / Actress',
+      desc: 'Someone else\u2019s words, your delivery. Every role is a new persona to sell.',
+      tags: [['positive', 'Award Season Buzz'], ['negative', 'Typecasting Risk'], ['positive', 'Press Tour Exposure']]
+    },
+    'group-member': {
+      title: 'Group Member',
+      desc: 'The spotlight is shared, and so is the fallout. Your solo brand lives inside a bigger one.',
+      tags: [['positive', 'Built-In Fandom'], ['negative', 'Shared Spotlight'], ['negative', 'Group Drama Spillover']]
+    },
+    'content-creator': {
+      title: 'Content Creator',
+      desc: 'Content, collabs, sponsorships, drama. The most parasocial career path.',
+      tags: [['positive', 'Social Fandoms Boosted'], ['negative', '+15% Fan Loyalty'], ['negative', 'Cancel Risk']]
+    },
+    socialite: {
+      title: 'Socialite',
+      desc: 'Famous for being everywhere, known by everyone who matters. The party is the platform.',
+      tags: [['positive', 'Elite Network Access'], ['positive', 'Event Invite Priority'], ['negative', 'Substance Scrutiny']]
+    }
+  };
+
+  const FAME_PATH_CONTENT = {
+    'viral-star': {
+      title: 'Viral Star',
+      desc: 'Algorithm-favored and always trending. The internet decided you were interesting, and it hasn\u2019t stopped.',
+      tags: [['positive', '+35% Algorithm Boost'], ['negative', 'Relevance Has a Shelf Life'], ['positive', 'Meme-able Moments']]
+    },
+    'scandalous-one': {
+      title: 'The Scandalous One',
+      desc: 'Controversy follows you, and so do the headlines. Bad press is still press.',
+      tags: [['positive', '+25% Media Coverage'], ['negative', 'Brand Deal Hesitancy'], ['negative', 'Public Trust Damage']]
+    },
+    'lover-player': {
+      title: 'The Lover / Player',
+      desc: 'Your relationships are the storyline. Every situationship becomes a trending topic.',
+      tags: [['positive', 'Tabloid Attention'], ['negative', 'Privacy Invasion'], ['positive', 'Shipping Fandom Engagement']]
+    },
+    'shit-talker': {
+      title: 'The Shit-Talker',
+      desc: 'You say what everyone\u2019s thinking, then some. The comment section is a battlefield you started.',
+      tags: [['positive', 'High Engagement Rate'], ['negative', 'Beef Magnet'], ['negative', 'Cancel Risk']]
+    },
+    'mysterious-one': {
+      title: 'The Mysterious One',
+      desc: 'You say almost nothing, and people can\u2019t stop theorizing. Silence became the whole strategy.',
+      tags: [['positive', 'Theory-Fueled Engagement'], ['positive', 'Air of Exclusivity'], ['negative', 'Harder to Monetize']]
+    },
+    activist: {
+      title: 'The Activist',
+      desc: 'You use the platform for something bigger. Every post is a stance, and every stance has a cost.',
+      tags: [['positive', 'Loyal Values-Driven Fanbase'], ['negative', 'Polarized Reactions'], ['negative', 'Brand Deal Restrictions']]
+    },
+    'industry-vet': {
+      title: 'The Industry Vet',
+      desc: 'You\u2019ve outlasted three algorithm changes and two platform migrations. Longevity is the brand now.',
+      tags: [['positive', 'Established Credibility'], ['positive', 'Institutional Connections'], ['negative', '"Is She Still Relevant?" Discourse']]
+    }
+  };
+
+  function renderAccomplishmentCard(prefix, content) {
+    if (!content) return;
+    var titleEl = document.getElementById('card-' + prefix + '-title');
+    var descEl = document.getElementById('card-' + prefix + '-desc');
+    var tagsEl = document.getElementById('card-' + prefix + '-tags');
+    if (titleEl) titleEl.textContent = content.title;
+    if (descEl) descEl.textContent = content.desc;
+    if (tagsEl) {
+      tagsEl.innerHTML = content.tags.map(function (t) {
+        return '<span class="tag ' + t[0] + '">' + t[1] + '</span>';
+      }).join('');
+    }
+  }
+
+  function applyAccomplishments(profile) {
+    if (!profile) return;
+    renderAccomplishmentCard('origin', ORIGIN_CONTENT[profile.origin]);
+    renderAccomplishmentCard('identity', IDENTITY_CONTENT[profile.identity]);
+    renderAccomplishmentCard('famepath', FAME_PATH_CONTENT[profile.fame_path]);
+  }
+</script>
+
+    <script>
+      // paint the cached profile the instant its elements exist —
+      // same trick as the theme script up top, all synchronous, no
+      // network wait. runs before the badge/xp-bar/fill animation
+      // scripts below, so real profile data is already in place
+      // before anything else on the page moves.
+      (function () {
+        var p = window.__cachedProfile;
+        if (!p) return;
+        var handle = p.handle ? '@' + p.handle.replace(/^@/, '') : '@yourhandle';
+        document.getElementById('stage-player-handle').textContent = handle;
+        document.getElementById('stage-hero-handle').textContent = p.display_name || handle;
+        var occupations = {
+          'singer-rapper': 'Singer / Rapper',
+          'kpop-idol': 'K-pop Idol',
+          model: 'Model',
+          athlete: 'Athlete',
+          'actor-actress': 'Actor / Actress',
+          'group-member': 'Group Member',
+          'content-creator': 'Content Creator',
+          socialite: 'Socialite'
+        };
+        if (p.identity) {
+          document.getElementById('stage-hero-role').textContent = '✦ ' + (occupations[p.identity] || p.identity);
+        }
+        if (p.avatar_url) {
+          var preview = document.getElementById('profile-preview');
+          var placeholder = document.getElementById('placeholder-text');
+          preview.src = p.avatar_url;
+          preview.style.display = 'block';
+          placeholder.style.display = 'none';
+        }
+      })();
+    </script>
  
    
   <!-- Current Level -->
@@ -1034,52 +1224,60 @@
     <h2 class="section-title">ACCOMPLISHMENTS</h2>
     <span class="see-all">See All</span>
   </div>
-  <div class="accomplishment-card">
+  <div class="accomplishment-card" id="card-origin">
     <div class="card-header">
       <span class="card-subtitle">Who You Are</span>
-      <span class="category-pill">Identity</span>
+      <span class="category-pill">Origin</span>
     </div>
-    <h3 class="card-title"><span class="glow-star">✭</span> The Nepo Baby</h3>
-    <p class="card-description">
+    <h3 class="card-title"><span class="glow-star">✭</span> <span id="card-origin-title">The Nepo Baby</span></h3>
+    <p class="card-description" id="card-origin-desc">
       Born into the industry. Doors open differently for you — but so does the scrutiny. Every move is watched, every mistake amplified.
     </p>
-    <div class="tag-row">
+    <div class="tag-row" id="card-origin-tags">
       <span class="tag positive">+20% Brand Deals</span>
       <span class="tag negative">+30% Hate Comments</span>
       <span class="tag positive">Industry Access Early</span>
    </div>
   </div>
-  <div class="accomplishment-card">
+  <div class="accomplishment-card" id="card-identity">
     <div class="card-header">
       <span class="card-subtitle">What You Do</span>
-      <span class="category-pill">CAREER</span>
+      <span class="category-pill">Identity</span>
     </div>
-    <h3 class="card-title"><span class="glow-star">✭</span> Influencer</h3>
-    <p class="card-description">
+    <h3 class="card-title"><span class="glow-star">✭</span> <span id="card-identity-title">Influencer</span></h3>
+    <p class="card-description" id="card-identity-desc">
       Content, collabs, sponsorships, drama. The most parasocial career path.
     </p>
-    <div class="tag-row">
+    <div class="tag-row" id="card-identity-tags">
       <span class="tag positive">Social Fandoms Boosted</span>
       <span class="tag negative">+15% Fan Loyalty</span>
       <span class="tag negative">Cancel Risk</span>
    </div>
   </div>
-  <div class="accomplishment-card">
+  <div class="accomplishment-card" id="card-famepath">
     <div class="card-header">
-      <span class="card-subtitle">How You Got Here</span>
-      <span class="category-pill">ORIGIN</span>
+      <span class="card-subtitle">How You're Known</span>
+      <span class="category-pill">Fame Path</span>
     </div>
-    <h3 class="card-title"><span class="glow-star">✭</span> Reality TV</h3>
-    <p class="card-description">
+    <h3 class="card-title"><span class="glow-star">✭</span> <span id="card-famepath-title">Reality TV</span></h3>
+    <p class="card-description" id="card-famepath-desc">
       The whole country watched you before you dropped a single post.
     </p>
-    <div class="tag-row">
+    <div class="tag-row" id="card-famepath-tags">
       <span class="tag positive">+ 500 Starting Followers</span>
       <span class="tag negative">+ Mixed Public Opinion</span>
       <span class="tag negative">+ Drama Events</span>
    </div>
   </div>
  </div>
+
+ <script>
+   // paint the accomplishment cards from cache the instant their elements
+   // exist — same pattern as the hero-card script above. real content
+   // per origin/identity/fame_path, no jitter, no random numbers.
+   applyAccomplishments(window.__cachedProfile);
+ </script>
+
  <!-- ===== SKILLS PANEL ===== -->
 
 <hr class="section-divider"/>
@@ -1284,6 +1482,13 @@
             .eq('id', user.id);
 
           if (error) console.log('Could not save Stage profile image:', error);
+
+          try {
+            var existing = {};
+            var cached = localStorage.getItem('spotlight-profile');
+            if (cached) existing = JSON.parse(cached);
+            localStorage.setItem('spotlight-profile', JSON.stringify(Object.assign({}, existing, { avatar_url: avatarUrl })));
+          } catch (e2) {}
         };
         reader.readAsDataURL(file);
       }
@@ -1311,13 +1516,16 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+// cached version already painted synchronously above (see the inline
+// script right after the hero-card). this just refreshes it from the
+// network in the background and updates the shared cache for next time.
 async function loadStageProfile() {
   const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) return;
 
   const { data: profile, error } = await supabaseClient
     .from('profiles')
-    .select('display_name, handle, avatar_url, identity')
+    .select('display_name, handle, avatar_url, identity, origin, fame_path')
     .eq('id', user.id)
     .single();
 
@@ -1343,11 +1551,20 @@ async function loadStageProfile() {
     document.getElementById('stage-hero-role').textContent = `✦ ${occupations[profile.identity] || profile.identity}`;
   }
 
+  applyAccomplishments(profile);
+
   if (profile.avatar_url && !stageAvatarChanged) {
     profilePreview.src = profile.avatar_url;
     profilePreview.style.display = 'block';
     placeholderText.style.display = 'none';
   }
+
+  try {
+    var existing = {};
+    var cached = localStorage.getItem('spotlight-profile');
+    if (cached) existing = JSON.parse(cached);
+    localStorage.setItem('spotlight-profile', JSON.stringify(Object.assign({}, existing, profile)));
+  } catch (e) {}
 }
 
 loadStageProfile();
