@@ -23,15 +23,16 @@ const GEMINI_API_KEY_FALLBACK = Deno.env.get("GEMINI_API_KEY_FALLBACK");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-// same 5 bots used for AI posts -- kept as a separate constant here
-// (rather than importing) since edge functions deploy independently and
-// don't share module state with generate-ai-posts.
 const BOT_PROFILE_IDS = [
   "9c99876a-cef5-4f3c-b379-5e59bf6039b3",
   "698b21a4-238c-46b8-856d-171ff94ac60f",
   "b9a268ff-981b-4321-8bdf-8f20098aad3f",
   "a4ffb15c-7375-4ff5-bcb9-a2be9bc0797d",
   "42f10c9d-c485-4505-a827-662462e85633",
+  "03c6a846-f871-4c73-bfe6-754d87661c71",
+  "35a7eb25-8f70-43c3-82ab-e32028b87bce",
+  "a4970b5c-cd07-4182-a04d-f0614e0ca200",
+  "f661dc7b-6967-4c0c-9ab3-210e56404124",
 ];
 
 const REPLIES_PER_BATCH = 3;
