@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9A24B;
+    --gold-bright: #E8C77A;
+    --black: #0A0908;
+    --stage: #121110;
+    --card: #17151300;
+    --card-solid: #171512;
+    --line: #2A2620;
+    --ivory: #F3EFE6;
+    --muted: #948C7A;
+    --danger: #C1553F;
+  }
+
+  html.light {
+    --black: #F3EFE6;
+    --stage: #EAE4D4;
+    --card-solid: #FFFFFF;
+    --line: #DAD2BC;
+    --ivory: #1A1712;
+    --muted: #6B6455;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--black);
+    color: var(--ivory);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    transition: background 0.5s ease, color 0.5s ease;
+    display: flex;
+    justify-content: center;
+    padding: 48px 20px 80px;
+  }
+
+  .page {
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* --- Spotlight header --- */
+  .spotlight-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0 36px;
+    text-align: center;
+  }
+
+  .beam {
+    position: absolute;
+    top: -160px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px;
+    height: 420px;
+    background: radial-gradient(circle at 50% 30%, rgba(201,162,75,0.35), rgba(201,162,75,0.08) 45%, transparent 70%);
+    pointer-events: none;
+    filter: blur(2px);
+    transition: opacity 0.5s ease;
+  }
+
+  html.light .beam {
+    background: radial-gradient(circle at 50% 30%, rgba(201,162,75,0.45), rgba(201,162,75,0.12) 45%, transparent 70%);
+  }
+
+  .avatar {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #2b2620, #100f0d);
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 600;
+    color: var(--gold-bright);
+    box-shadow: 0 0 0 1px rgba(201,162,75,0.15), 0 20px 40px -18px rgba(201,162,75,0.5);
+    z-index: 1;
+  }
+
+  .name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 30px;
+    font-weight: 600;
+    margin: 18px 0 2px;
+    letter-spacing: 0.2px;
+    z-index: 1;
+  }
+
+  .handle {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    z-index: 1;
+  }
+
+  .handle span { color: var(--gold); }
+
+  /* --- Section --- */
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--muted);
+    margin: 32px 4px 10px;
+  }
+
+  .group {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+    background: linear-gradient(180deg, rgba(201,162,75,0.03), transparent);
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: rgba(201,162,75,0.06); }
+  .row.static { cursor: default; }
+  .row.static:hover { background: transparent; }
+
+  .row-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(201,162,75,0.1);
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  .icon svg { width: 16px; height: 16px; stroke: var(--gold); }
+
+  .row-title {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--ivory);
+  }
+
+  .row-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .chevron {
+    width: 16px; height: 16px;
+    stroke: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .value-pill {
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-right: 4px;
+  }
+
+  /* --- Toggle switch --- */
+  .switch {
+    position: relative;
+    width: 46px;
+    height: 26px;
+    border-radius: 100px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.3s ease;
+  }
+
+  .switch.on { background: rgba(201,162,75,0.25); border-color: var(--gold); }
+
+  .switch-dot {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--muted);
+    transition: transform 0.3s cubic-bezier(.4,0,.2,1), background 0.3s ease;
+  }
+
+  .switch.on .switch-dot {
+    transform: translateX(20px);
+    background: var(--gold-bright);
+    box-shadow: 0 0 10px rgba(232,199,122,0.6);
+  }
+
+  /* --- Language modal --- */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(2px);
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    width: 100%;
+    max-width: 480px;
+    background: var(--card-solid);
+    border: 1px solid var(--line);
+    border-bottom: none;
+    border-radius: 18px 18px 0 0;
+    padding: 8px 0 10px;
+    animation: slideUp 0.28s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-handle {
+    width: 36px;
+    height: 4px;
+    background: var(--line);
+    border-radius: 4px;
+    margin: 10px auto 6px;
+  }
+
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 0 12px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .lang-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 22px;
+    font-size: 14.5px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--line);
+  }
+  .lang-option:last-of-type { border-bottom: none; }
+  .lang-option:hover { background: rgba(201,162,75,0.06); }
+  .lang-option .check { stroke: var(--gold); width: 16px; height: 16px; opacity: 0; }
+  .lang-option.selected .check { opacity: 1; }
+  .lang-option.selected .lang-option-name { color: var(--gold-bright); }
+
+  .modal-cancel {
+    text-align: center;
+    padding: 14px 0 4px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+  }
+
+  /* --- Danger zone --- */
+  .danger-text { color: var(--danger); }
+  .icon.danger { background: rgba(193,85,63,0.1); }
+  .icon.danger svg { stroke: var(--danger); }
+
+  /* --- World log --- */
+  .log-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-name { color: var(--ivory); font-weight: 500; }
+  .log-meta { color: var(--muted); font-size: 11.5px; }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  footer span { color: var(--gold); }
+
+  /* Focus visibility */
+  .row:focus-visible, .switch:focus-visible {
+    outline: 1px solid var(--gold);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="spotlight-wrap">
+    <div class="beam"></div>
+    <div class="avatar">M</div>
+    <div class="name">Mira Voss</div>
+    <div class="handle">@<span>mira.voss</span> · on spotlight since 2026</div>
+  </div>
+
+  <div class="section-label">Account</div>
+  <div class="group">
+    <div class="row" tabindex="0" onclick="alert('Open edit profile')">
+      <div class="row-left">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></div>
+        <div>
+          <div class="row-title">Edit profile</div>
+          <div class="row-sub">Photo, bio, links</div>
+        </div>
+      </div>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
+    <div class="row static">
+      <div class="row-left">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-6 8-6s8 2 8 6"/></svg></div>
+        <div>
+          <div class="row-title">Username</div>
+          <div class="row-sub">mira.voss</div>
+        </div>
+      </div>
+      <div class="value-pill">Change</div>
+    </div>
+  </div>
+
+  <div class="section-label">Appearance</div>
+  <div class="group">
+    <div class="row static">
+      <div class="row-left">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></div>
+        <div>
+          <div class="row-title">Dark mode</div>
+          <div class="row-sub" id="mode-sub">Stage lights dimmed</div>
+        </div>
+      </div>
+      <div class="switch on" id="theme-switch" tabindex="0" onclick="toggleTheme()"><div class="switch-dot"></div></div>
+    </div>
+
+    <div class="row" tabindex="0" onclick="openLangModal()">
+      <div class="row-left">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg></div>
+        <div>
+          <div class="row-title">Change language</div>
+          <div class="row-sub" id="lang-sub">English</div>
+        </div>
+      </div>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+  </div>
+
+  <div class="section-label">World Log</div>
+  <div class="group">
+    <div class="log-item">
+      <div class="log-name">Harry Potter</div>
+      <div class="log-meta">Jul 20 · 42 min</div>
+    </div>
+    <div class="log-item">
+      <div class="log-name">Love Island</div>
+      <div class="log-meta">Jul 18 · 17 min</div>
+    </div>
+    <div class="log-item">
+      <div class="log-name">Custom World</div>
+      <div class="log-meta">Jul 14 · 63 min</div>
+    </div>
+    <div class="row" tabindex="0" onclick="alert('View full world log')" style="justify-content:center;">
+      <div class="row-title" style="color:var(--gold); font-size:13px;">View full log</div>
+    </div>
+  </div>
+
+  <div class="section-label">Session</div>
+  <div class="group">
+    <div class="row" tabindex="0" onclick="alert('Logged out')">
+      <div class="row-left">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg></div>
+        <div class="row-title">Log out</div>
+      </div>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+
+    <div class="row" tabindex="0" onclick="confirmDelete()">
+      <div class="row-left">
+        <div class="icon danger"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></div>
+        <div class="row-title danger-text">Delete account</div>
+      </div>
+      <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="stroke:var(--danger)"><path d="M9 6l6 6-6 6"/></svg>
+    </div>
+  </div>
+
+
+</div>
+
+<div class="modal-overlay" id="lang-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Change language</div>
+    <div id="lang-options">
+      <div class="lang-option selected" onclick="selectLang(this,'English')">
+        <span class="lang-option-name">English</span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="lang-option" onclick="selectLang(this,'Español')">
+        <span class="lang-option-name">Español</span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="lang-option" onclick="selectLang(this,'Français')">
+        <span class="lang-option-name">Français</span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="lang-option" onclick="selectLang(this,'Deutsch')">
+        <span class="lang-option-name">Deutsch</span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="lang-option" onclick="selectLang(this,'日本語')">
+        <span class="lang-option-name">日本語</span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+      <div class="lang-option" onclick="selectLang(this,'Português')">
+        <span class="lang-option-name">Português</span>
+        <svg class="check" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      </div>
+    </div>
+    <div class="modal-cancel" onclick="closeLangModal()">Cancel</div>
+  </div>
+</div>
+
+<script>
+  function toggleTheme() {
+    const html = document.documentElement;
+    const sw = document.getElementById('theme-switch');
+    const sub = document.getElementById('mode-sub');
+    html.classList.toggle('light');
+    sw.classList.toggle('on');
+    if (html.classList.contains('light')) {
+      sub.textContent = 'House lights up';
+    } else {
+      sub.textContent = 'Stage lights dimmed';
+    }
+  }
+
+  function openLangModal() {
+    document.getElementById('lang-modal').classList.add('open');
+  }
+
+  function closeLangModal() {
+    document.getElementById('lang-modal').classList.remove('open');
+  }
+
+  function selectLang(el, name) {
+    document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('lang-sub').textContent = name;
+    setTimeout(closeLangModal, 200);
+  }
+
+  document.getElementById('lang-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeLangModal();
+  });
+</script>
+
+</body>
+</html>
