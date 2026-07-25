@@ -318,7 +318,7 @@ function changeAvatar (){
     const file = e.target.files[0];
     if (file) {
       avatarImg.src = URL.createObjectURL(file);
-      localStorage.setItem('savedAvatar', avatarImg.src);
+      localStorage.setItem('savedAvatar', avatarImg);
     }
   });
 changeAvatar();
@@ -327,7 +327,6 @@ changeAvatar();
 saveBtn.addEventListener('click', (e) => {
   e.preventDefault(); // Securely blocks the link from navigating early
 
-  // Grab the text values using your exact variable names
   const profileData = {
     name: name.value,
     handle: handle.value,
