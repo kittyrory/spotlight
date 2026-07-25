@@ -591,7 +591,22 @@
   let currentProfile = null;
 
   async function loadIconProfile() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
+        // 1. ADD THIS LOCAL CHECK AT THE TOP:
+    const localData = localStorage.getItem('savedProfile');
+    if (localData) {
+      const parsedLocal = JSON.parse(localData);
+      
+      const mockProfile = {
+        display_name: parsedLocal.name,
+        handle: parsedLocal.handle,
+        bio: parsedLocal.bio,
+        avatar_url: localStorage.getItem('savedAvatar') || null,
+        header_url: localStorage.getItem('savedBanner') || null,
+        applyProfileToDOM(mockProfile);
+      return;
+    }
+
+      const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return;
 
     const { data: profile, error } = await supabaseClient
@@ -628,7 +643,7 @@
       document.getElementById('fameHeaderImg').src = profile.header_url;
     }
   }
-
+  }
   loadIconProfile();
 </script>
 
@@ -945,6 +960,7 @@
     editStatus.className = 'modal-status success';
     setTimeout(closeEditModal, 600);
   });
+
 </script>
 </body>
 </html>
