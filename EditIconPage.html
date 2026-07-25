@@ -298,6 +298,14 @@ function changeBanner (){
  bannerFile.click();
 });
 }
+  bannerFile.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      bannerImag.src = URL.createObjectURL(file);
+      localStorage.setItem('savedBanner', bannerImag.src);
+    }
+  });
+
 changeBanner();
 
 //function to change avatar image//
@@ -306,6 +314,13 @@ function changeAvatar (){
   avatarFile.click();
   });
 }
+ avatarFile.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      avatarImg.src = URL.createObjectURL(file);
+      localStorage.setItem('savedAvatar', avatarImg.src);
+    }
+  });
 changeAvatar();
 
 //update changes//
