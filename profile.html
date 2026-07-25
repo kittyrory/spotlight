@@ -40,6 +40,7 @@
       --back-hover-color: #808080;
       --toggle-border: rgba(255, 255, 255, 0.25);
       --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      --accent: #e2bb00;
     }
 
     [data-theme="light"] {
@@ -62,6 +63,7 @@
       --back-hover-color: #666666;
       --toggle-border: rgba(0, 0, 0, 0.25);
       --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      --accent: #c9a300;
     }
 
     #theme-toggle {
@@ -371,7 +373,7 @@
       margin-top: 24px;
     }
 
-    .bio-header {
+    .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -457,6 +459,121 @@
       background-color: var(--surface-hover) !important;
       transition: all 0.2s ease;
     }
+
+    .per-selection {
+      width: 100%;
+      margin-top: 24px;
+      display: block !important;
+    }
+
+    .per-title {
+      color: var(--text);
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    /* --------------- */
+
+    .slider-container {
+      background-color: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 16px 14px;
+      margin-top: 10px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  
+    .per-label-edge {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted2);
+      white-space: nowrap;
+    }
+  
+    .per-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      border-radius: 4px;
+      background: linear-gradient(to right,
+        var(--accent) 0%,
+        var(--accent) calc((var(--val, 6) - 1) / 10 * 100%),
+        var(--muted) calc((var(--val, 6) - 1) / 10 * 100%),
+        var(--muted) 100%);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .per-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      transition: transform 0.15s;
+      margin-top: calc((4px - 18px) / 2);
+    }
+
+    .per-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .per-slider::-moz-range-track {
+      height: 4px;
+      border-radius: 4px;
+      background: var(--muted);
+    }
+
+    .per-slider::-moz-range-progress {
+      height: 4px;
+      border-radius: 4px;
+      background: var(--accent);
+    }
+
+    .per-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: 2px solid var(--bg);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .per-slider::-moz-range-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .per-slider:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+  
+    .per-value {
+      margin-top: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--muted2);
+    }
+  
+    .per-value span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    /* ------------------ */
 
     .cont {
       background-color: #e2bb00;
@@ -557,10 +674,27 @@
 
   <div class="section-divider"></div>
 
-  <div class="bio-selection">
-    <div class="bio-header">
-      <label class="bio-title">Your Bio</label>
+  <div class="per-selection">
+    <div class="header">
+      <label class="per-title">Personality</label>
       <span class="gameplay-badge">⚡AFFECTS GAMEPLAY</span>
+    </div>
+
+      <div class="slider-container">
+        <div class="slider-row">
+          <span class="per-label-edge">Compassionate</span>
+          <input type="range" id="perSlider" min="1" max="11" value="6" class="per-slider">
+          <span class="per-label-edge">Vindictive</span>
+        </div>
+        <div class="per-value">
+          Personality: <span id="perValue">Independent</span>
+        </div>
+      </div>
+    </div>
+
+  <div class="bio-selection">
+    <div class="header">
+      <label class="bio-title">Your Bio</label>
     </div>
 
     <div class="bio-box-container" id="bio-container">
@@ -578,7 +712,6 @@
       <span>authentic</span>...
     </p>
     <p class="error-msg" id="bio-error">Write something - tell the world who you are!</p>
-  </div>
 
   <button class="cont" id="continue-btn">Continue →</button>
   <button class="back" id="back-btn">← Back</button>
@@ -738,6 +871,32 @@
     document.getElementById('back-btn').addEventListener('click', () => {
       window.location.href = 'origin.html';
     });
+
+    // personality slider
+    const perSlider = document.getElementById('perSlider');
+    const perValue = document.getElementById('perValue');
+
+    const perLabels = {
+      1: 'Compassionate',
+      2: 'Kind',
+      3: 'Patient',
+      4: 'Honest',
+      5: 'Pragmatic',
+      6: 'Independent',
+      7: 'Stubborn',
+      8: 'Competitive',
+      9: 'Arrogant',
+      10: 'Cynical',
+      11: 'Vindictive'
+    };
+
+    function updatePerLabel() {
+      perValue.textContent = perLabels[perSlider.value];
+      perSlider.style.setProperty('--val', perSlider.value);
+    }
+
+    perSlider.addEventListener('input', updatePerLabel);
+    updatePerLabel();
 
     //bio dictionary
   const dictionaryKeyWords = {
