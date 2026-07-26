@@ -403,9 +403,17 @@
         return;
       }
 
-      const destination = await getPostLoginDestination();
-      window.location.href = destination;
+      if (signUpData.user) {
+  const { error: profileError } = await supabaseClient
+    .from('profiles')
+    .insert({
+      id: signUpData.user.id,
+      username: usernameVal,
+      display_name: usernameVal,
+      handle: usernameVal,
+      avatar_url: null
     });
+}
   </script>
 </body>
 </html>
