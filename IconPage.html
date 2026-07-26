@@ -584,49 +584,8 @@
 <script src="scripts/theme.js"></script>
 
 <script>
-   /* ---------- load real profile data ---------- */
-   // cached version already painted synchronously above (see the inline
-   // script right after the fame-bio element). this just refreshes it
-   // from the network in the background and updates the cache for next time.
+  /* ---------- load real profile data ---------- */
   let currentProfile = null;
-
-  async function loadIconProfile() {
-        // 1. ADD THIS LOCAL CHECK AT THE TOP:
-    const localData = localStorage.getItem('savedProfile');
-    if (localData) {
-      const parsedLocal = JSON.parse(localData);
-      
-      const mockProfile = {
-        display_name: parsedLocal.name,
-        handle: parsedLocal.handle,
-        bio: parsedLocal.bio,
-        avatar_url: localStorage.getItem('savedAvatar') || null,
-        header_url: localStorage.getItem('savedBanner') || null,
-        applyProfileToDOM(mockProfile);
-      return;
-    }
-
-      const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return;
-
-    const { data: profile, error } = await supabaseClient
-      .from('profiles')
-      .select('display_name, handle, bio, avatar_url, header_url')
-      .eq('id', user.id)
-      .single();
-
-    if (error || !profile) {
-      if (error) console.error('Could not load profile:', error);
-      return;
-    }
-
-    currentProfile = profile;
-    applyProfileToDOM(profile);
-
-    try {
-      localStorage.setItem('spotlight-profile', JSON.stringify(profile));
-    } catch (e) {}
-  }
 
   function applyProfileToDOM(profile) {
     const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
@@ -643,10 +602,85 @@
       document.getElementById('fameHeaderImg').src = profile.header_url;
     }
   }
+
+  async function loadIconProfile() {
+    // 1. Check local cache first
+    const localData = localStorage.getItem('savedProfile');
+    if (localData) {
+      try {
+        const parsedLocal = JSON.parse(localData);
+        const mockProfile = {
+          display_name: parsedLocal.name,
+          handle: parsedLocal.handle,
+          bio: parsedLocal.bio,
+          avatar_url: localStorage.getItem('savedAvatar') || null,
+          header_url: localStorage.getItem('savedBanner') || null,
+        };
+        applyProfileToDOM(mockProfile);
+        return;
+      } catch (e) {
+        console.warn('Could not parse cached profile:', e);
+      }
+    }
+
+    // 2. Fetch from Supabase
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      console.error('No signed-in user:', userError);
+      return;
+    }
+
+    const { data: profile, error } = await supabaseClient
+      .from('profiles')
+      .select('display_name, handle, bio, avatar_url, header_url')
+      .eq('id', user.id)
+      .single();
+
+    // 3. If no profile exists, create one
+    if (error || !profile) {
+      if (error && error.code === 'PGRST116') {
+        // No profile row found — create one from auth metadata
+        const username = user.user_metadata?.username || user.email?.split('@')[0] || 'user';
+        const newProfile = {
+          id: user.id,
+          display_name: username,
+          handle: username,
+          bio: '',
+          avatar_url: null,
+          header_url: null,
+        };
+
+        const { error: insertError } = await supabaseClient
+          .from('profiles')
+          .insert(newProfile);
+
+        if (!insertError) {
+          // Remove id before applying to DOM
+          delete newProfile.id;
+          currentProfile = newProfile;
+          applyProfileToDOM(newProfile);
+          try {
+            localStorage.setItem('spotlight-profile', JSON.stringify(newProfile));
+          } catch (e) {}
+          return;
+        }
+      }
+
+      console.error('Could not load profile:', error);
+      return;
+    }
+
+    // 4. Profile loaded successfully
+    currentProfile = profile;
+    applyProfileToDOM(profile);
+    try {
+      localStorage.setItem('spotlight-profile', JSON.stringify(profile));
+    } catch (e) {}
   }
+
+  // Load the profile when the page loads
   loadIconProfile();
 </script>
-
 <script>
   /* ---------- back button: return to whichever page the user came from ---------- */
   document.getElementById('backBtn').addEventListener('click', () => {
