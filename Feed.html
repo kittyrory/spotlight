@@ -9,10 +9,10 @@
 
   <script>
     window.addEventListener('error', function (e) {
-      alert('DEBUG ERROR: ' + e.message + '\n' + (e.filename || '') + ':' + (e.lineno || ''));
+      console.error('DEBUG ERROR:', e.message, (e.filename || '') + ':' + (e.lineno || ''));
     });
     window.addEventListener('unhandledrejection', function (e) {
-      alert('DEBUG PROMISE REJECTION: ' + (e.reason?.message || e.reason));
+      console.error('DEBUG PROMISE REJECTION:', e.reason?.message || e.reason);
     });
   </script>
   <script>
@@ -857,10 +857,17 @@
       const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
 
       // bot authors live in a separate table since they aren't real
-      // auth users. fetch those for any AI posts and fold them into the
-      // same lookup keyed by post id (not user id, since bot ids and real
-      // profile ids come from different tables and could theoretically clash)
-      const botUserIds = [...new Set(posts.map((post) => post.bot_user_id).filter(Boolean))];
+      // auth users. fetch those for any AI posts AND any AI replies (reply
+      // bots are a bigger pool than post bots, so a bot id can show up on
+      // a reply without ever having authored a post in this batch -- must
+      // collect from both or lookups for reply-only bots silently miss)
+      // and fold them into the same lookup keyed by post id (not user id,
+      // since bot ids and real profile ids come from different tables and
+      // could theoretically clash)
+      const botUserIds = [...new Set([
+        ...posts.map((post) => post.bot_user_id).filter(Boolean),
+        ...(replies || []).map((reply) => reply.bot_user_id).filter(Boolean)
+      ])];
       let botProfileById = new Map();
       if (botUserIds.length) {
         const { data: botProfiles, error: botProfileError } = await supabaseClient
@@ -941,7 +948,7 @@
     // also enforced server-side since a client-side check alone can be bypassed
     async function generateAiPosts(reason, currentUser) {
       if (!currentUser) return;
-      alert('DEBUG: generateAiPosts called, reason=' + reason);
+      console.log('generateAiPosts called, reason=' + reason);
 
       const now = Date.now();
       if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
@@ -961,7 +968,6 @@
           .single();
         if (profileError) {
           console.error('Could not load profile context:', profileError);
-          alert('DEBUG: profile fetch error: ' + JSON.stringify(profileError));
         }
 
         const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
@@ -981,7 +987,7 @@
             worlds,
           }
         });
-        alert('DEBUG: invoke returned, error=' + JSON.stringify(error));
+        console.log('generate-ai-posts invoke returned, error=' + JSON.stringify(error));
         if (error) {
           console.error('Could not generate AI posts:', error);
           return;
@@ -990,7 +996,6 @@
         await loadUserPosts(currentUser);
       } catch (error) {
         console.error('Could not generate AI posts:', error);
-        alert('DEBUG: caught exception: ' + (error?.message || error));
       }
     }
 
@@ -1007,7 +1012,6 @@
         .single();
       if (error) {
         console.error('Could not check profile ai_posts_seeded:', error);
-        alert('DEBUG: ai_posts_seeded check error: ' + JSON.stringify(error));
         return;
       }
       if (data?.ai_posts_seeded) return;

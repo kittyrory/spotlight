@@ -197,23 +197,54 @@ async function callGemini(userMessage: string): Promise<{ content: string }[]> {
   }
 }
 
+// builds the prompt for one bot's reply. Crucially, this now tells the
+// bot (a) who actually wrote the original post, so a bot that ISN'T the
+// poster doesn't answer questions as if it had firsthand knowledge of
+// something it never posted, and (b) whether the latest message was
+// actually directed at it (@mentioned) vs. just part of the general
+// thread it's reacting to.
 function buildReplyPrompt(
   postContent: string,
+  postAuthorName: string | null,
+  isPostAuthor: boolean,
   threadReplies: { content: string; author: string }[],
   bot: BotProfile,
-  latestUserMessage: string | null
+  latestUserMessage: string | null,
+  isDirectlyAddressed: boolean
 ): string {
   const lines: string[] = [];
   lines.push(`You are ${bot.display_name} (@${bot.handle.replace(/^@/, "")}), replying on Spotlight.`);
-  lines.push(`Original post: "${postContent}"`);
+  lines.push(`Original post (by ${postAuthorName ?? "another user"}): "${postContent}"`);
 
   if (threadReplies.length) {
     lines.push("Thread so far:");
     threadReplies.forEach((r) => lines.push(`- ${r.author}: ${r.content}`));
   }
 
+  if (isPostAuthor) {
+    lines.push(
+      "You are the original poster. You have firsthand knowledge of what you posted " +
+      "and can answer questions about it directly and specifically."
+    );
+  } else {
+    lines.push(
+      "You did NOT write the original post and have no firsthand knowledge of it beyond " +
+      "what's written above. Do not invent specific details (colors, exact events, feelings " +
+      "the poster didn't mention) as if you experienced them yourself. React the way a " +
+      "bystander in the thread would -- agree, joke, ask your own question, or add a general " +
+      "reaction -- without claiming personal experience of the post's contents."
+    );
+  }
+
   if (latestUserMessage) {
-    lines.push(`Respond specifically to this latest message: "${latestUserMessage}"`);
+    if (isDirectlyAddressed) {
+      lines.push(`This message is directed at you specifically -- respond to it directly: "${latestUserMessage}"`);
+    } else {
+      lines.push(
+        `The latest message in the thread is: "${latestUserMessage}". You were not ` +
+        `specifically addressed, so only react to it if it makes sense for you to jump in.`
+      );
+    }
   }
 
   lines.push("Generate 1 reply now.");
@@ -241,9 +272,12 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // NOTE: also fetching user_id (the bot who actually made the post) --
+    // previously this only grabbed id/content, so no reply prompt ever
+    // knew who the original poster was.
     const { data: post, error: postError } = await supabase
       .from("posts")
-      .select("id, content")
+      .select("id, content, user_id")
       .eq("id", postId)
       .single();
     if (postError) throw postError;
@@ -263,6 +297,9 @@ Deno.serve(async (req) => {
     if (botsError) throw botsError;
     const botsList = (bots || []) as BotProfile[];
     const botById = new Map(botsList.map((b) => [b.id, b]));
+
+    const postAuthor = post.user_id ? botById.get(post.user_id) : undefined;
+    const postAuthorName = postAuthor?.display_name ?? null;
 
     // how many times has each bot already replied in this thread
     const replyCountByBot = new Map<string, number>();
@@ -302,17 +339,39 @@ Deno.serve(async (req) => {
 
     const insertedRows = [];
     for (const bot of replyBots) {
-      const prompt = buildReplyPrompt(post.content, threadForPrompt, bot, latestUserMessage);
-      const replies = await callGemini(prompt);
-      const content = replies[0]?.content;
-      if (!content) continue;
+      const isPostAuthor = post.user_id === bot.id;
+      const isDirectlyAddressed = mentionedBotIds.includes(bot.id);
+      const prompt = buildReplyPrompt(
+        post.content,
+        postAuthorName,
+        isPostAuthor,
+        threadForPrompt,
+        bot,
+        latestUserMessage,
+        isDirectlyAddressed
+      );
 
-      insertedRows.push({
-        post_id: postId,
-        bot_user_id: bot.id,
-        content,
-        is_ai_generated: true,
-      });
+      try {
+        const replies = await callGemini(prompt);
+        const content = replies[0]?.content;
+        if (!content) {
+          console.error(`Bot ${bot.handle} (${bot.id}) returned no usable content, skipping`);
+          continue;
+        }
+
+        insertedRows.push({
+          post_id: postId,
+          bot_user_id: bot.id,
+          content,
+          is_ai_generated: true,
+        });
+      } catch (err) {
+        // previously a failed call here just silently vanished with no
+        // trace -- if this happened to be the @mentioned bot, it would
+        // look like "the tagged bot never replied" with zero clue why.
+        console.error(`Reply generation failed for bot ${bot.handle} (${bot.id}):`, err);
+        continue;
+      }
     }
 
     if (!insertedRows.length) {
