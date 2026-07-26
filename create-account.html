@@ -330,7 +330,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="scripts/supabase.js"></script>
   <script src="scripts/theme.js"></script>
-  <script>
+<script>
+  // 👇 ADD THIS — Initialize Supabase directly
+  const SUPABASE_URL = 'https://qhcohcxmxndexkhexbst.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_mX0YOWlolguEx3j0uCjtmQ_VlMdEYhz';
+  
+  // Try to use existing supabaseClient, or create a new one
+  if (typeof supabaseClient === 'undefined') {
+    console.log('Creating supabaseClient from page initialization');
+    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  } else {
+    console.log('Using existing supabaseClient');
+  }
+
+  // Test the connection
+  console.log('🔌 Supabase client ready:', supabaseClient);
+</script>
+
+<script src="scripts/supabase.js"></script>
+
+<script>
+  // Your signup code
   const usernameInput = document.getElementById('username');
   const passwordInput = document.getElementById('password');
   const usernameError = document.getElementById('username-error');
@@ -354,7 +374,7 @@
   passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
 
   createBtn.addEventListener('click', async (e) => {
-    e.preventDefault(); // 👈 ADD THIS to prevent any default behavior
+    e.preventDefault();
 
     const usernameVal = usernameInput.value.trim();
     const passwordVal = passwordInput.value.trim();
@@ -431,7 +451,6 @@
         return;
       }
 
-      // Navigate to identity page
       window.location.href = 'identity.html';
 
     } catch (err) {
