@@ -331,112 +331,116 @@
   <script src="scripts/supabase.js"></script>
   <script src="scripts/theme.js"></script>
   <script>
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
-    const usernameError = document.getElementById('username-error');
-    const passwordError = document.getElementById('password-error');
-    const createBtn     = document.getElementById('create-btn');
+  const usernameInput = document.getElementById('username');
+  const passwordInput = document.getElementById('password');
+  const usernameError = document.getElementById('username-error');
+  const passwordError = document.getElementById('password-error');
+  const createBtn = document.getElementById('create-btn');
 
-    function clearError(input, errorEl) {
-      input.classList.remove('error');
-      errorEl.classList.remove('visible');
+  function clearError(input, errorEl) {
+    input.classList.remove('error');
+    errorEl.classList.remove('visible');
+  }
+
+  function showError(input, errorEl, message) {
+    input.classList.remove('error');
+    void input.offsetWidth;
+    input.classList.add('error');
+    if (message) errorEl.textContent = message;
+    errorEl.classList.add('visible');
+  }
+
+  usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
+  passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
+
+  createBtn.addEventListener('click', async (e) => {
+    e.preventDefault(); // 👈 ADD THIS to prevent any default behavior
+
+    const usernameVal = usernameInput.value.trim();
+    const passwordVal = passwordInput.value.trim();
+
+    let hasError = false;
+
+    if (!usernameVal) {
+      showError(usernameInput, usernameError, 'Enter your username first');
+      hasError = true;
     }
 
-    function showError(input, errorEl, message) {
-      // remove then re-add to re-trigger the shake animation
-      input.classList.remove('error');
-      void input.offsetWidth;
-      input.classList.add('error');
-      if (message) errorEl.textContent = message;
-      errorEl.classList.add('visible');
+    if (!passwordVal) {
+      showError(passwordInput, passwordError, "Don't forget your password");
+      hasError = true;
     }
 
-    // clear errors as the user types
-    usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
-    passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
-
-    createBtn.addEventListener('click', async (e) => {
-      const usernameVal = usernameInput.value.trim();
-      const passwordVal = passwordInput.value.trim();
-
-      let hasError = false;
-
+    if (hasError) {
       if (!usernameVal) {
-        showError(usernameInput, usernameError, 'Enter your username first');
-        hasError = true;
+        usernameInput.focus();
+      } else {
+        passwordInput.focus();
       }
+      return;
+    }
 
-      if (!passwordVal) {
-        showError(passwordInput, passwordError, "Don't forget your password");
-        hasError = true;
-      }
+    createBtn.disabled = true;
+    createBtn.textContent = 'Creating...';
 
-      if (hasError) {
-        if (!usernameVal) {
-          usernameInput.focus();
-        } else {
-          passwordInput.focus();
+    const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
+
+    console.log('📧 Signing up with:', fakeEmail);
+
+    try {
+      const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+        email: fakeEmail,
+        password: passwordVal,
+        options: {
+          data: { username: usernameVal }
         }
+      });
+
+      if (signUpError) {
+        console.error('Signup error:', signUpError);
+        showError(usernameInput, usernameError, 'That username is already taken');
+        createBtn.disabled = false;
+        createBtn.textContent = 'Join now';
+        usernameInput.focus();
         return;
       }
 
-      createBtn.disabled = true;
-      createBtn.textContent = 'Creating...';
+      if (signUpData.user) {
+        console.log('✅ User created:', signUpData.user.id);
 
-      // supabase auth is email-based under the hood, but we only want
-      // username + password on the frontend. so we turn the username into
-      // a fake email the user never sees, and use that for auth.
-      // username also gets passed in as metadata so the db trigger can
-      // pick it up and create the matching profiles row.
-     const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
+        const { error: profileError } = await supabaseClient
+          .from('profiles')
+          .insert({
+            id: signUpData.user.id,
+            username: usernameVal,
+            display_name: usernameVal,
+            handle: usernameVal,
+            avatar_url: null
+          });
 
-// ✅ Capture the data from signUp()
-const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
-  email: fakeEmail,
-  password: passwordVal,
-  options: {
-    data: { username: usernameVal }
-  }
-});
+        if (profileError) {
+          console.error('❌ Profile creation failed:', profileError);
+        } else {
+          console.log('✅ Profile created successfully');
+        }
+      } else {
+        console.warn('⚠️ User data not available — email confirmation might be required');
+        createBtn.disabled = false;
+        createBtn.textContent = 'Join now';
+        showError(usernameInput, usernameError, 'Check your email to confirm your account');
+        return;
+      }
 
-createBtn.disabled = false;
-createBtn.textContent = 'Join now';
+      // Navigate to identity page
+      window.location.href = 'identity.html';
 
-if (signUpError) {
-  console.error('Signup error:', signUpError);
-  showError(usernameInput, usernameError, 'That username is already taken');
-  usernameInput.focus();
-  return;
-}
-
-// ✅ Check if the user was created
-if (signUpData.user) {
-  console.log('User created:', signUpData.user.id);
-  
-  // ✅ Insert the profile row
-  const { error: profileError } = await supabaseClient
-    .from('profiles')
-    .insert({
-      id: signUpData.user.id,
-      username: usernameVal,
-      display_name: usernameVal,
-      handle: usernameVal,
-      avatar_url: null
-    });
-
-  if (profileError) {
-    console.error('Profile creation failed:', profileError);
-    // Still proceed — user is created, but profile failed
-    // You might want to show a warning here
-  } else {
-    console.log('Profile created successfully');
-  }
-} else {
-  console.warn('User data not available — email confirmation might be required');
-}
-
-// Navigate to identity page
-window.location.href = 'identity.html';
+    } catch (err) {
+      console.error('💥 Unexpected error:', err);
+      createBtn.disabled = false;
+      createBtn.textContent = 'Join now';
+      showError(usernameInput, usernameError, 'Something went wrong. Please try again.');
+    }
+  });
 </script>
 </body>
 </html>
