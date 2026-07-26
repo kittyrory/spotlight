@@ -388,28 +388,55 @@
       // a fake email the user never sees, and use that for auth.
       // username also gets passed in as metadata so the db trigger can
       // pick it up and create the matching profiles row.
-      const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
+     const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
 
-      const { error: signUpError } = await supabaseClient.auth.signUp({
-        email: fakeEmail,
-        password: passwordVal,
-        options: {
-          data: { username: usernameVal }
-        }
-      });
+// ✅ Capture the data from signUp()
+const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
+  email: fakeEmail,
+  password: passwordVal,
+  options: {
+    data: { username: usernameVal }
+  }
+});
 
-      createBtn.disabled = false;
-      createBtn.textContent = 'Join now';
+createBtn.disabled = false;
+createBtn.textContent = 'Join now';
 
-      if (signUpError) {
-        console.error('Signup error:', signUpError);
-        showError(usernameInput, usernameError, 'That username is already taken');
-        usernameInput.focus();
-        return;
-      }
+if (signUpError) {
+  console.error('Signup error:', signUpError);
+  showError(usernameInput, usernameError, 'That username is already taken');
+  usernameInput.focus();
+  return;
+}
 
-      window.location.href = 'identity.html';
+// ✅ Check if the user was created
+if (signUpData.user) {
+  console.log('User created:', signUpData.user.id);
+  
+  // ✅ Insert the profile row
+  const { error: profileError } = await supabaseClient
+    .from('profiles')
+    .insert({
+      id: signUpData.user.id,
+      username: usernameVal,
+      display_name: usernameVal,
+      handle: usernameVal,
+      avatar_url: null
     });
-  </script>
+
+  if (profileError) {
+    console.error('Profile creation failed:', profileError);
+    // Still proceed — user is created, but profile failed
+    // You might want to show a warning here
+  } else {
+    console.log('Profile created successfully');
+  }
+} else {
+  console.warn('User data not available — email confirmation might be required');
+}
+
+// Navigate to identity page
+window.location.href = 'identity.html';
+</script>
 </body>
 </html>
