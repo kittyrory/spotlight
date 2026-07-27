@@ -331,105 +331,90 @@
   <script src="scripts/supabase.js"></script>
   <script src="scripts/setup-router.js"></script>
   <script src="scripts/theme.js"></script>
-<script>
-  const SUPABASE_URL = 'https://qhcohcxmxndexkhexbst.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_mX0YOWlolguEx3j0uCjtmQ_VlMdEYhz';
-  
-  if (typeof supabaseClient === 'undefined') {
-    console.log('Creating supabaseClient for login page');
-    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-  
-  console.log('🔌 Supabase client ready:', supabaseClient);
-</script>
+  <script>
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const usernameError = document.getElementById('username-error');
+    const passwordError = document.getElementById('password-error');
+    const signInBtn    = document.getElementById('sign-in-btn');
 
-<script src="scripts/supabase.js"></script>
-<script src="scripts/setup-router.js"></script>
-<script src="scripts/theme.js"></script>
-
-<script>
-  const usernameInput = document.getElementById('username');
-  const passwordInput = document.getElementById('password');
-  const usernameError = document.getElementById('username-error');
-  const passwordError = document.getElementById('password-error');
-  const signInBtn = document.getElementById('sign-in-btn');
-
-  function clearError(input, errorEl) {
-    input.classList.remove('error');
-    errorEl.classList.remove('visible');
-  }
-
-  function showError(input, errorEl, message) {
-    input.classList.remove('error');
-    void input.offsetWidth;
-    input.classList.add('error');
-    if (message) errorEl.textContent = message;
-    errorEl.classList.add('visible');
-  }
-
-  usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
-  passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
-
-  signInBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    const usernameVal = usernameInput.value.trim();
-    const passwordVal = passwordInput.value.trim();
-
-    let hasError = false;
-
-    if (!usernameVal) {
-      showError(usernameInput, usernameError, 'Enter your username first');
-      hasError = true;
+    function clearError(input, errorEl) {
+      input.classList.remove('error');
+      errorEl.classList.remove('visible');
     }
 
-    if (!passwordVal) {
-      showError(passwordInput, passwordError, "Don't forget your password");
-      hasError = true;
+    function showError(input, errorEl, message) {
+      // remove then re-add to re-trigger the shake animation
+      input.classList.remove('error');
+      void input.offsetWidth;
+      input.classList.add('error');
+      if (message) errorEl.textContent = message;
+      errorEl.classList.add('visible');
     }
 
-    if (hasError) {
+    // clear errors as the user types
+    usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
+    passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
+
+    signInBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+
+      const usernameVal = usernameInput.value.trim();
+      const passwordVal = passwordInput.value.trim();
+
+      let hasError = false;
+
       if (!usernameVal) {
-        usernameInput.focus();
-      } else {
-        passwordInput.focus();
+        showError(usernameInput, usernameError, 'Enter your username first');
+        hasError = true;
       }
-      return;
-    }
 
-    signInBtn.disabled = true;
-    signInBtn.textContent = 'Signing in...';
+      if (!passwordVal) {
+        showError(passwordInput, passwordError, "Don't forget your password");
+        hasError = true;
+      }
 
-    const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
-
-    try {
-      const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
-        email: fakeEmail,
-        password: passwordVal
-      });
-
-      signInBtn.disabled = false;
-      signInBtn.textContent = 'Sign In';
-
-      if (signInError) {
-        console.error('Login error:', signInError);
-        showError(passwordInput, passwordError, 'Incorrect username or password');
-        passwordInput.focus();
+      if (hasError) {
+        if (!usernameVal) {
+          usernameInput.focus();
+        } else {
+          passwordInput.focus();
+        }
         return;
       }
 
-      console.log('✅ User signed in:', signInData.user.id);
+      signInBtn.disabled = true;
+      signInBtn.textContent = 'Signing in...';
 
-      // Redirect to Feed or homepage
-      window.location.href = 'Feed.html';
+      // supabase auth is email-based under the hood, but we only have
+      // username + password on the frontend. so we turn the username into
+      // a fake email the user never sees, and use that for auth.
+      const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
 
-    } catch (err) {
-      console.error('💥 Unexpected error:', err);
-      signInBtn.disabled = false;
-      signInBtn.textContent = 'Sign In';
-      showError(passwordInput, passwordError, 'Something went wrong. Please try again.');
-    }
-  });
-</script>
+      try {
+        const { error: signInError } = await supabaseClient.auth.signInWithPassword({
+          email: fakeEmail,
+          password: passwordVal
+        });
+
+        signInBtn.disabled = false;
+        signInBtn.textContent = 'Sign In';
+
+        if (signInError) {
+          showError(passwordInput, passwordError, 'Incorrect username or password');
+          passwordInput.focus();
+          return;
+        }
+
+        const destination = await getPostLoginDestination();
+        window.location.href = destination;
+
+      } catch (err) {
+        signInBtn.disabled = false;
+        signInBtn.textContent = 'Sign In';
+        showError(passwordInput, passwordError, 'Something went wrong. Please try again.');
+      }
+    });
+  </script>
 </body>
 </html>
