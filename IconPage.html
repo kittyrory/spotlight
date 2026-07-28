@@ -368,74 +368,6 @@
     .bottomTab a{ padding:6px 8px; font-size:14px; }
   }
 
-  /* ---------- edit profile modal ---------- */
-  .modal-overlay{
-    position:fixed; inset:0; z-index:10000;
-    background:rgba(0,0,0,.55);
-    display:none; align-items:flex-end; justify-content:center;
-  }
-  .modal-overlay.open{ display:flex; }
-  .modal-sheet{
-    width:100%; max-width:430px;
-    background: var(--card);
-    border:1px solid var(--card-border);
-    border-radius:24px 24px 0 0;
-    padding:22px 20px 26px;
-    max-height:88vh; overflow-y:auto;
-    animation: sheetUp .3s cubic-bezier(.2,.9,.3,1.1);
-  }
-  @keyframes sheetUp{ from{ transform:translateY(24px); opacity:0; } to{ transform:none; opacity:1; } }
-  .modal-header{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:16px;
-  }
-  .modal-title{ font-family:'Urbanist',sans-serif; font-weight:800; font-size:16px; }
-  .modal-close{
-    width:30px; height:30px; border-radius:50%;
-    background: var(--surface-1); border:1px solid var(--card-border);
-    display:flex; align-items:center; justify-content:center;
-    color: var(--ink-dim); cursor:pointer;
-  }
-  .modal-field{ margin-bottom:14px; }
-  .modal-field label{
-    display:block; font-family:'Urbanist',sans-serif; font-weight:700;
-    font-size:11.5px; letter-spacing:.04em; text-transform:uppercase;
-    color: var(--ink-faint); margin-bottom:6px;
-  }
-  .modal-field input[type="text"],
-  .modal-field textarea{
-    width:100%; background: var(--surface-1); border:1px solid var(--card-border);
-    border-radius:12px; padding:10px 12px; color: var(--ink);
-    font-family:'Urbanist',sans-serif; font-size:13.5px; resize:vertical;
-  }
-  .modal-field textarea{ min-height:70px; line-height:1.5; }
-  .modal-field input[type="text"]:focus,
-  .modal-field textarea:focus{ outline:none; border-color: var(--gold); }
-  .modal-upload-row{ display:flex; gap:12px; align-items:center; }
-  .modal-upload-preview{
-    width:52px; height:52px; border-radius:50%; overflow:hidden;
-    flex-shrink:0; border:1px solid var(--card-border); background:var(--surface-1);
-  }
-  .modal-upload-preview.header-preview{ width:100%; height:70px; border-radius:12px; }
-  .modal-upload-preview img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .modal-upload-btn{
-    font-family:'Urbanist',sans-serif; font-weight:700; font-size:12px;
-    background: var(--surface-1); border:1px solid var(--card-border);
-    color: var(--ink); padding:8px 12px; border-radius:999px; cursor:pointer;
-  }
-  .modal-save-btn{
-    width:100%; margin-top:6px;
-    background: linear-gradient(135deg, var(--gold), var(--gold-deep));
-    color:#1a1408; font-family:'Urbanist',sans-serif; font-weight:800; font-size:14px;
-    border:none; border-radius:14px; padding:13px 0; cursor:pointer;
-  }
-  .modal-save-btn:disabled{ opacity:.6; cursor:default; }
-  .modal-status{
-    text-align:center; font-size:12px; margin-top:10px; min-height:16px;
-    color: var(--ink-faint);
-  }
-  .modal-status.error{ color: var(--hard); }
-  .modal-status.success{ color: var(--easy); }
 </style>
 </head>
 <body>
@@ -530,44 +462,6 @@
     <div class="circle-scroll" id="circleScroll"></div>
   </div>
 
-  <div class="modal-overlay" id="editModalOverlay">
-    <div class="modal-sheet">
-      <div class="modal-header">
-        <div class="modal-title">Edit Profile</div>
-        <button class="modal-close" id="editModalClose" type="button" aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-
-      <div class="modal-field">
-        <label>Avatar</label>
-        <div class="modal-upload-row">
-          <div class="modal-upload-preview" id="avatarPreviewWrap">
-            <img id="avatarPreviewImg" src="" alt="">
-          </div>
-          <label class="modal-upload-btn" for="avatarFileInput">Change Avatar</label>
-          <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-        </div>
-      </div>
-
-      <div class="modal-field">
-        <label>Display Name</label>
-        <input type="text" id="editDisplayName" maxlength="40" placeholder="Your name">
-      </div>
-
-      <div class="modal-field">
-        <label>Handle</label>
-        <input type="text" id="editHandle" maxlength="30" placeholder="yourhandle">
-      </div>
-
-      <div class="modal-field">
-        <label>Bio</label>
-        <textarea id="editBio" maxlength="160" placeholder="Tell people about yourself"></textarea>
-      </div>
-
-      <button class="modal-save-btn" id="editSaveBtn" type="button">Save Changes</button>
-      <div class="modal-status" id="editStatus"></div>
-    </div>
   </div>
 
   <nav class="bottomTab" aria-label="Primary navigation">
@@ -897,103 +791,11 @@
     try { localStorage.setItem('spotlight-profile', JSON.stringify(updated)); } catch (e) {}
   });
 
-  /* ---------- edit profile modal ---------- */
-  const editModalOverlay = document.getElementById('editModalOverlay');
-  const editProfileBtn = document.getElementById('editProfileBtn');
-  const editModalClose = document.getElementById('editModalClose');
-  const editDisplayName = document.getElementById('editDisplayName');
-  const editHandle = document.getElementById('editHandle');
-  const editBio = document.getElementById('editBio');
-  const avatarPreviewImg = document.getElementById('avatarPreviewImg');
-  const avatarFileInput = document.getElementById('avatarFileInput');
-  const editSaveBtn = document.getElementById('editSaveBtn');
-  const editStatus = document.getElementById('editStatus');
-
-  let pendingAvatarDataUrl = null;
-
-  function openEditModal() {
-    const p = currentProfile || {};
-    editDisplayName.value = p.display_name || '';
-    editHandle.value = (p.handle || '').replace(/^@/, '');
-    editBio.value = p.bio || '';
-    avatarPreviewImg.src = p.avatar_url || document.getElementById('fameAvatarImg').src;
-    pendingAvatarDataUrl = null;
-    editStatus.textContent = '';
-    editStatus.className = 'modal-status';
-    editModalOverlay.classList.add('open');
-  }
-
-  function closeEditModal() {
-    editModalOverlay.classList.remove('open');
-  }
-
-  editProfileBtn.addEventListener('click', openEditModal);
-  editModalClose.addEventListener('click', closeEditModal);
-  editModalOverlay.addEventListener('click', (e) => {
-    if (e.target === editModalOverlay) closeEditModal();
-  });
-
-  function readFileAsDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  avatarFileInput.addEventListener('change', async function () {
-    const file = this.files[0];
-    if (!file) return;
-    pendingAvatarDataUrl = await readFileAsDataUrl(file);
-    avatarPreviewImg.src = pendingAvatarDataUrl;
-  });
-
-  editSaveBtn.addEventListener('click', async () => {
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      editStatus.textContent = 'You need to be signed in to save changes.';
-      editStatus.className = 'modal-status error';
-      return;
-    }
-
-    const handleRaw = editHandle.value.trim().replace(/^@/, '');
-    const updates = {
-      display_name: editDisplayName.value.trim(),
-      handle: handleRaw,
-      bio: editBio.value.trim(),
-    };
-    if (pendingAvatarDataUrl) updates.avatar_url = pendingAvatarDataUrl;
-
-    editSaveBtn.disabled = true;
-    editSaveBtn.textContent = 'Saving...';
-    editStatus.textContent = '';
-    editStatus.className = 'modal-status';
-
-    const { data: updated, error } = await supabaseClient
-      .from('profiles')
-      .update(updates)
-      .eq('id', user.id)
-      .select('display_name, handle, bio, avatar_url, header_url')
-      .single();
-
-    editSaveBtn.disabled = false;
-    editSaveBtn.textContent = 'Save Changes';
-
-    if (error) {
-      console.error('Could not save profile:', error);
-      editStatus.textContent = 'Could not save changes. Try again.';
-      editStatus.className = 'modal-status error';
-      return;
-    }
-
-    currentProfile = updated;
-    applyProfileToDOM(updated);
-    try { localStorage.setItem('spotlight-profile', JSON.stringify(updated)); } catch (e) {}
-    editStatus.textContent = 'Saved!';
-    editStatus.className = 'modal-status success';
-    setTimeout(closeEditModal, 600);
-  });
+  /* ---------- Link to editIconPage ---------- */
+  editProfileBtn.addEventListener('click', () => {
+  sessionStorage.setItem('spotlight-last-page', window.location.href);
+  window.location.href = 'EditIconPage.html'; 
+});
 
 </script>
 </body>
