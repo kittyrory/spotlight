@@ -22,3 +22,8 @@ jobs:
         port: 21
         local-dir: ./
         server-dir: ./htdocs/
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.github/**
