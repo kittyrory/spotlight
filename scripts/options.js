@@ -1,22 +1,24 @@
 // selection logic
-document.querySelectorAll('.option').forEach(opt => {
-  opt.addEventListener('click', () => {
-    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
-    opt.classList.add('selected');
+document.querySelectorAll(".option").forEach((opt) => {
+  opt.addEventListener("click", () => {
+    document
+      .querySelectorAll(".option")
+      .forEach((o) => o.classList.remove("selected"));
+    opt.classList.add("selected");
   });
 });
 
 // continue button
-const cardGrid = document.getElementById('card-grid');
-const continueBtn = document.getElementById('continue-btn');
+const cardGrid = document.getElementById("card-grid");
+const continueBtn = document.getElementById("continue-btn");
 
 // error handling
-continueBtn.addEventListener('click', async () => {
-  const selectedOption = document.querySelector('.option.selected');
+continueBtn.addEventListener("click", async () => {
+  const selectedOption = document.querySelector(".option.selected");
   if (!selectedOption) {
-    cardGrid.classList.remove('shake');
+    cardGrid.classList.remove("shake");
     void cardGrid.offsetWidth;
-    cardGrid.classList.add('shake');
+    cardGrid.classList.add("shake");
     return;
   }
 
@@ -26,7 +28,7 @@ continueBtn.addEventListener('click', async () => {
   if (window.onContinueSave) {
     continueBtn.disabled = true;
     const originalText = continueBtn.textContent;
-    continueBtn.textContent = 'Saving...';
+    continueBtn.textContent = "Saving...";
 
     const ok = await window.onContinueSave(selectedOption.dataset.value);
 
@@ -42,11 +44,11 @@ continueBtn.addEventListener('click', async () => {
   if (next) window.location.href = next;
 });
 
-  // back button
-  const backBtn = document.getElementById('back-btn');
-  if (backBtn) {
-    const prev = backBtn.dataset.prev;
-    backBtn.addEventListener('click', () => {
-      if (prev) window.location.href = prev;
-    });
-  }
+// back button
+const backBtn = document.getElementById("back-btn");
+if (backBtn) {
+  const prev = backBtn.dataset.prev;
+  backBtn.addEventListener("click", () => {
+    if (prev) window.location.href = prev;
+  });
+}

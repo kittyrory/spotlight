@@ -48,7 +48,8 @@ markdown fences, no preamble, in this exact shape:
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -69,7 +70,9 @@ function extractMentionedBotIds(text: string, bots: BotProfile[]): string[] {
   let match;
   while ((match = mentionPattern.exec(text)) !== null) {
     const handle = match[1].toLowerCase();
-    const bot = bots.find((b) => b.handle.replace(/^@/, "").toLowerCase() === handle);
+    const bot = bots.find(
+      (b) => b.handle.replace(/^@/, "").toLowerCase() === handle,
+    );
     if (bot) mentioned.add(bot.id);
   }
   return [...mentioned];
@@ -78,19 +81,22 @@ function extractMentionedBotIds(text: string, bots: BotProfile[]): string[] {
 function pickReplyBots(
   eligibleBots: BotProfile[],
   mentionedIds: string[],
-  count: number
+  count: number,
 ): BotProfile[] {
   // mentioned + eligible (under cap) bots always get included first
-  const mentionedEligible = eligibleBots.filter((b) => mentionedIds.includes(b.id));
+  const mentionedEligible = eligibleBots.filter((b) =>
+    mentionedIds.includes(b.id),
+  );
   const rest = eligibleBots.filter((b) => !mentionedIds.includes(b.id));
   const shuffledRest = [...rest].sort(() => Math.random() - 0.5);
 
   // if more than the batch size are mentioned, only random-select among
   // them rather than including all (per spec: >4 mentions falls back to
   // random selection logic)
-  const mentionedPool = mentionedEligible.length > count
-    ? [...mentionedEligible].sort(() => Math.random() - 0.5).slice(0, count)
-    : mentionedEligible;
+  const mentionedPool =
+    mentionedEligible.length > count
+      ? [...mentionedEligible].sort(() => Math.random() - 0.5).slice(0, count)
+      : mentionedEligible;
 
   const combined = [...mentionedPool, ...shuffledRest].slice(0, count);
   return combined;
@@ -99,7 +105,10 @@ function pickReplyBots(
 // primary path: calls Gemini's own native API directly (not OpenRouter).
 // key goes in the ?key= query param, request/response shape is Gemini's
 // native format (contents/parts in, candidates[0].content.parts[0].text out).
-async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
+async function callGeminiNative(
+  apiKey: string,
+  userMessage: string,
+): Promise<{ content: string }[]> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
     {
@@ -109,16 +118,14 @@ async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ 
         system_instruction: {
           parts: [{ text: BASE_SYSTEM_PROMPT }],
         },
-        contents: [
-          { role: "user", parts: [{ text: userMessage }] },
-        ],
+        contents: [{ role: "user", parts: [{ text: userMessage }] }],
         generationConfig: {
           temperature: 1,
           maxOutputTokens: 300,
           responseMimeType: "application/json",
         },
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -137,30 +144,37 @@ async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ 
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
-  if (!Array.isArray(parsed.replies)) throw new Error("Model response missing replies array");
+  if (!Array.isArray(parsed.replies))
+    throw new Error("Model response missing replies array");
   return parsed.replies;
 }
 
 // fallback path: OpenRouter's OpenAI-compatible chat completions endpoint.
 // Bearer token auth, response text lives at choices[0].message.content.
-async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
+async function callOpenRouter(
+  apiKey: string,
+  userMessage: string,
+): Promise<{ content: string }[]> {
+  const response = await fetch(
+    "https://openrouter.ai/api/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash-lite",
+        messages: [
+          { role: "system", content: BASE_SYSTEM_PROMPT },
+          { role: "user", content: userMessage },
+        ],
+        temperature: 1,
+        max_tokens: 300,
+        response_format: { type: "json_object" },
+      }),
     },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash-lite",
-      messages: [
-        { role: "system", content: BASE_SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-      temperature: 1,
-      max_tokens: 300,
-      response_format: { type: "json_object" },
-    }),
-  });
+  );
 
   if (!response.ok) {
     const errText = await response.text();
@@ -178,7 +192,8 @@ async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ co
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
-  if (!Array.isArray(parsed.replies)) throw new Error("Model response missing replies array");
+  if (!Array.isArray(parsed.replies))
+    throw new Error("Model response missing replies array");
   return parsed.replies;
 }
 
@@ -210,11 +225,15 @@ function buildReplyPrompt(
   threadReplies: { content: string; author: string }[],
   bot: BotProfile,
   latestUserMessage: string | null,
-  isDirectlyAddressed: boolean
+  isDirectlyAddressed: boolean,
 ): string {
   const lines: string[] = [];
-  lines.push(`You are ${bot.display_name} (@${bot.handle.replace(/^@/, "")}), replying on Spotlight.`);
-  lines.push(`Original post (by ${postAuthorName ?? "another user"}): "${postContent}"`);
+  lines.push(
+    `You are ${bot.display_name} (@${bot.handle.replace(/^@/, "")}), replying on Spotlight.`,
+  );
+  lines.push(
+    `Original post (by ${postAuthorName ?? "another user"}): "${postContent}"`,
+  );
 
   if (threadReplies.length) {
     lines.push("Thread so far:");
@@ -224,25 +243,27 @@ function buildReplyPrompt(
   if (isPostAuthor) {
     lines.push(
       "You are the original poster. You have firsthand knowledge of what you posted " +
-      "and can answer questions about it directly and specifically."
+        "and can answer questions about it directly and specifically.",
     );
   } else {
     lines.push(
       "You did NOT write the original post and have no firsthand knowledge of it beyond " +
-      "what's written above. Do not invent specific details (colors, exact events, feelings " +
-      "the poster didn't mention) as if you experienced them yourself. React the way a " +
-      "bystander in the thread would -- agree, joke, ask your own question, or add a general " +
-      "reaction -- without claiming personal experience of the post's contents."
+        "what's written above. Do not invent specific details (colors, exact events, feelings " +
+        "the poster didn't mention) as if you experienced them yourself. React the way a " +
+        "bystander in the thread would -- agree, joke, ask your own question, or add a general " +
+        "reaction -- without claiming personal experience of the post's contents.",
     );
   }
 
   if (latestUserMessage) {
     if (isDirectlyAddressed) {
-      lines.push(`This message is directed at you specifically -- respond to it directly: "${latestUserMessage}"`);
+      lines.push(
+        `This message is directed at you specifically -- respond to it directly: "${latestUserMessage}"`,
+      );
     } else {
       lines.push(
         `The latest message in the thread is: "${latestUserMessage}". You were not ` +
-        `specifically addressed, so only react to it if it makes sense for you to jump in.`
+          `specifically addressed, so only react to it if it makes sense for you to jump in.`,
       );
     }
   }
@@ -252,11 +273,16 @@ function buildReplyPrompt(
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST") return jsonResponse({ error: "Method not allowed" }, 405);
+  if (req.method === "OPTIONS")
+    return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST")
+    return jsonResponse({ error: "Method not allowed" }, 405);
 
   if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return jsonResponse({ error: "Missing required environment variables/secrets" }, 500);
+    return jsonResponse(
+      { error: "Missing required environment variables/secrets" },
+      500,
+    );
   }
 
   let body: { post_id?: string; reason?: string; user_id?: string };
@@ -305,16 +331,22 @@ Deno.serve(async (req) => {
     const replyCountByBot = new Map<string, number>();
     (existingReplies || []).forEach((r) => {
       if (r.bot_user_id) {
-        replyCountByBot.set(r.bot_user_id, (replyCountByBot.get(r.bot_user_id) || 0) + 1);
+        replyCountByBot.set(
+          r.bot_user_id,
+          (replyCountByBot.get(r.bot_user_id) || 0) + 1,
+        );
       }
     });
 
     const eligibleBots = botsList.filter(
-      (b) => (replyCountByBot.get(b.id) || 0) < MAX_REPLIES_PER_BOT_PER_THREAD
+      (b) => (replyCountByBot.get(b.id) || 0) < MAX_REPLIES_PER_BOT_PER_THREAD,
     );
 
     if (!eligibleBots.length) {
-      return jsonResponse({ inserted: [], note: "All bots have hit their reply cap in this thread" });
+      return jsonResponse({
+        inserted: [],
+        note: "All bots have hit their reply cap in this thread",
+      });
     }
 
     // figure out latest user message + mentions (only relevant for the
@@ -334,7 +366,9 @@ Deno.serve(async (req) => {
 
     const threadForPrompt = (existingReplies || []).map((r) => ({
       content: r.content,
-      author: r.bot_user_id ? (botById.get(r.bot_user_id)?.display_name || "bot") : "user",
+      author: r.bot_user_id
+        ? botById.get(r.bot_user_id)?.display_name || "bot"
+        : "user",
     }));
 
     const insertedRows = [];
@@ -348,14 +382,16 @@ Deno.serve(async (req) => {
         threadForPrompt,
         bot,
         latestUserMessage,
-        isDirectlyAddressed
+        isDirectlyAddressed,
       );
 
       try {
         const replies = await callGemini(prompt);
         const content = replies[0]?.content;
         if (!content) {
-          console.error(`Bot ${bot.handle} (${bot.id}) returned no usable content, skipping`);
+          console.error(
+            `Bot ${bot.handle} (${bot.id}) returned no usable content, skipping`,
+          );
           continue;
         }
 
@@ -369,7 +405,10 @@ Deno.serve(async (req) => {
         // previously a failed call here just silently vanished with no
         // trace -- if this happened to be the @mentioned bot, it would
         // look like "the tagged bot never replied" with zero clue why.
-        console.error(`Reply generation failed for bot ${bot.handle} (${bot.id}):`, err);
+        console.error(
+          `Reply generation failed for bot ${bot.handle} (${bot.id}):`,
+          err,
+        );
         continue;
       }
     }

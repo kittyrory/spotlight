@@ -1,585 +1,701 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <title>Loading...</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- font links -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Loading...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- font links -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
 
-  <script>
-    // apply saved theme immediately to avoid a flash of the wrong theme.
-    (function () {
-      var saved = localStorage.getItem('spotlight-theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
-    })();
-  </script>
+    <script>
+      // apply saved theme immediately to avoid a flash of the wrong theme.
+      (function () {
+        var saved = localStorage.getItem("spotlight-theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+      })();
+    </script>
 
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap');
- 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
- 
-  :root,
-  [data-theme="dark"] {
-    --paper: #000000;
-    --ink: #f4efe4;
-    --gold-dark: #d1a53a;
-    --gold: #e8b23f;
-    --gold-bright: #ffcf4d;
-    --gold-glow: #e0a83c;
-    --dust: #ffd873;
-    --track-bg: rgba(255, 255, 255, 0.08);
-    --track-inset: rgba(232, 178, 63, 0.35);
-    --status-text: rgba(244, 239, 228, 0.72);
-    --tip-color: rgba(244, 239, 228, 0.68);
-  }
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap");
 
-  [data-theme="light"] {
-    --paper: #ffffff;
-    --ink: #17130a;
-    --gold-dark: #a3760f;
-    --gold: #c8901c;
-    --gold-bright: #e8a622;
-    --gold-glow: #b8860b;
-    --dust: #d6a12f;
-    --track-bg: rgba(23, 19, 10, 0.07);
-    --track-inset: rgba(184, 134, 11, 0.3);
-    --status-text: rgba(23, 19, 10, 0.72);
-    --tip-color: rgba(23, 19, 10, 0.68);
-  }
- 
-  html, body {
-    width: 100%;
-    height: 100%;
-    background: var(--paper);
-    overflow: hidden;
-    font-family: 'DM Mono', monospace;
-    transition: background-color 0.25s ease;
-  }
- 
-  .screen {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    background: var(--paper);
-    transition: background-color 0.25s ease;
-  }
- 
-  /* ---------- STAGE GLOW (spotlight over the content, not the whole screen) ---------- */
-  .stage-glow {
-    position: absolute;
-    top: 6%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 720px;
-    height: 620px;
-    background: radial-gradient(ellipse 320px 480px at 50% 20%, rgba(200, 144, 20, 0.08) 0%, rgba(200, 144, 20, 0.035) 40%, transparent 72%);
-    filter: blur(10px);
-    pointer-events: none;
-    z-index: 1;
-    animation: glowBreathe 6s ease-in-out infinite;
-  }
- 
-  @keyframes glowBreathe {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
-  }
- 
-  /* ---------- DUST PARTICLES ---------- */
-  .dust {
-    position: absolute;
-    bottom: -5%;
-    border-radius: 50%;
-    background: var(--dust);
-    box-shadow: 0 0 7px rgba(184, 134, 11, 0.55);
-    opacity: 0;
-    animation-name: floatUp;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-  }
- 
-  @keyframes floatUp {
-    0% { transform: translateY(0) translateX(0); opacity: 0; }
-    8% { opacity: var(--peak-op, 0.7); }
-    50% { transform: translateY(-55vh) translateX(var(--drift, 10px)); }
-    92% { opacity: var(--peak-op, 0.7); }
-    100% { transform: translateY(-105vh) translateX(calc(var(--drift, 10px) * 2)); opacity: 0; }
-  }
- 
-  /* ---------- TICKER ---------- */
-  .ticker-wrap {
-    position: absolute;
-    top: 6%;
-    left: 0;
-    width: 100%;
-    overflow: hidden;
-    opacity: 0.55;
-    z-index: 0;
-    mask-image: linear-gradient(90deg, transparent, black 15%, black 85%, transparent);
-  }
- 
-  .ticker {
-    display: inline-flex;
-    white-space: nowrap;
-    animation: scrollTicker 38s linear infinite;
-    font-size: 13px;
-    letter-spacing: 0.12em;
-    color: var(--gold-dark);
-  }
- 
-  .ticker span {
-    margin-right: 48px;
-    text-transform: uppercase;
-  }
- 
-  .ticker span.tag { color: var(--gold-bright); font-weight: 500; }
- 
-  @keyframes scrollTicker {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
- 
-  /* ---------- LOGO ---------- */
-  .logo-block {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    margin-bottom: 64px;
-    margin-top: 40px;
-  }
- 
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 96px;
-    letter-spacing: 0.06em;
-    line-height: 1;
-    white-space: nowrap;
-  }
- 
-  .logo .spot { color: var(--ink); }
- 
-  .logo .light {
-    color: var(--gold-bright);
-    animation: lightPulse 3.2s ease-in-out infinite;
-  }
- 
-  @keyframes lightPulse {
-    0%, 100% {
-      text-shadow:
-        0 0 4px rgba(184, 134, 11, 0.3),
-        0 0 9px rgba(184, 134, 11, 0.2),
-        0 0 18px rgba(184, 134, 11, 0.1);
-    }
-    50% {
-      text-shadow:
-        0 0 7px rgba(184, 134, 11, 0.5),
-        0 0 17px rgba(184, 134, 11, 0.32),
-        0 0 34px rgba(184, 134, 11, 0.18),
-        0 0 55px rgba(184, 134, 11, 0.09);
-    }
-  }
- 
-  .logo .dot {
-    display: inline-block;
-    color: var(--gold-bright);
-    animation: dotBeat 3.4s ease-in-out infinite;
-    transform-origin: center;
-  }
- 
-  @keyframes dotBeat {
-    0%, 100% { transform: scale(1); text-shadow: 0 0 4px rgba(184, 134, 11, 0.28); }
-    50% { transform: scale(1.22); text-shadow: 0 0 10px rgba(184, 134, 11, 0.5); }
-  }
- 
-  .rule {
-    margin: 18px auto 0;
-    height: 1px;
-    width: 0;
-    background: linear-gradient(90deg, transparent, var(--gold), var(--gold-bright), var(--gold), transparent);
-    animation: growRule 1.4s ease-out 0.4s forwards;
-  }
- 
-  @keyframes growRule {
-    to { width: 260px; }
-  }
- 
-  /* ---------- LOADING BAR ---------- */
-  .loader-block {
-    position: relative;
-    z-index: 2;
-    width: 420px;
-    max-width: 82vw;
-  }
- 
-  .bar-track {
-    position: relative;
-    width: 100%;
-    height: 8px;
-    background: var(--track-bg);
-    border-radius: 4px;
-    overflow: visible;
-    box-shadow: inset 0 0 0 1px var(--track-inset);
-  }
- 
-  .bar-fill {
-    position: relative;
-    height: 100%;
-    width: 0%;
-    border-radius: 4px;
-    background: linear-gradient(90deg, var(--gold-dark), var(--gold) 60%, var(--gold-bright));
-    box-shadow: 0 0 12px rgba(184, 134, 11, 0.35);
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  }
- 
-  .bar-tip {
-    position: absolute;
-    right: -3px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--gold-bright);
-    box-shadow: 0 0 10px 3px rgba(184, 134, 11, 0.7);
-    animation: tipFlicker 2.2s ease-in-out infinite;
-  }
- 
-  @keyframes tipFlicker {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.55; }
-  }
- 
-  .bar-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-top: 12px;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-  }
- 
-  .bar-status {
-    color: var(--status-text);
-    text-transform: uppercase;
-    font-size: 11px;
-    letter-spacing: 0.14em;
-  }
- 
-  .bar-pct {
-    color: var(--gold-glow);
-    font-size: 15px;
-    font-weight: 500;
-    min-width: 42px;
-    text-align: right;
-  }
- 
-  /* ---------- TIPS ---------- */
-  .tip-block {
-    margin-top: 42px;
-    height: 40px;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-  }
- 
-  .tip-text {
-    color: var(--tip-color);
-    font-family: Georgia, 'Times New Roman', serif;
-    font-style: italic;
-    font-size: 15px;
-    letter-spacing: 0.01em;
-    text-align: center;
-    max-width: 460px;
-    opacity: 0;
-    transition: opacity 0.6s ease;
-  }
- 
-  .tip-text.visible { opacity: 1; }
- 
-  .tip-text .kw {
-    color: var(--gold-glow);
-    font-style: normal;
-    font-weight: 700;
-  }
- 
-  /* ---------- ENTER BUTTON ---------- */
-  .enter-wrap {
-    margin-top: 46px;
-    height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
- 
-  .enter-btn {
-    position: relative;
-    opacity: 0;
-    transform: translateY(16px);
-    pointer-events: none;
-    padding: 14px 46px;
-    background: transparent;
-    border: 1px solid var(--gold-dark);
-    border-radius: 2px;
-    color: var(--gold-dark);
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    cursor: pointer;
-    overflow: hidden;
-    transition: opacity 0.8s ease, transform 0.8s ease, background 0.3s ease;
-  }
- 
-  .enter-btn.shown {
-    opacity: 1;
-    transform: translateY(0);
-    pointer-events: auto;
-    animation: btnPulse 2.6s ease-in-out infinite;
-  }
- 
-  .enter-btn:hover {
-    background: rgba(184, 134, 11, 0.08);
-  }
- 
-  @keyframes btnPulse {
-    0%, 100% { box-shadow: 0 0 4px rgba(184, 134, 11, 0.25), 0 0 0px rgba(184, 134, 11, 0); }
-    50% { box-shadow: 0 0 14px rgba(184, 134, 11, 0.45), 0 0 26px rgba(184, 134, 11, 0.2); }
-  }
- 
-  .enter-btn .shimmer {
-    position: absolute;
-    top: 0;
-    left: -60%;
-    width: 40%;
-    height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(184, 134, 11, 0.3), transparent);
-    animation: shimmerSweep 3s ease-in-out infinite;
-    animation-delay: 1s;
-  }
- 
-  @keyframes shimmerSweep {
-    0% { left: -60%; }
-    35%, 100% { left: 130%; }
-  }
- 
-  /* ---------- FADE OUT ---------- */
-  .fade-out {
-    position: fixed;
-    inset: 0;
-    background: #000;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 999;
-    transition: opacity 1s ease;
-  }
- 
-  .fade-out.active {
-    opacity: 1;
-    pointer-events: auto;
-  }
- 
-  @media (max-width: 560px) {
-    .logo { font-size: 64px; }
-    .loader-block { width: 300px; }
-  }
- 
-  @media (prefers-reduced-motion: reduce) {
-    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
-  }
-</style>
-</head>
-<body>
- 
-<div class="screen">
- 
-  <div class="stage-glow"></div>
- 
-  <div class="ticker-wrap">
-    <div class="ticker" id="ticker"></div>
-  </div>
- 
-  <div id="dustLayer"></div>
- 
-  <div class="logo-block">
-    <div class="logo">
-      <span class="spot">SPOT</span><span class="light">LIGHT</span><span class="dot">●</span>
-    </div>
-    <div class="rule"></div>
-  </div>
- 
-  <div class="loader-block">
-    <div class="bar-track">
-      <div class="bar-fill" id="barFill">
-        <div class="bar-tip"></div>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root,
+      [data-theme="dark"] {
+        --paper: #000000;
+        --ink: #f4efe4;
+        --gold-dark: #d1a53a;
+        --gold: #e8b23f;
+        --gold-bright: #ffcf4d;
+        --gold-glow: #e0a83c;
+        --dust: #ffd873;
+        --track-bg: rgba(255, 255, 255, 0.08);
+        --track-inset: rgba(232, 178, 63, 0.35);
+        --status-text: rgba(244, 239, 228, 0.72);
+        --tip-color: rgba(244, 239, 228, 0.68);
+      }
+
+      [data-theme="light"] {
+        --paper: #ffffff;
+        --ink: #17130a;
+        --gold-dark: #a3760f;
+        --gold: #c8901c;
+        --gold-bright: #e8a622;
+        --gold-glow: #b8860b;
+        --dust: #d6a12f;
+        --track-bg: rgba(23, 19, 10, 0.07);
+        --track-inset: rgba(184, 134, 11, 0.3);
+        --status-text: rgba(23, 19, 10, 0.72);
+        --tip-color: rgba(23, 19, 10, 0.68);
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: var(--paper);
+        overflow: hidden;
+        font-family: "DM Mono", monospace;
+        transition: background-color 0.25s ease;
+      }
+
+      .screen {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        background: var(--paper);
+        transition: background-color 0.25s ease;
+      }
+
+      /* ---------- STAGE GLOW (spotlight over the content, not the whole screen) ---------- */
+      .stage-glow {
+        position: absolute;
+        top: 6%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 720px;
+        height: 620px;
+        background: radial-gradient(
+          ellipse 320px 480px at 50% 20%,
+          rgba(200, 144, 20, 0.08) 0%,
+          rgba(200, 144, 20, 0.035) 40%,
+          transparent 72%
+        );
+        filter: blur(10px);
+        pointer-events: none;
+        z-index: 1;
+        animation: glowBreathe 6s ease-in-out infinite;
+      }
+
+      @keyframes glowBreathe {
+        0%,
+        100% {
+          opacity: 0.7;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* ---------- DUST PARTICLES ---------- */
+      .dust {
+        position: absolute;
+        bottom: -5%;
+        border-radius: 50%;
+        background: var(--dust);
+        box-shadow: 0 0 7px rgba(184, 134, 11, 0.55);
+        opacity: 0;
+        animation-name: floatUp;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
+
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0) translateX(0);
+          opacity: 0;
+        }
+        8% {
+          opacity: var(--peak-op, 0.7);
+        }
+        50% {
+          transform: translateY(-55vh) translateX(var(--drift, 10px));
+        }
+        92% {
+          opacity: var(--peak-op, 0.7);
+        }
+        100% {
+          transform: translateY(-105vh) translateX(calc(var(--drift, 10px) * 2));
+          opacity: 0;
+        }
+      }
+
+      /* ---------- TICKER ---------- */
+      .ticker-wrap {
+        position: absolute;
+        top: 6%;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        opacity: 0.55;
+        z-index: 0;
+        mask-image: linear-gradient(
+          90deg,
+          transparent,
+          black 15%,
+          black 85%,
+          transparent
+        );
+      }
+
+      .ticker {
+        display: inline-flex;
+        white-space: nowrap;
+        animation: scrollTicker 38s linear infinite;
+        font-size: 13px;
+        letter-spacing: 0.12em;
+        color: var(--gold-dark);
+      }
+
+      .ticker span {
+        margin-right: 48px;
+        text-transform: uppercase;
+      }
+
+      .ticker span.tag {
+        color: var(--gold-bright);
+        font-weight: 500;
+      }
+
+      @keyframes scrollTicker {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* ---------- LOGO ---------- */
+      .logo-block {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+        margin-bottom: 64px;
+        margin-top: 40px;
+      }
+
+      .logo {
+        font-family: "Bebas Neue", sans-serif;
+        font-size: 96px;
+        letter-spacing: 0.06em;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .logo .spot {
+        color: var(--ink);
+      }
+
+      .logo .light {
+        color: var(--gold-bright);
+        animation: lightPulse 3.2s ease-in-out infinite;
+      }
+
+      @keyframes lightPulse {
+        0%,
+        100% {
+          text-shadow:
+            0 0 4px rgba(184, 134, 11, 0.3),
+            0 0 9px rgba(184, 134, 11, 0.2),
+            0 0 18px rgba(184, 134, 11, 0.1);
+        }
+        50% {
+          text-shadow:
+            0 0 7px rgba(184, 134, 11, 0.5),
+            0 0 17px rgba(184, 134, 11, 0.32),
+            0 0 34px rgba(184, 134, 11, 0.18),
+            0 0 55px rgba(184, 134, 11, 0.09);
+        }
+      }
+
+      .logo .dot {
+        display: inline-block;
+        color: var(--gold-bright);
+        animation: dotBeat 3.4s ease-in-out infinite;
+        transform-origin: center;
+      }
+
+      @keyframes dotBeat {
+        0%,
+        100% {
+          transform: scale(1);
+          text-shadow: 0 0 4px rgba(184, 134, 11, 0.28);
+        }
+        50% {
+          transform: scale(1.22);
+          text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);
+        }
+      }
+
+      .rule {
+        margin: 18px auto 0;
+        height: 1px;
+        width: 0;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--gold),
+          var(--gold-bright),
+          var(--gold),
+          transparent
+        );
+        animation: growRule 1.4s ease-out 0.4s forwards;
+      }
+
+      @keyframes growRule {
+        to {
+          width: 260px;
+        }
+      }
+
+      /* ---------- LOADING BAR ---------- */
+      .loader-block {
+        position: relative;
+        z-index: 2;
+        width: 420px;
+        max-width: 82vw;
+      }
+
+      .bar-track {
+        position: relative;
+        width: 100%;
+        height: 8px;
+        background: var(--track-bg);
+        border-radius: 4px;
+        overflow: visible;
+        box-shadow: inset 0 0 0 1px var(--track-inset);
+      }
+
+      .bar-fill {
+        position: relative;
+        height: 100%;
+        width: 0%;
+        border-radius: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--gold-dark),
+          var(--gold) 60%,
+          var(--gold-bright)
+        );
+        box-shadow: 0 0 12px rgba(184, 134, 11, 0.35);
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .bar-tip {
+        position: absolute;
+        right: -3px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--gold-bright);
+        box-shadow: 0 0 10px 3px rgba(184, 134, 11, 0.7);
+        animation: tipFlicker 2.2s ease-in-out infinite;
+      }
+
+      @keyframes tipFlicker {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      .bar-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-top: 12px;
+        font-size: 12px;
+        letter-spacing: 0.08em;
+      }
+
+      .bar-status {
+        color: var(--status-text);
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+      }
+
+      .bar-pct {
+        color: var(--gold-glow);
+        font-size: 15px;
+        font-weight: 500;
+        min-width: 42px;
+        text-align: right;
+      }
+
+      /* ---------- TIPS ---------- */
+      .tip-block {
+        margin-top: 42px;
+        height: 40px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+      }
+
+      .tip-text {
+        color: var(--tip-color);
+        font-family: Georgia, "Times New Roman", serif;
+        font-style: italic;
+        font-size: 15px;
+        letter-spacing: 0.01em;
+        text-align: center;
+        max-width: 460px;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+      }
+
+      .tip-text.visible {
+        opacity: 1;
+      }
+
+      .tip-text .kw {
+        color: var(--gold-glow);
+        font-style: normal;
+        font-weight: 700;
+      }
+
+      /* ---------- ENTER BUTTON ---------- */
+      .enter-wrap {
+        margin-top: 46px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .enter-btn {
+        position: relative;
+        opacity: 0;
+        transform: translateY(16px);
+        pointer-events: none;
+        padding: 14px 46px;
+        background: transparent;
+        border: 1px solid var(--gold-dark);
+        border-radius: 2px;
+        color: var(--gold-dark);
+        font-family: "DM Mono", monospace;
+        font-size: 13px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        cursor: pointer;
+        overflow: hidden;
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s ease,
+          background 0.3s ease;
+      }
+
+      .enter-btn.shown {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        animation: btnPulse 2.6s ease-in-out infinite;
+      }
+
+      .enter-btn:hover {
+        background: rgba(184, 134, 11, 0.08);
+      }
+
+      @keyframes btnPulse {
+        0%,
+        100% {
+          box-shadow:
+            0 0 4px rgba(184, 134, 11, 0.25),
+            0 0 0px rgba(184, 134, 11, 0);
+        }
+        50% {
+          box-shadow:
+            0 0 14px rgba(184, 134, 11, 0.45),
+            0 0 26px rgba(184, 134, 11, 0.2);
+        }
+      }
+
+      .enter-btn .shimmer {
+        position: absolute;
+        top: 0;
+        left: -60%;
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(184, 134, 11, 0.3),
+          transparent
+        );
+        animation: shimmerSweep 3s ease-in-out infinite;
+        animation-delay: 1s;
+      }
+
+      @keyframes shimmerSweep {
+        0% {
+          left: -60%;
+        }
+        35%,
+        100% {
+          left: 130%;
+        }
+      }
+
+      /* ---------- FADE OUT ---------- */
+      .fade-out {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        opacity: 0;
+        pointer-events: none;
+        z-index: 999;
+        transition: opacity 1s ease;
+      }
+
+      .fade-out.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      @media (max-width: 560px) {
+        .logo {
+          font-size: 64px;
+        }
+        .loader-block {
+          width: 300px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="screen">
+      <div class="stage-glow"></div>
+
+      <div class="ticker-wrap">
+        <div class="ticker" id="ticker"></div>
+      </div>
+
+      <div id="dustLayer"></div>
+
+      <div class="logo-block">
+        <div class="logo">
+          <span class="spot">SPOT</span><span class="light">LIGHT</span
+          ><span class="dot">●</span>
+        </div>
+        <div class="rule"></div>
+      </div>
+
+      <div class="loader-block">
+        <div class="bar-track">
+          <div class="bar-fill" id="barFill">
+            <div class="bar-tip"></div>
+          </div>
+        </div>
+        <div class="bar-meta">
+          <div class="bar-status" id="barStatus">Warming up the stage…</div>
+          <div class="bar-pct" id="barPct">0%</div>
+        </div>
+      </div>
+
+      <div class="tip-block">
+        <div class="tip-text" id="tipText"></div>
+      </div>
+
+      <div class="enter-wrap">
+        <button class="enter-btn" id="enterBtn">
+          <span class="shimmer"></span>
+          Enter
+        </button>
       </div>
     </div>
-    <div class="bar-meta">
-      <div class="bar-status" id="barStatus">Warming up the stage…</div>
-      <div class="bar-pct" id="barPct">0%</div>
-    </div>
-  </div>
- 
-  <div class="tip-block">
-    <div class="tip-text" id="tipText"></div>
-  </div>
- 
-  <div class="enter-wrap">
-    <button class="enter-btn" id="enterBtn">
-      <span class="shimmer"></span>
-      Enter
-    </button>
-  </div>
- 
-</div>
- 
-<div class="fade-out" id="fadeOut"></div>
- 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="scripts/supabase.js"></script>
-<script src="scripts/theme.js"></script>
-<script>
-  // ---------- DUST PARTICLES ----------
-  const dustLayer = document.getElementById('dustLayer');
-  const DUST_COUNT = 28;
-  for (let i = 0; i < DUST_COUNT; i++) {
-    const d = document.createElement('div');
-    d.className = 'dust';
-    const size = 1.5 + Math.random() * 3.5;
-    const left = 30 + Math.random() * 40; // keep roughly within cone/pool area
-    const duration = 6 + Math.random() * 9;
-    const delay = Math.random() * 10;
-    const drift = (Math.random() * 60 - 30).toFixed(1) + 'px';
-    const peakOp = (0.3 + Math.random() * 0.5).toFixed(2);
-    d.style.width = size + 'px';
-    d.style.height = size + 'px';
-    d.style.left = left + 'vw';
-    d.style.animationDuration = duration + 's';
-    d.style.animationDelay = '-' + delay + 's';
-    d.style.setProperty('--drift', drift);
-    d.style.setProperty('--peak-op', peakOp);
-    dustLayer.appendChild(d);
-  }
- 
-  // ---------- TICKER ----------
-  const tickerItems = [
-    '#SPOTLIGHT', 'THANK YOU FOR SUPPORTING US', '@YUMMY_BLUEBERRY4U', '@KALEN_ELZ',
-    '@WAYUMIYOK', '@MOSAN951', '@GYUU.DIARIES', '@SORROWFULROAD', '@TRINI.TEA26', 
-    '@I_LOVE_JESTERS0',
-  ];
-  const tickerEl = document.getElementById('ticker');
-  const doubled = [...tickerItems, ...tickerItems];
-  tickerEl.innerHTML = doubled.map(t =>
-    `<span class="${t.startsWith('#') || t.startsWith('@') ? 'tag' : ''}">${t}</span>`
-  ).join('');
- 
-  // ---------- TIPS ----------
-  const tips = [
+
+    <div class="fade-out" id="fadeOut"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
+    <script src="scripts/theme.js"></script>
+    <script>
+      // ---------- DUST PARTICLES ----------
+      const dustLayer = document.getElementById("dustLayer");
+      const DUST_COUNT = 28;
+      for (let i = 0; i < DUST_COUNT; i++) {
+        const d = document.createElement("div");
+        d.className = "dust";
+        const size = 1.5 + Math.random() * 3.5;
+        const left = 30 + Math.random() * 40; // keep roughly within cone/pool area
+        const duration = 6 + Math.random() * 9;
+        const delay = Math.random() * 10;
+        const drift = (Math.random() * 60 - 30).toFixed(1) + "px";
+        const peakOp = (0.3 + Math.random() * 0.5).toFixed(2);
+        d.style.width = size + "px";
+        d.style.height = size + "px";
+        d.style.left = left + "vw";
+        d.style.animationDuration = duration + "s";
+        d.style.animationDelay = "-" + delay + "s";
+        d.style.setProperty("--drift", drift);
+        d.style.setProperty("--peak-op", peakOp);
+        dustLayer.appendChild(d);
+      }
+
+      // ---------- TICKER ----------
+      const tickerItems = [
+        "#SPOTLIGHT",
+        "THANK YOU FOR SUPPORTING US",
+        "@YUMMY_BLUEBERRY4U",
+        "@KALEN_ELZ",
+        "@WAYUMIYOK",
+        "@MOSAN951",
+        "@GYUU.DIARIES",
+        "@SORROWFULROAD",
+        "@TRINI.TEA26",
+        "@I_LOVE_JESTERS0",
+      ];
+      const tickerEl = document.getElementById("ticker");
+      const doubled = [...tickerItems, ...tickerItems];
+      tickerEl.innerHTML = doubled
+        .map(
+          (t) =>
+            `<span class="${t.startsWith("#") || t.startsWith("@") ? "tag" : ""}">${t}</span>`,
+        )
+        .join("");
+
+      // ---------- TIPS ----------
+      const tips = [
         'Comment your username on tiktok <span class="kw">(@spotlightthegame)</span> to be added to the supporter list!',
-    'Beefs are a <span class="kw">feature</span>, not a bug.',
-    'The <span class="kw">Cancellation Meter</span> fills silently.',
-    '<span class="skw">Fan wars</span> happen when two fandoms collide in your comments.',
-    'A well-timed <span class="kw">apology</span> can undo a week of damage.',
-    'Some clips are only meant to be seen <span class="kw">out of context</span>.',
-    '<span class="kw">Clout</span> decays if you don\'t feed it.',
-    'Every collab has a <span class="kw">breakup clause</span> nobody reads.',
-    'The algorithm rewards <span class="kw">chaos</span> more than charm.',
-    'A leaked DM is worth more than a press release.',
-    '<span class="kw">Ghosting</span> a fanbase has consequences.',
-    'Publicists exist to slow down the inevitable.',
-    'The brightest <span class="kw">spotlight</span> casts the longest shadow.'
-  ];
-  let tipIndex = 0;
-  const tipEl = document.getElementById('tipText');
- 
-  function showTip(i) {
-    tipEl.classList.remove('visible');
-    setTimeout(() => {
-      tipEl.innerHTML = tips[i];
-      tipEl.classList.add('visible');
-    }, 500);
-  }
-  showTip(tipIndex);
-  setInterval(() => {
-    tipIndex = (tipIndex + 1) % tips.length;
-    showTip(tipIndex);
-  }, 3500);
- 
-  // ---------- LOADING BAR ----------
-  const barFill = document.getElementById('barFill');
-  const barPct = document.getElementById('barPct');
-  const barStatus = document.getElementById('barStatus');
-  const enterBtn = document.getElementById('enterBtn');
- 
-  const statusStages = [
-    { at: 0, text: 'Warming up the stage…' },
-    { at: 35, text: 'Summoning celebrities…' },
-    { at: 90, text: 'The spotlight is lit.' }
-  ];
- 
-  let progress = 0;
-  let statusPointer = 0;
- 
-  function updateStatus(p) {
-    while (statusPointer < statusStages.length - 1 && p >= statusStages[statusPointer + 1].at) {
-      statusPointer++;
-    }
-    barStatus.textContent = statusStages[statusPointer].text;
-  }
- 
-  function tick() {
-    if (progress >= 100) {
-      progress = 100;
-      barFill.style.width = '100%';
-      barPct.textContent = '100%';
-      updateStatus(100);
-      enterBtn.classList.add('shown');
-      return;
-    }
- 
-    // irregular step: sometimes a fast burst, sometimes a slow crawl, sometimes a pause
-    const roll = Math.random();
-    let step, delay;
-    if (roll < 0.18) {
-      step = 4 + Math.random() * 7;     // fast burst
-      delay = 140 + Math.random() * 160;
-    } else if (roll < 0.4) {
-      step = 0.3 + Math.random() * 1;   // slow crawl
-      delay = 320 + Math.random() * 360;
-    } else if (roll < 0.5) {
-      step = 0;                         // stall / hesitation
-      delay = 500 + Math.random() * 650;
-    } else {
-      step = 1.5 + Math.random() * 3;   // normal
-      delay = 180 + Math.random() * 240;
-    }
- 
-    progress = Math.min(100, progress + step);
-    barFill.style.width = progress.toFixed(1) + '%';
-    barPct.textContent = Math.floor(progress) + '%';
-    updateStatus(progress);
- 
-    setTimeout(tick, delay);
-  }
-  setTimeout(tick, 400);
- 
-  // ---------- ENTER BUTTON ----------
-  const fadeOut = document.getElementById('fadeOut');
-  enterBtn.addEventListener('click', () => {
-    if (!enterBtn.classList.contains('shown')) return;
-    fadeOut.classList.add('active');
-    setTimeout(() => {
-      window.location.href = 'Feed.html';
-    }, 1000);
-  });
-</script>
- 
-</body>
+        'Beefs are a <span class="kw">feature</span>, not a bug.',
+        'The <span class="kw">Cancellation Meter</span> fills silently.',
+        '<span class="skw">Fan wars</span> happen when two fandoms collide in your comments.',
+        'A well-timed <span class="kw">apology</span> can undo a week of damage.',
+        'Some clips are only meant to be seen <span class="kw">out of context</span>.',
+        '<span class="kw">Clout</span> decays if you don\'t feed it.',
+        'Every collab has a <span class="kw">breakup clause</span> nobody reads.',
+        'The algorithm rewards <span class="kw">chaos</span> more than charm.',
+        "A leaked DM is worth more than a press release.",
+        '<span class="kw">Ghosting</span> a fanbase has consequences.',
+        "Publicists exist to slow down the inevitable.",
+        'The brightest <span class="kw">spotlight</span> casts the longest shadow.',
+      ];
+      let tipIndex = 0;
+      const tipEl = document.getElementById("tipText");
+
+      function showTip(i) {
+        tipEl.classList.remove("visible");
+        setTimeout(() => {
+          tipEl.innerHTML = tips[i];
+          tipEl.classList.add("visible");
+        }, 500);
+      }
+      showTip(tipIndex);
+      setInterval(() => {
+        tipIndex = (tipIndex + 1) % tips.length;
+        showTip(tipIndex);
+      }, 3500);
+
+      // ---------- LOADING BAR ----------
+      const barFill = document.getElementById("barFill");
+      const barPct = document.getElementById("barPct");
+      const barStatus = document.getElementById("barStatus");
+      const enterBtn = document.getElementById("enterBtn");
+
+      const statusStages = [
+        { at: 0, text: "Warming up the stage…" },
+        { at: 35, text: "Summoning celebrities…" },
+        { at: 90, text: "The spotlight is lit." },
+      ];
+
+      let progress = 0;
+      let statusPointer = 0;
+
+      function updateStatus(p) {
+        while (
+          statusPointer < statusStages.length - 1 &&
+          p >= statusStages[statusPointer + 1].at
+        ) {
+          statusPointer++;
+        }
+        barStatus.textContent = statusStages[statusPointer].text;
+      }
+
+      function tick() {
+        if (progress >= 100) {
+          progress = 100;
+          barFill.style.width = "100%";
+          barPct.textContent = "100%";
+          updateStatus(100);
+          enterBtn.classList.add("shown");
+          return;
+        }
+
+        // irregular step: sometimes a fast burst, sometimes a slow crawl, sometimes a pause
+        const roll = Math.random();
+        let step, delay;
+        if (roll < 0.18) {
+          step = 4 + Math.random() * 7; // fast burst
+          delay = 140 + Math.random() * 160;
+        } else if (roll < 0.4) {
+          step = 0.3 + Math.random() * 1; // slow crawl
+          delay = 320 + Math.random() * 360;
+        } else if (roll < 0.5) {
+          step = 0; // stall / hesitation
+          delay = 500 + Math.random() * 650;
+        } else {
+          step = 1.5 + Math.random() * 3; // normal
+          delay = 180 + Math.random() * 240;
+        }
+
+        progress = Math.min(100, progress + step);
+        barFill.style.width = progress.toFixed(1) + "%";
+        barPct.textContent = Math.floor(progress) + "%";
+        updateStatus(progress);
+
+        setTimeout(tick, delay);
+      }
+      setTimeout(tick, 400);
+
+      // ---------- ENTER BUTTON ----------
+      const fadeOut = document.getElementById("fadeOut");
+      enterBtn.addEventListener("click", () => {
+        if (!enterBtn.classList.contains("shown")) return;
+        fadeOut.classList.add("active");
+        setTimeout(() => {
+          window.location.href = "Feed.html";
+        }, 1000);
+      });
+    </script>
+  </body>
 </html>

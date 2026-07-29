@@ -1,336 +1,397 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Following</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --gold: #C9A24B;
-    --gold-bright: #E8C77A;
-    --black: #0A0908;
-    --line: #2A2620;
-    --ivory: #F3EFE6;
-    --muted-onblack: #948C7A;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Following</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --gold: #c9a24b;
+        --gold-bright: #e8c77a;
+        --black: #0a0908;
+        --line: #2a2620;
+        --ivory: #f3efe6;
+        --muted-onblack: #948c7a;
 
-    /* card (white) surface */
-    --card-bg: #FFFFFF;
-    --card-border: #EDE7D6;
-    --ink: #1C1810;
-    --ink-dim: #8A8064;
+        /* card (white) surface */
+        --card-bg: #ffffff;
+        --card-border: #ede7d6;
+        --ink: #1c1810;
+        --ink-dim: #8a8064;
 
-    /* relationship accent colors */
-    --rel-acquaintance: #8C8676;
-    --rel-friend: #C9A24B;
-    --rel-close: #B8862F;
-    --rel-rival: #C97A3F;
-    --rel-enemy: #C1553F;
-    --rel-lover: #C14F79;
-  }
+        /* relationship accent colors */
+        --rel-acquaintance: #8c8676;
+        --rel-friend: #c9a24b;
+        --rel-close: #b8862f;
+        --rel-rival: #c97a3f;
+        --rel-enemy: #c1553f;
+        --rel-lover: #c14f79;
+      }
 
-  * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
 
-  body {
-    margin: 0;
-    background: var(--black);
-    color: var(--ivory);
-    font-family: 'Inter', sans-serif;
-    min-height: 100vh;
-    padding: 40px 20px 80px;
-  }
+      body {
+        margin: 0;
+        background: var(--black);
+        color: var(--ivory);
+        font-family: "Inter", sans-serif;
+        min-height: 100vh;
+        padding: 40px 20px 80px;
+      }
 
-  .page { max-width: 640px; margin: 0 auto; }
+      .page {
+        max-width: 640px;
+        margin: 0 auto;
+      }
 
-  .header {
-    text-align: center;
-    margin-bottom: 30px;
-    position: relative;
-  }
+      .header {
+        text-align: center;
+        margin-bottom: 30px;
+        position: relative;
+      }
 
-  .beam {
-    position: absolute;
-    top: -140px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 460px;
-    height: 320px;
-    background: radial-gradient(circle at 50% 30%, rgba(201,162,75,0.28), rgba(201,162,75,0.06) 45%, transparent 70%);
-    pointer-events: none;
-  }
+      .beam {
+        position: absolute;
+        top: -140px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 460px;
+        height: 320px;
+        background: radial-gradient(
+          circle at 50% 30%,
+          rgba(201, 162, 75, 0.28),
+          rgba(201, 162, 75, 0.06) 45%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
 
-  .title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 32px;
-    font-weight: 600;
-    color: var(--ivory);
-    position: relative;
-    z-index: 1;
-  }
+      .title {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 32px;
+        font-weight: 600;
+        color: var(--ivory);
+        position: relative;
+        z-index: 1;
+      }
 
-  .filter-row {
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    padding: 4px 2px 28px;
-    scrollbar-width: none;
-  }
-  .filter-row::-webkit-scrollbar { display: none; }
+      .filter-row {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding: 4px 2px 28px;
+        scrollbar-width: none;
+      }
+      .filter-row::-webkit-scrollbar {
+        display: none;
+      }
 
-  .filter-chip {
-    flex-shrink: 0;
-    padding: 7px 15px;
-    border-radius: 100px;
-    border: 1px solid var(--line);
-    font-size: 12px;
-    color: var(--muted-onblack);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-  }
-  .filter-chip.active {
-    border-color: var(--gold);
-    color: var(--gold-bright);
-    background: rgba(201,162,75,0.1);
-  }
+      .filter-chip {
+        flex-shrink: 0;
+        padding: 7px 15px;
+        border-radius: 100px;
+        border: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted-onblack);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+      .filter-chip.active {
+        border-color: var(--gold);
+        color: var(--gold-bright);
+        background: rgba(201, 162, 75, 0.1);
+      }
 
-  /* --- rows (rectangles) instead of grid boxes --- */
-  .list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+      /* --- rows (rectangles) instead of grid boxes --- */
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
 
-  .card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
-    border-radius: 16px;
-    padding: 14px 18px;
-    box-shadow: 0 8px 22px rgba(0,0,0,0.35);
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 26px rgba(0,0,0,0.45);
-  }
+      .card {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 16px;
+        padding: 14px 18px;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+        cursor: pointer;
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+      }
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45);
+      }
 
-  .avatar {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    background: linear-gradient(160deg, #2b2620, #100f0d);
-    border: 2px solid var(--card-accent, var(--gold));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 21px;
-    font-weight: 600;
-    color: var(--card-accent, var(--gold-bright));
-  }
+      .avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: linear-gradient(160deg, #2b2620, #100f0d);
+        border: 2px solid var(--card-accent, var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Cormorant Garamond", serif;
+        font-size: 21px;
+        font-weight: 600;
+        color: var(--card-accent, var(--gold-bright));
+      }
 
-  .card-body {
-    flex: 1;
-    min-width: 0;
-  }
+      .card-body {
+        flex: 1;
+        min-width: 0;
+      }
 
-  .card-top-row {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10px;
-  }
+      .card-top-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
 
-  .name-block { min-width: 0; }
+      .name-block {
+        min-width: 0;
+      }
 
-  .char-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 18px;
-    font-weight: 600;
-    line-height: 1.15;
-    color: var(--ink);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+      .char-name {
+        font-family: "Cormorant Garamond", serif;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.15;
+        color: var(--ink);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
 
-  .char-handle {
-    font-size: 11.5px;
-    color: var(--ink-dim);
-    margin-top: 1px;
-  }
+      .char-handle {
+        font-size: 11.5px;
+        color: var(--ink-dim);
+        margin-top: 1px;
+      }
 
-  .rel-badge {
-    flex-shrink: 0;
-    padding: 4px 11px;
-    border-radius: 100px;
-    font-size: 10px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    font-weight: 700;
-    color: #fff;
-    background: var(--card-accent, var(--gold));
-  }
+      .rel-badge {
+        flex-shrink: 0;
+        padding: 4px 11px;
+        border-radius: 100px;
+        font-size: 10px;
+        letter-spacing: 0.6px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #fff;
+        background: var(--card-accent, var(--gold));
+      }
 
-  .activity-line {
-    margin-top: 6px;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-  .xp { font-weight: 700; margin-right: 5px; }
-  .xp.up { color: #2E8B57; }
-  .xp.down { color: var(--rel-enemy); }
-  .activity-text { color: var(--ink-dim); }
+      .activity-line {
+        margin-top: 6px;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      .xp {
+        font-weight: 700;
+        margin-right: 5px;
+      }
+      .xp.up {
+        color: #2e8b57;
+      }
+      .xp.down {
+        color: var(--rel-enemy);
+      }
+      .activity-text {
+        color: var(--ink-dim);
+      }
 
-  /* --- diverging (center-anchored) bond meter --- */
-  .meter-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 10px;
-    margin-bottom: 4px;
-  }
-  .meter-label {
-    font-size: 10px;
-    color: var(--ink-dim);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-  .meter-value {
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .meter-value.pos { color: #2E8B57; }
-  .meter-value.neg { color: var(--rel-enemy); }
+      /* --- diverging (center-anchored) bond meter --- */
+      .meter-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 10px;
+        margin-bottom: 4px;
+      }
+      .meter-label {
+        font-size: 10px;
+        color: var(--ink-dim);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .meter-value {
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .meter-value.pos {
+        color: #2e8b57;
+      }
+      .meter-value.neg {
+        color: var(--rel-enemy);
+      }
 
-  .meter-track {
-    position: relative;
-    width: 100%;
-    height: 7px;
-    border-radius: 100px;
-    background: #EFE9D8;
-    overflow: visible;
-  }
+      .meter-track {
+        position: relative;
+        width: 100%;
+        height: 7px;
+        border-radius: 100px;
+        background: #efe9d8;
+        overflow: visible;
+      }
 
-  .meter-center {
-    position: absolute;
-    top: -3px;
-    left: 50%;
-    width: 2px;
-    height: 13px;
-    background: #D8CFAF;
-    transform: translateX(-50%);
-    border-radius: 2px;
-  }
+      .meter-center {
+        position: absolute;
+        top: -3px;
+        left: 50%;
+        width: 2px;
+        height: 13px;
+        background: #d8cfaf;
+        transform: translateX(-50%);
+        border-radius: 2px;
+      }
 
-  .meter-fill {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    background: var(--card-accent, var(--gold));
-    border-radius: 100px;
-  }
+      .meter-fill {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        background: var(--card-accent, var(--gold));
+        border-radius: 100px;
+      }
 
-  footer {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 11px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted-onblack);
-  }
-  footer span { color: var(--gold); }
-</style>
-</head>
-<body>
+      footer {
+        text-align: center;
+        margin-top: 40px;
+        font-size: 11px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--muted-onblack);
+      }
+      footer span {
+        color: var(--gold);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <div class="beam"></div>
+        <div class="title">Following</div>
+      </div>
 
-<div class="page">
+      <div class="filter-row">
+        <div class="filter-chip active">All</div>
+        <div class="filter-chip">Acquaintance</div>
+        <div class="filter-chip">Friend</div>
+        <div class="filter-chip">Close Friend</div>
+        <div class="filter-chip">Rival</div>
+        <div class="filter-chip">Enemy</div>
+        <div class="filter-chip">Lover</div>
+      </div>
 
-  <div class="header">
-    <div class="beam"></div>
-    <div class="title">Following</div>
-  </div>
+      <div class="list" id="list"></div>
 
-  <div class="filter-row">
-    <div class="filter-chip active">All</div>
-    <div class="filter-chip">Acquaintance</div>
-    <div class="filter-chip">Friend</div>
-    <div class="filter-chip">Close Friend</div>
-    <div class="filter-chip">Rival</div>
-    <div class="filter-chip">Enemy</div>
-    <div class="filter-chip">Lover</div>
-  </div>
+      <footer>Curtain · <span>Backstage</span> Roster</footer>
+    </div>
 
-  <div class="list" id="list"></div>
+    <script>
+      // bond: -100 (worst) to +100 (best). Rendered on a center-anchored meter:
+      // negative values fill left of center, positive values fill right of center.
+      const CHARACTERS = [
+        {
+          name: "Roman Kastellan",
+          handle: "@romankastellan",
+          initial: "R",
+          accent: "var(--rel-lover)",
+          badge: "Lover",
+          xp: 45,
+          xpDir: "up",
+          note: "Left you a rose backstage",
+          bond: 92,
+        },
+        {
+          name: "Lena Marchetti",
+          handle: "@lenamarchetti",
+          initial: "L",
+          accent: "var(--rel-close)",
+          badge: "Close Friend",
+          xp: 30,
+          xpDir: "up",
+          note: "Invited you to rehearsal",
+          bond: 78,
+        },
+        {
+          name: "Jonas Everhart",
+          handle: "@jonaseverhart",
+          initial: "J",
+          accent: "var(--rel-friend)",
+          badge: "Friend",
+          xp: 15,
+          xpDir: "up",
+          note: "Replied to your message",
+          bond: 61,
+        },
+        {
+          name: "Aria Delacroix",
+          handle: "@ariadelacroix",
+          initial: "A",
+          accent: "var(--rel-acquaintance)",
+          badge: "Acquaintance",
+          xp: 8,
+          xpDir: "up",
+          note: "Noticed you in the crowd",
+          bond: 15,
+        },
+        {
+          name: "Selina Voss",
+          handle: "@selinavoss",
+          initial: "S",
+          accent: "var(--rel-rival)",
+          badge: "Rival",
+          xp: 12,
+          xpDir: "down",
+          note: "Outshined you at the audition",
+          bond: -45,
+        },
+        {
+          name: "Viktor Sorrentino",
+          handle: "@viktorsorrentino",
+          initial: "V",
+          accent: "var(--rel-enemy)",
+          badge: "Enemy",
+          xp: 30,
+          xpDir: "down",
+          note: "Badmouthed you to the press",
+          bond: -85,
+        },
+      ];
 
-  <footer>Curtain · <span>Backstage</span> Roster</footer>
+      const listEl = document.getElementById("list");
 
-</div>
+      function renderList(filter) {
+        listEl.innerHTML = "";
+        CHARACTERS.filter(
+          (c) => filter === "All" || c.badge === filter,
+        ).forEach((c) => {
+          const isPos = c.bond >= 0;
+          const magnitude = Math.min(Math.abs(c.bond), 100); // 0-100, half of the track
+          const fillWidth = magnitude / 2; // percent of full track width
+          const fillLeft = isPos ? 50 : 50 - fillWidth;
 
-<script>
-  // bond: -100 (worst) to +100 (best). Rendered on a center-anchored meter:
-  // negative values fill left of center, positive values fill right of center.
-  const CHARACTERS = [
-    {
-      name: "Roman Kastellan", handle: "@romankastellan", initial: "R",
-      accent: "var(--rel-lover)", badge: "Lover",
-      xp: 45, xpDir: "up", note: "Left you a rose backstage",
-      bond: 92
-    },
-    {
-      name: "Lena Marchetti", handle: "@lenamarchetti", initial: "L",
-      accent: "var(--rel-close)", badge: "Close Friend",
-      xp: 30, xpDir: "up", note: "Invited you to rehearsal",
-      bond: 78
-    },
-    {
-      name: "Jonas Everhart", handle: "@jonaseverhart", initial: "J",
-      accent: "var(--rel-friend)", badge: "Friend",
-      xp: 15, xpDir: "up", note: "Replied to your message",
-      bond: 61
-    },
-    {
-      name: "Aria Delacroix", handle: "@ariadelacroix", initial: "A",
-      accent: "var(--rel-acquaintance)", badge: "Acquaintance",
-      xp: 8, xpDir: "up", note: "Noticed you in the crowd",
-      bond: 15
-    },
-    {
-      name: "Selina Voss", handle: "@selinavoss", initial: "S",
-      accent: "var(--rel-rival)", badge: "Rival",
-      xp: 12, xpDir: "down", note: "Outshined you at the audition",
-      bond: -45
-    },
-    {
-      name: "Viktor Sorrentino", handle: "@viktorsorrentino", initial: "V",
-      accent: "var(--rel-enemy)", badge: "Enemy",
-      xp: 30, xpDir: "down", note: "Badmouthed you to the press",
-      bond: -85
-    },
-  ];
-
-  const listEl = document.getElementById('list');
-
-  function renderList(filter) {
-    listEl.innerHTML = '';
-    CHARACTERS
-      .filter(c => filter === 'All' || c.badge === filter)
-      .forEach(c => {
-        const isPos = c.bond >= 0;
-        const magnitude = Math.min(Math.abs(c.bond), 100); // 0-100, half of the track
-        const fillWidth = magnitude / 2; // percent of full track width
-        const fillLeft = isPos ? 50 : 50 - fillWidth;
-
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.style.setProperty('--card-accent', c.accent);
-        card.innerHTML = `
+          const card = document.createElement("div");
+          card.className = "card";
+          card.style.setProperty("--card-accent", c.accent);
+          card.innerHTML = `
           <div class="avatar">${c.initial}</div>
           <div class="card-body">
             <div class="card-top-row">
@@ -341,12 +402,12 @@
               <div class="rel-badge">${c.badge}</div>
             </div>
             <div class="activity-line">
-              <span class="xp ${c.xpDir}">${c.xpDir === 'up' ? '+' : '−'}${c.xp} XP</span>
+              <span class="xp ${c.xpDir}">${c.xpDir === "up" ? "+" : "−"}${c.xp} XP</span>
               <span class="activity-text">${c.note}</span>
             </div>
             <div class="meter-row">
               <div class="meter-label">Bond</div>
-              <div class="meter-value ${isPos ? 'pos' : 'neg'}">${isPos ? '+' : ''}${c.bond}</div>
+              <div class="meter-value ${isPos ? "pos" : "neg"}">${isPos ? "+" : ""}${c.bond}</div>
             </div>
             <div class="meter-track">
               <div class="meter-center"></div>
@@ -354,20 +415,21 @@
             </div>
           </div>
         `;
-        listEl.appendChild(card);
+          listEl.appendChild(card);
+        });
+      }
+
+      renderList("All");
+
+      document.querySelectorAll(".filter-chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          document
+            .querySelectorAll(".filter-chip")
+            .forEach((c) => c.classList.remove("active"));
+          chip.classList.add("active");
+          renderList(chip.textContent.trim());
+        });
       });
-  }
-
-  renderList('All');
-
-  document.querySelectorAll('.filter-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      renderList(chip.textContent.trim());
-    });
-  });
-</script>
-
-</body>
+    </script>
+  </body>
 </html>

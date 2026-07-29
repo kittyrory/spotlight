@@ -75,12 +75,19 @@ type WorldContext = {
 // and chosen worlds, so posts reference their actual context instead of
 // being generic. kept separate from the system prompt so the formatting
 // rules stay stable and only the user context section changes per call.
-function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]): string {
+function buildUserContextMessage(
+  profile: ProfileContext,
+  worlds: WorldContext[],
+): string {
   const lines: string[] = [];
 
   if (profile) {
-    if (profile.display_name) lines.push(`Display name: ${profile.display_name}`);
-    if (profile.handle) lines.push(`Handle: @${profile.handle} (you can @ mention this user by handle in a post occasionally)`);
+    if (profile.display_name)
+      lines.push(`Display name: ${profile.display_name}`);
+    if (profile.handle)
+      lines.push(
+        `Handle: @${profile.handle} (you can @ mention this user by handle in a post occasionally)`,
+      );
     if (profile.origin) lines.push(`Origin: ${profile.origin}`);
     if (profile.fame_path) lines.push(`Fame path: ${profile.fame_path}`);
     if (profile.identity) lines.push(`Identity: ${profile.identity}`);
@@ -88,7 +95,9 @@ function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]
   }
 
   if (worlds?.length) {
-    lines.push("You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are a bystander to the plot:");
+    lines.push(
+      "You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are a bystander to the plot:",
+    );
     worlds.forEach((w) => {
       const parts = [w.title, w.category, w.description].filter(Boolean);
       if (w.tags?.length) parts.push(`tags: ${w.tags.join(", ")}`);
@@ -99,16 +108,21 @@ function buildUserContextMessage(profile: ProfileContext, worlds: WorldContext[]
   if (!lines.length) {
     return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
   }
-  return `Here is context about the user these posts are  for. You are encourage to make ` +
+  return (
+    `Here is context about the user these posts are  for. You are encourage to make ` +
     `posts feel personal and relevant to their interests and identity, without being repetitive. Tag the users handle when replying \n\n` +
     lines.join("\n") +
-    `\n\nGenerate ${POST_COUNT} posts now.`;
+    `\n\nGenerate ${POST_COUNT} posts now.`
+  );
 }
 
 // primary path: calls Gemini's own native API directly (not OpenRouter).
 // key goes in the ?key= query param, request/response shape is Gemini's
 // native format (contents/parts in, candidates[0].content.parts[0].text out).
-async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
+async function callGeminiNative(
+  apiKey: string,
+  userMessage: string,
+): Promise<{ content: string }[]> {
   const response = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`,
     {
@@ -118,16 +132,14 @@ async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ 
         system_instruction: {
           parts: [{ text: BASE_SYSTEM_PROMPT }],
         },
-        contents: [
-          { role: "user", parts: [{ text: userMessage }] },
-        ],
+        contents: [{ role: "user", parts: [{ text: userMessage }] }],
         generationConfig: {
           temperature: 1,
           maxOutputTokens: 500,
           responseMimeType: "application/json",
         },
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -148,21 +160,25 @@ async function callGeminiNative(apiKey: string, userMessage: string): Promise<{ 
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
-  if (!Array.isArray(parsed.posts)) throw new Error("Model response missing posts array");
+  if (!Array.isArray(parsed.posts))
+    throw new Error("Model response missing posts array");
   return parsed.posts.slice(0, POST_COUNT);
 }
 
 // fallback path: OpenRouter's OpenAI-compatible chat completions endpoint.
 // Bearer token auth (not ?key=), response text lives at
 // choices[0].message.content instead of Gemini's native shape.
-async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ content: string }[]> {
+async function callOpenRouter(
+  apiKey: string,
+  userMessage: string,
+): Promise<{ content: string }[]> {
   const response = await fetch(
     "https://openrouter.ai/api/v1/chat/completions",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash-lite",
@@ -174,7 +190,7 @@ async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ co
         max_tokens: 500,
         response_format: { type: "json_object" },
       }),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -193,7 +209,8 @@ async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ co
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
-  if (!Array.isArray(parsed.posts)) throw new Error("Model response missing posts array");
+  if (!Array.isArray(parsed.posts))
+    throw new Error("Model response missing posts array");
   return parsed.posts.slice(0, POST_COUNT);
 }
 
@@ -201,7 +218,10 @@ async function callOpenRouter(apiKey: string, userMessage: string): Promise<{ co
 // that call fails for any reason (rate limit, account restriction, network
 // error, malformed response), falls back once to OpenRouter using
 // GEMINI_API_KEY_FALLBACK, which holds an OpenRouter key.
-async function callGemini(profile: ProfileContext, worlds: WorldContext[]): Promise<{ content: string }[]> {
+async function callGemini(
+  profile: ProfileContext,
+  worlds: WorldContext[],
+): Promise<{ content: string }[]> {
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
 
   const userMessage = buildUserContextMessage(profile, worlds);
@@ -230,7 +250,8 @@ async function callGemini(profile: ProfileContext, worlds: WorldContext[]): Prom
 // browser blocks the whole request before our code even runs.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
@@ -248,12 +269,22 @@ Deno.serve(async (req) => {
 
   if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     return new Response(
-      JSON.stringify({ error: "Missing required environment variables/secrets" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: "Missing required environment variables/secrets",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
-  let body: { reason?: string; user_id?: string; profile?: ProfileContext; worlds?: WorldContext[] };
+  let body: {
+    reason?: string;
+    user_id?: string;
+    profile?: ProfileContext;
+    worlds?: WorldContext[];
+  };
   try {
     body = await req.json();
   } catch {
@@ -275,8 +306,13 @@ Deno.serve(async (req) => {
 
   if (BOT_PROFILE_IDS.some((id) => id.startsWith("REPLACE_WITH_"))) {
     return new Response(
-      JSON.stringify({ error: "BOT_PROFILE_IDS placeholders were never filled in" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: "BOT_PROFILE_IDS placeholders were never filled in",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
@@ -301,7 +337,10 @@ Deno.serve(async (req) => {
       if (Date.now() - lastGeneratedAt < COOLDOWN_MS) {
         return new Response(
           JSON.stringify({ error: "Cooldown active, try again shortly" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
       }
     }

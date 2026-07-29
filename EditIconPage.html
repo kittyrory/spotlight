@@ -1,340 +1,418 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Profile — Edit Page</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<style>
-  :root{
-    --bg: #0a0a0d;
-    --card: #17181c;
-    --card-border: #26272c;
-    --ink: #f2f1ee;
-    --ink-dim: #a6a5ab;
-    --ink-faint: #6e6d73;
-    --gold: #f5c451;
-    --easy: #6fcf97;
-    --hard: #f2685f;
-    --tag: #7dd3fc;
-    --verified: #4fa8dd;
-    --track: #26272c;
-  }
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; }
-  body{
-    background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
-    color: var(--ink);
-    font-family: 'Inter', system-ui, sans-serif;
-    min-height:100vh;
-    display:flex;
-    justify-content:center;
-    padding: 0 0 50px;
-  }
-  .phone{
-    width: 100%;
-    max-width: 430px;
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile — Edit Page</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <style>
+    :root {
+      --bg: #0a0a0d;
+      --card: #17181c;
+      --card-border: #26272c;
+      --ink: #f2f1ee;
+      --ink-dim: #a6a5ab;
+      --ink-faint: #6e6d73;
+      --gold: #f5c451;
+      --easy: #6fcf97;
+      --hard: #f2685f;
+      --tag: #7dd3fc;
+      --verified: #4fa8dd;
+      --track: #26272c;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
+      color: var(--ink);
+      font-family: "Inter", system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 0 0 50px;
+    }
+    .phone {
+      width: 100%;
+      max-width: 430px;
+    }
 
-  /* ---------- banner + avatar ---------- */
-  .banner-wrap{
-    position:relative;
-    height:170px;
-    overflow:hidden;
-    background:#151519;
-  }
-  .banner-wrap img{
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .banner-wrap::after{
-    content:"";
-    position:absolute; inset:0;
-    background: linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,0) 35%, rgba(10,10,13,.15) 100%);
-    pointer-events: none;
-  }
-  .banner-topbar{
-    position:absolute;
-    top:14px; left:14px; right:14px;
-    display:flex;
-    justify-content:space-between;
-  }
-  .circle-btn{
-    width:36px; height:36px;
-    border-radius:50%;
-    background:rgba(10,10,13,.55);
-    backdrop-filter: blur(6px);
-    border:1px solid rgba(255,255,255,.12);
-    display:flex; align-items:center; justify-content:center;
-    color:#fff;
-    font-size:15px;
-    cursor:pointer;
-  }
-  .identity-block{ 
-    padding: 0 7px; 
-    column-gap: 10px; }
-  .avatar-row{
-    display: inline-flex;
-    align-items: center;
-    gap: 270px;
-  }
-  .avatar{
-    width:92px; height:92px;
-    border-radius:50%;
-    border:4px solid var(--bg);
-    overflow:hidden;
-    position:relative;
-    background:#1c1d21;
-    margin-top:-45px;
-  }
-  .avatar img{
-    width:100%; height:100%;
-    object-fit:cover;
-    display:block;
-  }
-  .avatar-edit{
-    position:absolute;
-    bottom:2px; right:2px;
-    width:26px; height:26px;
-    border-radius:50%;
-    background:var(--gold);
-    display:flex; align-items:center; justify-content:center;
-    color:#1a1408;
-    border:2px solid var(--bg);
-    cursor:pointer;
-  }
-  .avatar-edit svg{ width:13px; height:13px; }
-  #save-profile-btn{
-    font-size: 16px;
-    text-align: center;
-    color: black;
-    background-color: #ffd166;
-    padding: 10px 0;
-    margin-top:30px;
-    border-radius: 8px;
-    cursor:pointer;
-    margin-bottom:8px;
-     display: flex;
-    justify-content: center;
-    align-self: center;
-    font-size: 16px;
-    text-align: center;
-    color: #a32b13;
-    padding: 10px 24px;
-    margin-top: 12px;
-    height: 50px;
-    width: 100px;
-    border:#1c1d21 2px solid;
-    border-radius: 8px;
-  text-decoration: none;
-  }
-  .edit-profile-btn:hover{ border-color:#6b6c72; background:#1c1d21; }
+    /* ---------- banner + avatar ---------- */
+    .banner-wrap {
+      position: relative;
+      height: 170px;
+      overflow: hidden;
+      background: #151519;
+    }
+    .banner-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .banner-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.35) 0%,
+        rgba(0, 0, 0, 0) 35%,
+        rgba(10, 10, 13, 0.15) 100%
+      );
+      pointer-events: none;
+    }
+    .banner-topbar {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .circle-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(10, 10, 13, 0.55);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .identity-block {
+      padding: 0 7px;
+      column-gap: 10px;
+    }
+    .avatar-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 270px;
+    }
+    .avatar {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      border: 4px solid var(--bg);
+      overflow: hidden;
+      position: relative;
+      background: #1c1d21;
+      margin-top: -45px;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .avatar-edit {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1a1408;
+      border: 2px solid var(--bg);
+      cursor: pointer;
+    }
+    .avatar-edit svg {
+      width: 13px;
+      height: 13px;
+    }
+    #save-profile-btn {
+      font-size: 16px;
+      text-align: center;
+      color: black;
+      background-color: #ffd166;
+      padding: 10px 0;
+      margin-top: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: center;
+      align-self: center;
+      font-size: 16px;
+      text-align: center;
+      color: #a32b13;
+      padding: 10px 24px;
+      margin-top: 12px;
+      height: 50px;
+      width: 100px;
+      border: #1c1d21 2px solid;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+    .edit-profile-btn:hover {
+      border-color: #6b6c72;
+      background: #1c1d21;
+    }
 
-  .name-row{
-    font-family:'Sora',sans-serif;
-    font-weight:800;
-    font-size:19px;
-    margin-bottom:12px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top:14px;
-  }
-  .name{
-    display: inline-block;
-    align-items: column;
-    font-family:'Sora',sans-serif;
-    font-weight:800;
-    font-size:22px;
-    gap: 8px;
-  }
-  .handle{
-    color: var(--ink-faint);
-    font-size:14.5px;
-    margin-top:2px;
-  }
-  .add-bio{
-    display:flex;
-    flex-direction:column;
-    margin-top:12px;
-    font-size:14.5px;
-    font-weight:800;
-    font-size:22px;
-    color: white;
-  }
-  .bio.placeholder{ 
-    color:#57565c; 
-    font-style:italic; 
-    cursor:pointer; 
-    background: transparent;
-    border: none;
-    color: var(--text);
-    line-height: 1.5;
-    width: 100%;
-    height: 55px;
-    resize: none;
-    outline: none;
-    padding: 0;
-    font-family: inherit;
-  }
+    .name-row {
+      font-family: "Sora", sans-serif;
+      font-weight: 800;
+      font-size: 19px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .name {
+      display: inline-block;
+      align-items: column;
+      font-family: "Sora", sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      gap: 8px;
+    }
+    .handle {
+      color: var(--ink-faint);
+      font-size: 14.5px;
+      margin-top: 2px;
+    }
+    .add-bio {
+      display: flex;
+      flex-direction: column;
+      margin-top: 12px;
+      font-size: 14.5px;
+      font-weight: 800;
+      font-size: 22px;
+      color: white;
+    }
+    .bio.placeholder {
+      color: #57565c;
+      font-style: italic;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      line-height: 1.5;
+      width: 100%;
+      height: 55px;
+      resize: none;
+      outline: none;
+      padding: 0;
+      font-family: inherit;
+    }
 
-  #cancelProfileLink{
-    display: flex;
-    justify-content: center;
-    align-self: center;
-    font-size: 16px;
-    text-align: center;
-    color: #a32b13;
-    padding: 10px 24px;
-    margin-top: 12px;
-    height: 50px;
-    width: 100px;
-    border:#1c1d21 2px solid;
-    border-radius: 8px;
-  text-decoration: none;
-  }
+    #cancelProfileLink {
+      display: flex;
+      justify-content: center;
+      align-self: center;
+      font-size: 16px;
+      text-align: center;
+      color: #a32b13;
+      padding: 10px 24px;
+      margin-top: 12px;
+      height: 50px;
+      width: 100px;
+      border: #1c1d21 2px solid;
+      border-radius: 8px;
+      text-decoration: none;
+    }
 
-   #cancelProfileLink:hover{ border-color:#6b6c72; background:#1c1d21; }
+    #cancelProfileLink:hover {
+      border-color: #6b6c72;
+      background: #1c1d21;
+    }
 
-  #name-input, #handle-input, #bio-input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--card-border);
-    border-radius: 6px;
-    background-color: var(--card);
-    color: var(--ink);
-    font-size: 14px;
-  }
-  .section-divider {
-  border: none;               
-  height: 1px;             
-  background-color: #333333;  
-  width: 95%;                
-  margin: 1px;          
-}
-  
-  /* ---------- section shared ---------- */
-  .section{ padding: 26px 18px 0; }
-  .section-title{
-    font-family:'Sora',sans-serif;
-    font-weight:800;
-    font-size:19px;
-    margin-bottom:12px;
-    display:flex; align-items:center; gap:8px;
-  }
-  .section-title .count{ color:var(--ink-faint); font-weight:600; font-size:15px; }
+    #name-input,
+    #handle-input,
+    #bio-input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      background-color: var(--card);
+      color: var(--ink);
+      font-size: 14px;
+    }
+    .section-divider {
+      border: none;
+      height: 1px;
+      background-color: #333333;
+      width: 95%;
+      margin: 1px;
+    }
 
-  .card{
-    background: linear-gradient(180deg, #1a1b1f 0%, #151519 100%);
-    border:1px solid var(--card-border);
-    border-radius:18px;
-    padding: 18px 18px 20px;
-  }
-</style>
-<body>
-<div class="phone">
-  <div class="banner-wrap">
-    <img id="banner-Img" 
-    src="https://picsum.photos/seed/eventsbanner/860/340" 
-    alt="click to change">
-    
-    <input id="bannerFile" type="file" accept="image/*" hidden/>
-    <div class="banner-topbar">
-      <div class="circle-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    /* ---------- section shared ---------- */
+    .section {
+      padding: 26px 18px 0;
+    }
+    .section-title {
+      font-family: "Sora", sans-serif;
+      font-weight: 800;
+      font-size: 19px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .count {
+      color: var(--ink-faint);
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, #1a1b1f 0%, #151519 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 18px 18px 20px;
+    }
+  </style>
+  <body>
+    <div class="phone">
+      <div class="banner-wrap">
+        <img
+          id="banner-Img"
+          src="https://picsum.photos/seed/eventsbanner/860/340"
+          alt="click to change"
+        />
+
+        <input id="bannerFile" type="file" accept="image/*" hidden />
+        <div class="banner-topbar">
+          <div class="circle-btn">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </div>
+          <div class="circle-btn">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
-      <div class="circle-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </div>
-    </div>
-  </div>
 
-  <div class="identity-block">
-    <div class="avatar-row">
-      <div class="avatar">
-        <img id="avatar-Img" src="https://picsum.photos/seed/ariavance/200/200" alt="">
-        <input id="avatarFile" type="file" accept="image/*" hidden/>
+      <div class="identity-block">
+        <div class="avatar-row">
+          <div class="avatar">
+            <img
+              id="avatar-Img"
+              src="https://picsum.photos/seed/ariavance/200/200"
+              alt=""
+            />
+            <input id="avatarFile" type="file" accept="image/*" hidden />
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-  
-    <div class="name-row">
+
+      <div class="name-row">
         <label class="name-Input">Name</label>
-        <input type="text" id="name-input" placeholder="Enter Name">
-          <div class="section-divider"></div>
-    <label class="handle-input">Handle</label>
-    <input type="text" id="handle-input" placeholder="Enter Handle">
-      <div class="section-divider"></div>
-    <label class="bio-Input">Bio</label>
-    <textarea id="bio-input" placeholder="Enter Bio"></textarea> 
-   <a id="save-profile-btn">Save</a>
-<a id="cancelProfileLink" href="IconPage.html">Cancel</a>
+        <input type="text" id="name-input" placeholder="Enter Name" />
+        <div class="section-divider"></div>
+        <label class="handle-input">Handle</label>
+        <input type="text" id="handle-input" placeholder="Enter Handle" />
+        <div class="section-divider"></div>
+        <label class="bio-Input">Bio</label>
+        <textarea id="bio-input" placeholder="Enter Bio"></textarea>
+        <a id="save-profile-btn">Save</a>
+        <a id="cancelProfileLink" href="IconPage.html">Cancel</a>
+      </div>
     </div>
-</div>
-<script>
-    // ---------- JS ---------- //
-    //HTML elements into variables//
-const saveBtn = document.getElementById('save-profile-btn');
-const avatarEditBtn = document.getElementById('avatarFile');
-const avatarImg = document.getElementById('avatar-Img');
-const avatarFile = document.getElementById('avatarFile');
-const bannerFile = document.getElementById('bannerFile'); //invisible click image selector
-const bannerImag = document.getElementById('banner-Img');
-const handle = document.getElementById('handle-input');
-const name = document.getElementById('name-input');
-const bio = document.getElementById('bio-input');
-const iconPage = 'IconPage.html';
+    <script>
+      // ---------- JS ---------- //
+      //HTML elements into variables//
+      const saveBtn = document.getElementById("save-profile-btn");
+      const avatarEditBtn = document.getElementById("avatarFile");
+      const avatarImg = document.getElementById("avatar-Img");
+      const avatarFile = document.getElementById("avatarFile");
+      const bannerFile = document.getElementById("bannerFile"); //invisible click image selector
+      const bannerImag = document.getElementById("banner-Img");
+      const handle = document.getElementById("handle-input");
+      const name = document.getElementById("name-input");
+      const bio = document.getElementById("bio-input");
+      const iconPage = "IconPage.html";
 
-//function to change the banner image//
-function changeBanner (){
-  bannerImag.addEventListener('click', () => {
- bannerFile.click();
-});
-}
-  bannerFile.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      bannerImag.src = URL.createObjectURL(file);
-      localStorage.setItem('savedBanner', bannerImag.src);
-    }
-  });
+      //function to change the banner image//
+      function changeBanner() {
+        bannerImag.addEventListener("click", () => {
+          bannerFile.click();
+        });
+      }
+      bannerFile.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          bannerImag.src = URL.createObjectURL(file);
+          localStorage.setItem("savedBanner", bannerImag.src);
+        }
+      });
 
-changeBanner();
+      changeBanner();
 
-//function to change avatar image//
-function changeAvatar (){
-  avatarImg.addEventListener('click', ()=> {
-  avatarFile.click();
-  });
-}
- avatarFile.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      avatarImg.src = URL.createObjectURL(file);
-      localStorage.setItem('savedAvatar', avatarImg);
-    }
-  });
-changeAvatar();
+      //function to change avatar image//
+      function changeAvatar() {
+        avatarImg.addEventListener("click", () => {
+          avatarFile.click();
+        });
+      }
+      avatarFile.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          avatarImg.src = URL.createObjectURL(file);
+          localStorage.setItem("savedAvatar", avatarImg);
+        }
+      });
+      changeAvatar();
 
-//update changes//
-saveBtn.addEventListener('click', (e) => {
-  e.preventDefault(); // Securely blocks the link from navigating early
+      //update changes//
+      saveBtn.addEventListener("click", (e) => {
+        e.preventDefault(); // Securely blocks the link from navigating early
 
-  const profileData = {
-    name: name.value,
-    handle: handle.value,
-    bio: bio.value
-  };
+        const profileData = {
+          name: name.value,
+          handle: handle.value,
+          bio: bio.value,
+        };
 
-  // Save data package to browser memory
-  localStorage.setItem('savedProfile', JSON.stringify(profileData));
+        // Save data package to browser memory
+        localStorage.setItem("savedProfile", JSON.stringify(profileData));
 
-  window.location.href = iconPage;
-});
-</script>
-</body>
+        window.location.href = iconPage;
+      });
+    </script>
+  </body>
 </html>

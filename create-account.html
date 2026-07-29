@@ -1,465 +1,522 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<title>Spotlight | Create an Account</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- font links -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Spotlight | Create an Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- font links -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap"
+      rel="stylesheet"
+    />
 
-<script>
-  // apply saved theme immediately to avoid a flash of the wrong theme.
-  (function () {
-    var saved = localStorage.getItem('spotlight-theme');
-    if (saved) document.documentElement.setAttribute('data-theme', saved);
-  })();
-</script>
+    <script>
+      // apply saved theme immediately to avoid a flash of the wrong theme.
+      (function () {
+        var saved = localStorage.getItem("spotlight-theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+      })();
+    </script>
 
-<style>
-  * { 
-    box-sizing: border-box; 
-  }
-
-  :root,
-  [data-theme="dark"] {
-    --bg: #000000;
-    --text: #ffffff;
-    --muted: #666666;
-    --border: #2a2a2a;
-    --gold: #e2bb00;
-    --error: #e25555;
-    --gold-shadow: rgba(226, 187, 0, 0.2);
-    --gold-glow: rgba(226, 187, 0, 0.3);
-    --error-shadow: rgba(226, 85, 85, 0.2);
-    --toggle-border: rgba(255, 255, 255, 0.25);
-    --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-  }
-
-  [data-theme="light"] {
-    --bg: #f4f3f1;
-    --text: #1e1e1e;
-    --muted: #666666;
-    --border: #2a2a2a;
-    --gold: #e2bb00;
-    --error: #e25555;
-    --gold-shadow: rgba(226, 187, 0, 0.2);
-    --gold-glow: rgba(226, 187, 0, 0.3);
-    --error-shadow: rgba(226, 85, 85, 0.2);
-    --toggle-border: rgba(0, 0, 0, 0.25);
-    --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-  }
-  
-  body {
-    margin: 0;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Open Sans', sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
-    transition: background-color 0.25s ease, color 0.25s ease;
-  }
-
-  #theme-toggle {
-    position: fixed;
-    top: clamp(16px, 3vw, 32px);
-    left: clamp(16px, 3vw, 32px);
-    z-index: 20;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    border: 1.5px solid var(--toggle-border);
-    background-color: transparent;
-    color: var(--text);
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
-  }
-
-  #theme-toggle:hover {
-    border-color: var(--gold);
-    box-shadow: 0 0 12px var(--toggle-hover-shadow);
-  }
-
-  #theme-toggle:active {
-    transform: scale(0.92);
-  }
-
-  #theme-toggle svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.8;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  [data-theme="dark"] #theme-toggle .icon-moon,
-  [data-theme="light"] #theme-toggle .icon-sun {
-    display: none;
-  }
-  
-  .card {
-    width: 100%;
-    max-width: 380px;
-    padding: 40px;
-  }
-  
-  .logo {
-    display: flex;
-    align-items: center;
-    margin-bottom: 28px;
-  }
-  
-  .logo-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--gold);
-    border-radius: 50%;
-    margin-right: 8px;
-    flex-shrink: 0;
-  }
-  
-  .logo-text {
-    font-family: 'Anek Latin', Arial;
-    font-size: 16px;
-    letter-spacing: 2px;
-    color: var(--muted);
-  }
-  
-  .headline {
-    font-family: 'Anek Latin', Arial;
-    font-size: 40px;
-    line-height: 1.1;
-    margin: 0 0 6px 0;
-    color: var(--text);
-  }
-  
-  .sub {
-    font-size: 0.85rem;
-    margin: 0 0 28px 0;
-    color: var(--muted);
-  }
-  
-  .field {
-    margin-bottom: 12px;
-  }
-  
-  .field input {
-    width: 100%;
-    padding: 13px 16px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Source Code Pro', monospace;
-    font-size: 0.875rem;
-    outline: none;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  
-  .field input::placeholder {
-    color: var(--muted);
-  }
-  
-  .field input:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px var(--gold-shadow);
-  }
-  
-  .field input.error {
-    border-color: var(--error);
-    box-shadow: 0 0 0 3px var(--error-shadow);
-    animation: shake 0.3s ease;
-  }
-  
-  .error-msg {
-    font-size: 0.75rem;
-    color: var(--error);
-    margin-top: 5px;
-    padding-left: 4px;
-    display: none;
-  }
-  
-  .error-msg.visible {
-    display: block;
-  }
-  
-  @keyframes shake {
-    0%   { transform: translateX(0); }
-    25%  { transform: translateX(-6px); }
-    50%  { transform: translateX(6px); }
-    75%  { transform: translateX(-4px); }
-    100% { transform: translateX(0); }
-  }
-  
-  .btn {
-    display: block;
-    width: 100%;
-    padding: 13px 0;
-    border-radius: 999px;
-    border: none;
-    font-family: Arial;
-    font-weight: 700;
-    font-size: 0.875rem;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
-    text-align: center;
-  }
-  
-  .btn-primary {
-    background-color: var(--gold);
-    color: black;
-    margin-top: 8px;
-  }
-  
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px var(--gold-glow);
-  }
-  
-  .btn-primary:active { 
-    transform: scale(0.98); 
-  }
-  
-  .btn-primary:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-  
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 16px 0;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-  
-  .divider::before,
-  .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-  
-  .join-now {
-    text-align: center;
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-top: 20px;
-  }
-  
-  .join-now a {
-    color: var(--gold);
-  }
-  
-  .join-now a:hover {
-    text-decoration: underline;
-  }
-  
-  a:link {
-    text-decoration: none;
-    color: inherit;
-  }
-  a:visited {
-    text-decoration: none;
-    color: inherit;
-  }
-    
-  span {
-    color: var(--gold);
-  }
-</style>
-</head>
-<body>
-
-  <button id="theme-toggle" aria-label="Toggle light/dark mode">
-    <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="4.5"></circle>
-      <line x1="12" y1="1.5" x2="12" y2="4"></line>
-      <line x1="12" y1="20" x2="12" y2="22.5"></line>
-      <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
-      <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
-      <line x1="1.5" y1="12" x2="4" y2="12"></line>
-      <line x1="20" y1="12" x2="22.5" y2="12"></line>
-      <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
-      <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
-    </svg>
-    <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
-    </svg>
-  </button>
-
-  <div class="card">
-    <div class="logo">
-      <div class="logo-dot"></div>
-      <span class="logo-text">SPOTLIGHT</span>
-    </div>
-    <h1 class="headline">Create an<br>Account.</h1>
-    <p class="sub">Enter the Spotlight.</p>
-
-    <div class="field">
-      <input id="username" type="text" placeholder="Username" />
-      <p class="error-msg" id="username-error">Enter your username first</p>
-    </div>
-    <div class="field">
-      <input id="password" type="password" placeholder="Password" />
-      <p class="error-msg" id="password-error">Don't forget your password</p>
-    </div>
-
-    <button class="btn btn-primary" id="create-btn">Join now</button>
-
-    <div class="divider">or</div>
-    <p class="join-now">
-      Already have an account? <a href="login.html"><span>Sign in</span></a>
-    </p>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="scripts/supabase.js"></script>
-  <script src="scripts/theme.js"></script>
-<script>
-  // 👇 ADD THIS — Initialize Supabase directly
-  const SUPABASE_URL = 'https://qhcohcxmxndexkhexbst.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_mX0YOWlolguEx3j0uCjtmQ_VlMdEYhz';
-  
-  // Try to use existing supabaseClient, or create a new one
-  if (typeof supabaseClient === 'undefined') {
-    console.log('Creating supabaseClient from page initialization');
-    window.supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  } else {
-    console.log('Using existing supabaseClient');
-  }
-
-  // Test the connection
-  console.log('🔌 Supabase client ready:', supabaseClient);
-</script>
-
-<script src="scripts/supabase.js"></script>
-
-<script>
-  // Your signup code
-  const usernameInput = document.getElementById('username');
-  const passwordInput = document.getElementById('password');
-  const usernameError = document.getElementById('username-error');
-  const passwordError = document.getElementById('password-error');
-  const createBtn = document.getElementById('create-btn');
-
-  function clearError(input, errorEl) {
-    input.classList.remove('error');
-    errorEl.classList.remove('visible');
-  }
-
-  function showError(input, errorEl, message) {
-    input.classList.remove('error');
-    void input.offsetWidth;
-    input.classList.add('error');
-    if (message) errorEl.textContent = message;
-    errorEl.classList.add('visible');
-  }
-
-  usernameInput.addEventListener('input', () => clearError(usernameInput, usernameError));
-  passwordInput.addEventListener('input', () => clearError(passwordInput, passwordError));
-
-  createBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-
-    const usernameVal = usernameInput.value.trim();
-    const passwordVal = passwordInput.value.trim();
-
-    let hasError = false;
-
-    if (!usernameVal) {
-      showError(usernameInput, usernameError, 'Enter your username first');
-      hasError = true;
-    }
-
-    if (!passwordVal) {
-      showError(passwordInput, passwordError, "Don't forget your password");
-      hasError = true;
-    }
-
-    if (hasError) {
-      if (!usernameVal) {
-        usernameInput.focus();
-      } else {
-        passwordInput.focus();
+    <style>
+      * {
+        box-sizing: border-box;
       }
-      return;
-    }
 
-    createBtn.disabled = true;
-    createBtn.textContent = 'Creating...';
+      :root,
+      [data-theme="dark"] {
+        --bg: #000000;
+        --text: #ffffff;
+        --muted: #666666;
+        --border: #2a2a2a;
+        --gold: #e2bb00;
+        --error: #e25555;
+        --gold-shadow: rgba(226, 187, 0, 0.2);
+        --gold-glow: rgba(226, 187, 0, 0.3);
+        --error-shadow: rgba(226, 85, 85, 0.2);
+        --toggle-border: rgba(255, 255, 255, 0.25);
+        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      }
 
-    const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
+      [data-theme="light"] {
+        --bg: #f4f3f1;
+        --text: #1e1e1e;
+        --muted: #666666;
+        --border: #2a2a2a;
+        --gold: #e2bb00;
+        --error: #e25555;
+        --gold-shadow: rgba(226, 187, 0, 0.2);
+        --gold-glow: rgba(226, 187, 0, 0.3);
+        --error-shadow: rgba(226, 85, 85, 0.2);
+        --toggle-border: rgba(0, 0, 0, 0.25);
+        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      }
 
-    console.log('📧 Signing up with:', fakeEmail);
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-family: "Open Sans", sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease;
+      }
 
-    try {
-      const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
-        email: fakeEmail,
-        password: passwordVal,
-        options: {
-          data: { username: usernameVal }
+      #theme-toggle {
+        position: fixed;
+        top: clamp(16px, 3vw, 32px);
+        left: clamp(16px, 3vw, 32px);
+        z-index: 20;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1.5px solid var(--toggle-border);
+        background-color: transparent;
+        color: var(--text);
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition:
+          border-color 0.25s ease,
+          box-shadow 0.25s ease,
+          transform 0.15s ease;
+      }
+
+      #theme-toggle:hover {
+        border-color: var(--gold);
+        box-shadow: 0 0 12px var(--toggle-hover-shadow);
+      }
+
+      #theme-toggle:active {
+        transform: scale(0.92);
+      }
+
+      #theme-toggle svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      [data-theme="dark"] #theme-toggle .icon-moon,
+      [data-theme="light"] #theme-toggle .icon-sun {
+        display: none;
+      }
+
+      .card {
+        width: 100%;
+        max-width: 380px;
+        padding: 40px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        margin-bottom: 28px;
+      }
+
+      .logo-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--gold);
+        border-radius: 50%;
+        margin-right: 8px;
+        flex-shrink: 0;
+      }
+
+      .logo-text {
+        font-family: "Anek Latin", Arial;
+        font-size: 16px;
+        letter-spacing: 2px;
+        color: var(--muted);
+      }
+
+      .headline {
+        font-family: "Anek Latin", Arial;
+        font-size: 40px;
+        line-height: 1.1;
+        margin: 0 0 6px 0;
+        color: var(--text);
+      }
+
+      .sub {
+        font-size: 0.85rem;
+        margin: 0 0 28px 0;
+        color: var(--muted);
+      }
+
+      .field {
+        margin-bottom: 12px;
+      }
+
+      .field input {
+        width: 100%;
+        padding: 13px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.875rem;
+        outline: none;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .field input::placeholder {
+        color: var(--muted);
+      }
+
+      .field input:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 3px var(--gold-shadow);
+      }
+
+      .field input.error {
+        border-color: var(--error);
+        box-shadow: 0 0 0 3px var(--error-shadow);
+        animation: shake 0.3s ease;
+      }
+
+      .error-msg {
+        font-size: 0.75rem;
+        color: var(--error);
+        margin-top: 5px;
+        padding-left: 4px;
+        display: none;
+      }
+
+      .error-msg.visible {
+        display: block;
+      }
+
+      @keyframes shake {
+        0% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-6px);
+        }
+        50% {
+          transform: translateX(6px);
+        }
+        75% {
+          transform: translateX(-4px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 13px 0;
+        border-radius: 999px;
+        border: none;
+        font-family: Arial;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease,
+          border-color 0.15s ease,
+          color 0.15s ease,
+          opacity 0.15s ease;
+        text-align: center;
+      }
+
+      .btn-primary {
+        background-color: var(--gold);
+        color: black;
+        margin-top: 8px;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px var(--gold-glow);
+      }
+
+      .btn-primary:active {
+        transform: scale(0.98);
+      }
+
+      .btn-primary:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .divider {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 16px 0;
+        font-size: 0.75rem;
+        color: var(--muted);
+      }
+
+      .divider::before,
+      .divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+
+      .join-now {
+        text-align: center;
+        font-size: 0.82rem;
+        color: var(--muted);
+        margin-top: 20px;
+      }
+
+      .join-now a {
+        color: var(--gold);
+      }
+
+      .join-now a:hover {
+        text-decoration: underline;
+      }
+
+      a:link {
+        text-decoration: none;
+        color: inherit;
+      }
+      a:visited {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      span {
+        color: var(--gold);
+      }
+    </style>
+  </head>
+  <body>
+    <button id="theme-toggle" aria-label="Toggle light/dark mode">
+      <svg
+        class="icon-sun"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <line x1="12" y1="1.5" x2="12" y2="4"></line>
+        <line x1="12" y1="20" x2="12" y2="22.5"></line>
+        <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+        <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+        <line x1="1.5" y1="12" x2="4" y2="12"></line>
+        <line x1="20" y1="12" x2="22.5" y2="12"></line>
+        <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+        <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+      </svg>
+      <svg
+        class="icon-moon"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+      </svg>
+    </button>
+
+    <div class="card">
+      <div class="logo">
+        <div class="logo-dot"></div>
+        <span class="logo-text">SPOTLIGHT</span>
+      </div>
+      <h1 class="headline">Create an<br />Account.</h1>
+      <p class="sub">Enter the Spotlight.</p>
+
+      <div class="field">
+        <input id="username" type="text" placeholder="Username" />
+        <p class="error-msg" id="username-error">Enter your username first</p>
+      </div>
+      <div class="field">
+        <input id="password" type="password" placeholder="Password" />
+        <p class="error-msg" id="password-error">Don't forget your password</p>
+      </div>
+
+      <button class="btn btn-primary" id="create-btn">Join now</button>
+
+      <div class="divider">or</div>
+      <p class="join-now">
+        Already have an account? <a href="login.html"><span>Sign in</span></a>
+      </p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
+    <script src="scripts/theme.js"></script>
+    <script>
+      // 👇 ADD THIS — Initialize Supabase directly
+      const SUPABASE_URL = "https://qhcohcxmxndexkhexbst.supabase.co";
+      const SUPABASE_ANON_KEY =
+        "sb_publishable_mX0YOWlolguEx3j0uCjtmQ_VlMdEYhz";
+
+      // Try to use existing supabaseClient, or create a new one
+      if (typeof supabaseClient === "undefined") {
+        console.log("Creating supabaseClient from page initialization");
+        window.supabaseClient = supabase.createClient(
+          SUPABASE_URL,
+          SUPABASE_ANON_KEY,
+        );
+      } else {
+        console.log("Using existing supabaseClient");
+      }
+
+      // Test the connection
+      console.log("🔌 Supabase client ready:", supabaseClient);
+    </script>
+
+    <script src="scripts/supabase.js"></script>
+
+    <script>
+      // Your signup code
+      const usernameInput = document.getElementById("username");
+      const passwordInput = document.getElementById("password");
+      const usernameError = document.getElementById("username-error");
+      const passwordError = document.getElementById("password-error");
+      const createBtn = document.getElementById("create-btn");
+
+      function clearError(input, errorEl) {
+        input.classList.remove("error");
+        errorEl.classList.remove("visible");
+      }
+
+      function showError(input, errorEl, message) {
+        input.classList.remove("error");
+        void input.offsetWidth;
+        input.classList.add("error");
+        if (message) errorEl.textContent = message;
+        errorEl.classList.add("visible");
+      }
+
+      usernameInput.addEventListener("input", () =>
+        clearError(usernameInput, usernameError),
+      );
+      passwordInput.addEventListener("input", () =>
+        clearError(passwordInput, passwordError),
+      );
+
+      createBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const usernameVal = usernameInput.value.trim();
+        const passwordVal = passwordInput.value.trim();
+
+        let hasError = false;
+
+        if (!usernameVal) {
+          showError(usernameInput, usernameError, "Enter your username first");
+          hasError = true;
+        }
+
+        if (!passwordVal) {
+          showError(passwordInput, passwordError, "Don't forget your password");
+          hasError = true;
+        }
+
+        if (hasError) {
+          if (!usernameVal) {
+            usernameInput.focus();
+          } else {
+            passwordInput.focus();
+          }
+          return;
+        }
+
+        createBtn.disabled = true;
+        createBtn.textContent = "Creating...";
+
+        const fakeEmail = `${usernameVal.toLowerCase()}@spotlight.local`;
+
+        console.log("📧 Signing up with:", fakeEmail);
+
+        try {
+          const { data: signUpData, error: signUpError } =
+            await supabaseClient.auth.signUp({
+              email: fakeEmail,
+              password: passwordVal,
+              options: {
+                data: { username: usernameVal },
+              },
+            });
+
+          if (signUpError) {
+            console.error("Signup error:", signUpError);
+            showError(
+              usernameInput,
+              usernameError,
+              "That username is already taken",
+            );
+            createBtn.disabled = false;
+            createBtn.textContent = "Join now";
+            usernameInput.focus();
+            return;
+          }
+
+          if (signUpData.user) {
+            console.log("✅ User created:", signUpData.user.id);
+
+            const { error: profileError } = await supabaseClient
+              .from("profiles")
+              .insert({
+                id: signUpData.user.id,
+                username: usernameVal,
+                display_name: usernameVal,
+                handle: usernameVal,
+                avatar_url: null,
+              });
+
+            if (profileError) {
+              console.error("❌ Profile creation failed:", profileError);
+            } else {
+              console.log("✅ Profile created successfully");
+            }
+          } else {
+            console.warn(
+              "⚠️ User data not available — email confirmation might be required",
+            );
+            createBtn.disabled = false;
+            createBtn.textContent = "Join now";
+            showError(
+              usernameInput,
+              usernameError,
+              "Check your email to confirm your account",
+            );
+            return;
+          }
+
+          window.location.href = "identity.html";
+        } catch (err) {
+          console.error("💥 Unexpected error:", err);
+          createBtn.disabled = false;
+          createBtn.textContent = "Join now";
+          showError(
+            usernameInput,
+            usernameError,
+            "Something went wrong. Please try again.",
+          );
         }
       });
-
-      if (signUpError) {
-        console.error('Signup error:', signUpError);
-        showError(usernameInput, usernameError, 'That username is already taken');
-        createBtn.disabled = false;
-        createBtn.textContent = 'Join now';
-        usernameInput.focus();
-        return;
-      }
-
-      if (signUpData.user) {
-        console.log('✅ User created:', signUpData.user.id);
-
-        const { error: profileError } = await supabaseClient
-          .from('profiles')
-          .insert({
-            id: signUpData.user.id,
-            username: usernameVal,
-            display_name: usernameVal,
-            handle: usernameVal,
-            avatar_url: null
-          });
-
-        if (profileError) {
-          console.error('❌ Profile creation failed:', profileError);
-        } else {
-          console.log('✅ Profile created successfully');
-        }
-      } else {
-        console.warn('⚠️ User data not available — email confirmation might be required');
-        createBtn.disabled = false;
-        createBtn.textContent = 'Join now';
-        showError(usernameInput, usernameError, 'Check your email to confirm your account');
-        return;
-      }
-
-      window.location.href = 'identity.html';
-
-    } catch (err) {
-      console.error('💥 Unexpected error:', err);
-      createBtn.disabled = false;
-      createBtn.textContent = 'Join now';
-      showError(usernameInput, usernameError, 'Something went wrong. Please try again.');
-    }
-  });
-</script>
-</body>
+    </script>
+  </body>
 </html>
