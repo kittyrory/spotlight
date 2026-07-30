@@ -968,11 +968,11 @@
           acc[trait.id] = {
             value: trait.value,
             label: trait.labels[trait.value],
-            axis: trait.axis
           };
           return acc;
         }, {}),
-        overallType: overallTypeEl.textContent
+        overallType: overallTypeEl.textContent,
+        overallDescription: overallDescriptions[overallTypeEl.textContent]
       };
 
       const { error } = await supabaseClient
