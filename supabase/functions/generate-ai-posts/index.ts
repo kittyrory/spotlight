@@ -38,6 +38,10 @@ const BOT_PROFILE_IDS = [
   "b9a268ff-981b-4321-8bdf-8f20098aad3f",
   "a4ffb15c-7375-4ff5-bcb9-a2be9bc0797d",
   "42f10c9d-c485-4505-a827-662462e85633",
+  "03c6a846-f871-4c73-bfe6-754d87661c71",
+  "35a7eb25-8f70-43c3-82ab-e32028b87bce",
+  "a4970b5c-cd07-4182-a04d-f0614e0ca200",
+  "f661dc7b-6967-4c0c-9ab3-210e56404124",
 ];
 
 const POST_COUNT = 3;
