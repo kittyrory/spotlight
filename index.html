@@ -1,337 +1,384 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spotlight | Where Fame Lives</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap" rel="stylesheet">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spotlight | Where Fame Lives</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap"
+      rel="stylesheet"
+    />
 
-  <script>
-    // apply saved theme immediately to avoid a flash of the wrong theme.
-    (function () {
-      var saved = localStorage.getItem('spotlight-theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
-    })();
-  </script>
+    <script>
+      // apply saved theme immediately to avoid a flash of the wrong theme.
+      (function () {
+        var saved = localStorage.getItem("spotlight-theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+      })();
+    </script>
 
-  <style>
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    :root,
-    [data-theme="dark"] {
-      --gold: #ffd500;
-      --gold2: #ffd500;
-      --white: #ffffff;
-      --bg: #000000;
-      --muted: rgba(255, 255, 255, 0.35);
-      --ticker-border: rgba(255, 255, 255, 0.08);
-      --body-text: rgba(255, 255, 255, 0.45);
-      --button-border: rgba(255, 246, 202, 0.6);
-      --toggle-border: rgba(255, 246, 202, 0.4);
-      --glow-1: rgba(255, 213, 0, 0.7);
-      --glow-2: rgba(255, 213, 0, 0.4);
-      --glow-3: rgba(255, 213, 0, 0.15);
-      --pulse-base: rgba(255, 255, 255, 0.2);
-      --pulse-1: rgba(255, 213, 0, 0.45);
-      --pulse-2: rgba(255, 255, 255, 0.15);
-      --hover-shadow-1: rgba(255, 213, 0, 0.55);
-      --hover-shadow-2: rgba(255, 213, 0, 0.3);
-      --toggle-hover-shadow: rgba(255, 213, 0, 0.3);
-    }
-
-    [data-theme="light"] {
-      --gold: #ffec3f;
-      --gold2: #9d9129;
-      --white: #1e1e1e;
-      --bg: #eceaea;
-      --muted: rgba(0, 0, 0, 0.35);
-      --ticker-border: rgba(0, 0, 0, 0.1);
-      --body-text: rgba(0, 0, 0, 0.5);
-      --button-border: rgba(0, 0, 0, 0.3);
-      --toggle-border: rgba(0, 0, 0, 0.25);
-      --glow-1: rgba(163, 118, 10, 0.35);
-      --glow-2: rgba(163, 118, 10, 0.18);
-      --glow-3: rgba(163, 118, 10, 0.08);
-      --pulse-base: rgba(0, 0, 0, 0.1);
-      --pulse-1: rgba(163, 118, 10, 0.3);
-      --pulse-2: rgba(0, 0, 0, 0.08);
-      --hover-shadow-1: rgba(163, 118, 10, 0.3);
-      --hover-shadow-2: rgba(163, 118, 10, 0.15);
-      --toggle-hover-shadow: rgba(163, 118, 10, 0.25);
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      overflow: hidden;
-      background-color: var(--bg);
-      font-family: 'Anek Latin', Arial, sans-serif;
-      transition: background-color 0.25s ease;
-    }
-
-    /* ── Tickers ── */
-    .ticker-wrap {
-      position: fixed;
-      width: 100%;
-      overflow: hidden;
-      padding: 8px 0;
-      z-index: 10;
-    }
-
-    .ticker-wrap.top {
-      top: 0;
-      border-bottom: 1px solid var(--ticker-border);
-    }
-
-    .ticker-wrap.bottom {
-      bottom: 0;
-      border-top: 1px solid var(--ticker-border);
-    }
-
-    .ticker {
-      display: flex;
-      white-space: nowrap;
-      animation: scroll-left 30s linear infinite;
-    }
-
-    .ticker.reverse {
-      animation: scroll-right 35s linear infinite;
-    }
-
-    .ticker-item {
-      font-family: 'Anek Latin', Arial, sans-serif;
-      font-size: clamp(0.65rem, 0.9vw, 0.78rem);
-      letter-spacing: 0.1em;
-      padding: 0 1.2rem;
-      color: var(--muted);
-    }
-
-    .ticker-item.gold {
-      color: var(--gold2);
-      opacity: 0.85;
-    }
-
-    @keyframes scroll-left {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    @keyframes scroll-right {
-      0%   { transform: translateX(-50%); }
-      100% { transform: translateX(0); }
-    }
-
-    /* ── Hero content ── */
-    .hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: clamp(6px, 1.5vw, 14px);
-      text-align: center;
-      padding: 0 1rem;
-    }
-
-    h2 {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(0.55rem, 0.8vw, 0.65rem);
-      font-weight: 300;
-      letter-spacing: 0.6em;
-      color: var(--gold2);
-      opacity: 0.85;
-      text-transform: uppercase;
-    }
-
-    h1 {
-      font-family: 'Anek Latin', Arial, sans-serif;
-      font-size: clamp(3.5rem, 10vw, 6rem);
-      color: var(--white);
-      line-height: 1;
-    }
-
-    h1 span {
-      color: var(--gold);
-      text-shadow:
-        0 0 8px var(--glow-1),
-        0 0 22px var(--glow-2),
-        0 0 40px var(--glow-3);
-    }
-
-    p {
-      font-family: 'DM Mono', monospace;
-      font-size: clamp(0.6rem, 0.85vw, 0.7rem);
-      font-weight: 300;
-      letter-spacing: 0.35em;
-      color: var(--body-text);
-      text-transform: uppercase;
-      animation: pulse-glow 8s ease-in-out infinite;
-    }
-
-    @keyframes pulse-glow {
-      0%, 100% {
-        text-shadow:
-          0 0 4px var(--pulse-base);
+    <style>
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
-      50% {
-        text-shadow:
-          0 0 8px var(--pulse-1),
-          0 0 18px var(--pulse-2);
+
+      :root,
+      [data-theme="dark"] {
+        --gold: #ffd500;
+        --gold2: #ffd500;
+        --white: #ffffff;
+        --bg: #000000;
+        --muted: rgba(255, 255, 255, 0.35);
+        --ticker-border: rgba(255, 255, 255, 0.08);
+        --body-text: rgba(255, 255, 255, 0.45);
+        --button-border: rgba(255, 246, 202, 0.6);
+        --toggle-border: rgba(255, 246, 202, 0.4);
+        --glow-1: rgba(255, 213, 0, 0.7);
+        --glow-2: rgba(255, 213, 0, 0.4);
+        --glow-3: rgba(255, 213, 0, 0.15);
+        --pulse-base: rgba(255, 255, 255, 0.2);
+        --pulse-1: rgba(255, 213, 0, 0.45);
+        --pulse-2: rgba(255, 255, 255, 0.15);
+        --hover-shadow-1: rgba(255, 213, 0, 0.55);
+        --hover-shadow-2: rgba(255, 213, 0, 0.3);
+        --toggle-hover-shadow: rgba(255, 213, 0, 0.3);
       }
-    }
 
-    .glow-button {
-      display: inline-block;
-      margin-top: clamp(16px, 3vw, 32px);
-      padding: clamp(12px, 1.5vw, 16px) clamp(24px, 3vw, 30px);
-      cursor: pointer;
-      border-radius: 100px;
-      background-color: transparent;
-      border: 1.5px solid var(--button-border);
-      font-family: 'Source Code Pro', monospace;
-      font-weight: 700;
-      font-size: clamp(0.65rem, 0.9vw, 0.75rem);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--white);
-      text-decoration: none;
-      transition:
-        background-color 0.25s ease,
-        color 0.25s ease,
-        box-shadow 0.25s ease,
-        border-color 0.25s ease;
-    }
+      [data-theme="light"] {
+        --gold: #ffec3f;
+        --gold2: #9d9129;
+        --white: #1e1e1e;
+        --bg: #eceaea;
+        --muted: rgba(0, 0, 0, 0.35);
+        --ticker-border: rgba(0, 0, 0, 0.1);
+        --body-text: rgba(0, 0, 0, 0.5);
+        --button-border: rgba(0, 0, 0, 0.3);
+        --toggle-border: rgba(0, 0, 0, 0.25);
+        --glow-1: rgba(163, 118, 10, 0.35);
+        --glow-2: rgba(163, 118, 10, 0.18);
+        --glow-3: rgba(163, 118, 10, 0.08);
+        --pulse-base: rgba(0, 0, 0, 0.1);
+        --pulse-1: rgba(163, 118, 10, 0.3);
+        --pulse-2: rgba(0, 0, 0, 0.08);
+        --hover-shadow-1: rgba(163, 118, 10, 0.3);
+        --hover-shadow-2: rgba(163, 118, 10, 0.15);
+        --toggle-hover-shadow: rgba(163, 118, 10, 0.25);
+      }
 
-    .glow-button:hover {
-      background-color: var(--gold);
-      color: var(--white);
-      border-color: var(--gold);
-      box-shadow:
-        0 0 10px var(--hover-shadow-1),
-        0 0 28px var(--hover-shadow-2);
-    }
+      body {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+        background-color: var(--bg);
+        font-family: "Anek Latin", Arial, sans-serif;
+        transition: background-color 0.25s ease;
+      }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
+      /* ── Tickers ── */
+      .ticker-wrap {
+        position: fixed;
+        width: 100%;
+        overflow: hidden;
+        padding: 8px 0;
+        z-index: 10;
+      }
 
-    #theme-toggle {
-      position: fixed;
-      top: clamp(46px, 6vh, 60px);
-      left: clamp(16px, 3vw, 32px);
-      z-index: 20;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 1.5px solid var(--toggle-border);
-      background-color: transparent;
-      color: var(--white);
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
-    }
+      .ticker-wrap.top {
+        top: 0;
+        border-bottom: 1px solid var(--ticker-border);
+      }
 
-    #theme-toggle:hover {
-      border-color: var(--gold);
-      box-shadow: 0 0 12px var(--toggle-hover-shadow);
-    }
+      .ticker-wrap.bottom {
+        bottom: 0;
+        border-top: 1px solid var(--ticker-border);
+      }
 
-    #theme-toggle:active {
-      transform: scale(0.92);
-    }
+      .ticker {
+        display: flex;
+        white-space: nowrap;
+        animation: scroll-left 30s linear infinite;
+      }
 
-    #theme-toggle svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+      .ticker.reverse {
+        animation: scroll-right 35s linear infinite;
+      }
 
-    [data-theme="dark"] #theme-toggle .icon-moon,
-    [data-theme="light"] #theme-toggle .icon-sun {
-      display: none;
-    }
-  </style>
-</head>
-<body>
+      .ticker-item {
+        font-family: "Anek Latin", Arial, sans-serif;
+        font-size: clamp(0.65rem, 0.9vw, 0.78rem);
+        letter-spacing: 0.1em;
+        padding: 0 1.2rem;
+        color: var(--muted);
+      }
 
-  <button id="theme-toggle" aria-label="Toggle light/dark mode">
-    <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="4.5"></circle>
-      <line x1="12" y1="1.5" x2="12" y2="4"></line>
-      <line x1="12" y1="20" x2="12" y2="22.5"></line>
-      <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
-      <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
-      <line x1="1.5" y1="12" x2="4" y2="12"></line>
-      <line x1="20" y1="12" x2="22.5" y2="12"></line>
-      <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
-      <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
-    </svg>
-    <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
-    </svg>
-  </button>
+      .ticker-item.gold {
+        color: var(--gold2);
+        opacity: 0.85;
+      }
 
-  <div class="ticker-wrap top">
-    <div class="ticker" id="t1"></div>
-  </div>
+      @keyframes scroll-left {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
 
-  <div class="hero">
-    <h2>A New Era Begins</h2>
-    <h1>SPOT<span>LIGHT</span></h1>
-    <p><span>Where Fame Lives</span></p>
-    <a href="login.html" class="glow-button">Enter the Spotlight</a>
-  </div>
+      @keyframes scroll-right {
+        0% {
+          transform: translateX(-50%);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
 
-  <div class="ticker-wrap bottom">
-    <div class="ticker reverse" id="t2"></div>
-  </div>
+      /* ── Hero content ── */
+      .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(6px, 1.5vw, 14px);
+        text-align: center;
+        padding: 0 1rem;
+      }
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="scripts/supabase.js"></script>
-  <script src="scripts/theme.js"></script>
+      h2 {
+        font-family: "DM Mono", monospace;
+        font-size: clamp(0.55rem, 0.8vw, 0.65rem);
+        font-weight: 300;
+        letter-spacing: 0.6em;
+        color: var(--gold2);
+        opacity: 0.85;
+        text-transform: uppercase;
+      }
 
-  <script>
-    const names = [
-      "BEYONCÉ", "TAYLOR SWIFT", "BAD BUNNY", "PEDRO PASCAL", "NICKI MINAJ",
-      "GOJO", "NARUTO", "SABRINA CARPENTER", "LIZZO", "BILLIE EILISH",
-      "CHAEWON", "BLACKPINK", "BTS", "ARIANA GRANDE", "KENDRICK LAMAR"
-    ];
-    const tags = [
-      "#SPOTLIGHT", "#NOCONTEXT", "#ARMY", "#CRAZY", "#PROBLEMATIC",
-      "#SCANDAL", "#DRAMA", "#TRENDING", "#FANWAR", "#CANCELLED", "#VIRAL",
-      "#CHAOS", "#FEUDS", "#ICONS", "#FANDOMS", "#LOVE", "#SHIP", "#TEA"
-    ];
+      h1 {
+        font-family: "Anek Latin", Arial, sans-serif;
+        font-size: clamp(3.5rem, 10vw, 6rem);
+        color: var(--white);
+        line-height: 1;
+      }
 
-    function buildTicker(el, items, goldEvery = 3) {
-      const repeated = [...items, ...items, ...items, ...items];
-      repeated.forEach((txt, i) => {
-        const span = document.createElement('span');
-        span.className = 'ticker-item' + (i % goldEvery === 1 ? ' gold' : '');
-        span.textContent = txt + ' · ';
-        el.appendChild(span);
-      });
-    }
+      h1 span {
+        color: var(--gold);
+        text-shadow:
+          0 0 8px var(--glow-1),
+          0 0 22px var(--glow-2),
+          0 0 40px var(--glow-3);
+      }
 
-    buildTicker(document.getElementById('t1'), names, 2);
-    buildTicker(document.getElementById('t2'), tags, 2);
-  </script>
+      p {
+        font-family: "DM Mono", monospace;
+        font-size: clamp(0.6rem, 0.85vw, 0.7rem);
+        font-weight: 300;
+        letter-spacing: 0.35em;
+        color: var(--body-text);
+        text-transform: uppercase;
+        animation: pulse-glow 8s ease-in-out infinite;
+      }
 
-</body>
+      @keyframes pulse-glow {
+        0%,
+        100% {
+          text-shadow: 0 0 4px var(--pulse-base);
+        }
+        50% {
+          text-shadow:
+            0 0 8px var(--pulse-1),
+            0 0 18px var(--pulse-2);
+        }
+      }
+
+      .glow-button {
+        display: inline-block;
+        margin-top: clamp(16px, 3vw, 32px);
+        padding: clamp(12px, 1.5vw, 16px) clamp(24px, 3vw, 30px);
+        cursor: pointer;
+        border-radius: 100px;
+        background-color: transparent;
+        border: 1.5px solid var(--button-border);
+        font-family: "Source Code Pro", monospace;
+        font-weight: 700;
+        font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--white);
+        text-decoration: none;
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease,
+          box-shadow 0.25s ease,
+          border-color 0.25s ease;
+      }
+
+      .glow-button:hover {
+        background-color: var(--gold);
+        color: var(--white);
+        border-color: var(--gold);
+        box-shadow:
+          0 0 10px var(--hover-shadow-1),
+          0 0 28px var(--hover-shadow-2);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      #theme-toggle {
+        position: fixed;
+        top: clamp(46px, 6vh, 60px);
+        left: clamp(16px, 3vw, 32px);
+        z-index: 20;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1.5px solid var(--toggle-border);
+        background-color: transparent;
+        color: var(--white);
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition:
+          border-color 0.25s ease,
+          box-shadow 0.25s ease,
+          transform 0.15s ease;
+      }
+
+      #theme-toggle:hover {
+        border-color: var(--gold);
+        box-shadow: 0 0 12px var(--toggle-hover-shadow);
+      }
+
+      #theme-toggle:active {
+        transform: scale(0.92);
+      }
+
+      #theme-toggle svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      [data-theme="dark"] #theme-toggle .icon-moon,
+      [data-theme="light"] #theme-toggle .icon-sun {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="theme-toggle" aria-label="Toggle light/dark mode">
+      <svg
+        class="icon-sun"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="12" cy="12" r="4.5"></circle>
+        <line x1="12" y1="1.5" x2="12" y2="4"></line>
+        <line x1="12" y1="20" x2="12" y2="22.5"></line>
+        <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+        <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+        <line x1="1.5" y1="12" x2="4" y2="12"></line>
+        <line x1="20" y1="12" x2="22.5" y2="12"></line>
+        <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+        <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+      </svg>
+      <svg
+        class="icon-moon"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+      </svg>
+    </button>
+
+    <div class="ticker-wrap top">
+      <div class="ticker" id="t1"></div>
+    </div>
+
+    <div class="hero">
+      <h2>A New Era Begins</h2>
+      <h1>SPOT<span>LIGHT</span></h1>
+      <p><span>Where Fame Lives</span></p>
+      <a href="login.html" class="glow-button">Enter the Spotlight</a>
+    </div>
+
+    <div class="ticker-wrap bottom">
+      <div class="ticker reverse" id="t2"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
+    <script src="scripts/theme.js"></script>
+
+    <script>
+      const names = [
+        "BEYONCÉ",
+        "TAYLOR SWIFT",
+        "BAD BUNNY",
+        "PEDRO PASCAL",
+        "NICKI MINAJ",
+        "GOJO",
+        "NARUTO",
+        "SABRINA CARPENTER",
+        "LIZZO",
+        "BILLIE EILISH",
+        "CHAEWON",
+        "BLACKPINK",
+        "BTS",
+        "ARIANA GRANDE",
+        "KENDRICK LAMAR",
+      ];
+      const tags = [
+        "#SPOTLIGHT",
+        "#NOCONTEXT",
+        "#ARMY",
+        "#CRAZY",
+        "#PROBLEMATIC",
+        "#SCANDAL",
+        "#DRAMA",
+        "#TRENDING",
+        "#FANWAR",
+        "#CANCELLED",
+        "#VIRAL",
+        "#CHAOS",
+        "#FEUDS",
+        "#ICONS",
+        "#FANDOMS",
+        "#LOVE",
+        "#SHIP",
+        "#TEA",
+      ];
+
+      function buildTicker(el, items, goldEvery = 3) {
+        const repeated = [...items, ...items, ...items, ...items];
+        repeated.forEach((txt, i) => {
+          const span = document.createElement("span");
+          span.className = "ticker-item" + (i % goldEvery === 1 ? " gold" : "");
+          span.textContent = txt + " · ";
+          el.appendChild(span);
+        });
+      }
+
+      buildTicker(document.getElementById("t1"), names, 2);
+      buildTicker(document.getElementById("t2"), tags, 2);
+    </script>
+  </body>
 </html>

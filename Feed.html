@@ -1,1042 +1,1288 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- these fonts were referenced but not imported -->
-  <link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
-  <title>Spotlight | Feed</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- these fonts were referenced but not imported -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <title>Spotlight | Feed</title>
 
-  <script>
-    window.addEventListener('error', function (e) {
-      console.error('DEBUG ERROR:', e.message, (e.filename || '') + ':' + (e.lineno || ''));
-    });
-    window.addEventListener('unhandledrejection', function (e) {
-      console.error('DEBUG PROMISE REJECTION:', e.reason?.message || e.reason);
-    });
-  </script>
-  <script>
-    // apply saved theme immediately to avoid a flash of the wrong theme.
-    (function () {
-      var saved = localStorage.getItem('spotlight-theme');
-      if (saved) document.documentElement.setAttribute('data-theme', saved);
-      sessionStorage.setItem('spotlight-last-page', 'Feed.html');
-    })();
-  </script>
+    <script>
+      window.addEventListener("error", function (e) {
+        console.error(
+          "DEBUG ERROR:",
+          e.message,
+          (e.filename || "") + ":" + (e.lineno || ""),
+        );
+      });
+      window.addEventListener("unhandledrejection", function (e) {
+        console.error(
+          "DEBUG PROMISE REJECTION:",
+          e.reason?.message || e.reason,
+        );
+      });
+    </script>
+    <script>
+      // apply saved theme immediately to avoid a flash of the wrong theme.
+      (function () {
+        var saved = localStorage.getItem("spotlight-theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+        sessionStorage.setItem("spotlight-last-page", "Feed.html");
+      })();
+    </script>
 
-  <style>
-    /* added repeated colors to root 
+    <style>
+      /* added repeated colors to root 
     you can bring back the old colors if you want */
-    :root,
-    [data-theme="dark"] {
-      --bg: #0e0e0e; /* softer black (was #000 */
-      --text: #ffffff;
-      --surface: #1a1a1a;
-      --color-border: #333;
-      --color-muted: #888;
-      --color-accent: #e2bb00; /* changed to fit the same accent as the other pages (was: #dd991b) */
-      --color-accent-rgb: 226, 187, 0; /* was 221, 153, 27, left over from the old accent hex above */
-      --toggle-border: rgba(255, 255, 255, 0.25);
-      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-    }
+      :root,
+      [data-theme="dark"] {
+        --bg: #0e0e0e; /* softer black (was #000 */
+        --text: #ffffff;
+        --surface: #1a1a1a;
+        --color-border: #333;
+        --color-muted: #888;
+        --color-accent: #e2bb00; /* changed to fit the same accent as the other pages (was: #dd991b) */
+        --color-accent-rgb:
+          226, 187, 0; /* was 221, 153, 27, left over from the old accent hex above */
+        --toggle-border: rgba(255, 255, 255, 0.25);
+        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      }
 
-    [data-theme="light"] {
-      --bg: #f4f3f1;
-      --text: #1e1e1e;
-      --surface: #ffffff;
-      --color-border: #dcdcdc;
-      --color-muted: #767676;
-      --color-accent: #e2bb00;
-      --color-accent-rgb: 226, 187, 0;
-      --toggle-border: rgba(0, 0, 0, 0.25);
-      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-    }
+      [data-theme="light"] {
+        --bg: #f4f3f1;
+        --text: #1e1e1e;
+        --surface: #ffffff;
+        --color-border: #dcdcdc;
+        --color-muted: #767676;
+        --color-accent: #e2bb00;
+        --color-accent-rgb: 226, 187, 0;
+        --toggle-border: rgba(0, 0, 0, 0.25);
+        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+      }
 
-    * {
-      box-sizing: border-box;
-    }
+      * {
+        box-sizing: border-box;
+      }
 
-    body {
-      margin: 0;
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: Arial, sans-serif;
-      padding-bottom: 88px;
-      transition: background-color 0.25s ease, color 0.25s ease;
-    }
+      body {
+        margin: 0;
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+        padding-bottom: 88px;
+        transition:
+          background-color 0.25s ease,
+          color 0.25s ease;
+      }
 
-    #theme-toggle {
-      position: absolute;
-      top: 12px;
-      right: 20px;
-      z-index: 101;
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      border: 1.5px solid var(--toggle-border);
-      background-color: transparent;
-      color: var(--text);
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
-    }
+      #theme-toggle {
+        position: absolute;
+        top: 12px;
+        right: 20px;
+        z-index: 101;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 1.5px solid var(--toggle-border);
+        background-color: transparent;
+        color: var(--text);
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition:
+          border-color 0.25s ease,
+          box-shadow 0.25s ease,
+          transform 0.15s ease;
+      }
 
-    #theme-toggle:hover {
-      border-color: var(--color-accent);
-      box-shadow: 0 0 12px var(--toggle-hover-shadow);
-    }
+      #theme-toggle:hover {
+        border-color: var(--color-accent);
+        box-shadow: 0 0 12px var(--toggle-hover-shadow);
+      }
 
-    #theme-toggle:active {
-      transform: scale(0.92);
-    }
+      #theme-toggle:active {
+        transform: scale(0.92);
+      }
 
-    #theme-toggle svg {
-      width: 18px;
-      height: 18px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 1.8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
+      #theme-toggle svg {
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
 
-    [data-theme="dark"] #theme-toggle .icon-moon,
-    [data-theme="light"] #theme-toggle .icon-sun {
-      display: none;
-    }
+      [data-theme="dark"] #theme-toggle .icon-moon,
+      [data-theme="light"] #theme-toggle .icon-sun {
+        display: none;
+      }
 
-    .Feed {
-      display: inline-block;
-      font-family: 'Urbanist', 'Open Sans', Arial, sans-serif;
-      font-size: 22px;
-      cursor: pointer;
-      margin-bottom: 20px;
-      margin-top: 20px;
-    }
+      .Feed {
+        display: inline-block;
+        font-family: "Urbanist", "Open Sans", Arial, sans-serif;
+        font-size: 22px;
+        cursor: pointer;
+        margin-bottom: 20px;
+        margin-top: 20px;
+      }
 
-   .logoAccent {
-      color: var(--color-accent);
-    }
+      .logoAccent {
+        color: var(--color-accent);
+      }
 
-    .toppage {
-      display: block;
-      color: var(--text);
-      font-weight: bold;
-      /* fixed positioning so Feed / For You / Following / Blazing stay on top while scrolling */
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      background-color: var(--bg);
-      border-bottom: 1px solid var(--color-border);
-      padding: 10px 20px;
-      z-index: 100;
-      box-sizing: border-box;
-    }
+      .toppage {
+        display: block;
+        color: var(--text);
+        font-weight: bold;
+        /* fixed positioning so Feed / For You / Following / Blazing stay on top while scrolling */
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        background-color: var(--bg);
+        border-bottom: 1px solid var(--color-border);
+        padding: 10px 20px;
+        z-index: 100;
+        box-sizing: border-box;
+      }
 
-    .posts {
-      padding-top: 110px;
-      max-width: 680px;
-      margin: 0 auto;
-      padding-left: 16px;
-      padding-right: 16px;
-    }
+      .posts {
+        padding-top: 110px;
+        max-width: 680px;
+        margin: 0 auto;
+        padding-left: 16px;
+        padding-right: 16px;
+      }
 
-    /* centered instead of left-leaning, and given a little breathing room
+      /* centered instead of left-leaning, and given a little breathing room
     so the hover glow below doesn't feel cramped against neighbors 
     (stylistic change) */
-    .connectedPages {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 40px;
-    }
-
-    .connectedPages > div {
-      display: flex;
-      align-items: center;
-      padding: 6px 14px;
-      border-radius: 10px;
-      border: 1px solid transparent;
-      white-space: nowrap;
-    }
-
-    /* on narrow screens the three tabs + gap can overflow and wrap;
-    shrink the gap a bit so everything fits on one line */
-    @media (max-width: 480px) {
       .connectedPages {
-        gap: 16px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
       }
-    }
 
-    /* removed a leftover .connectedPages:hover rule that shrank the
+      .connectedPages > div {
+        display: flex;
+        align-items: center;
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+        white-space: nowrap;
+      }
+
+      /* on narrow screens the three tabs + gap can overflow and wrap;
+    shrink the gap a bit so everything fits on one line */
+      @media (max-width: 480px) {
+        .connectedPages {
+          gap: 16px;
+        }
+      }
+
+      /* removed a leftover .connectedPages:hover rule that shrank the
     container's own padding to 5px on hover, it made the whole row 
     jump/shift whenever the cursor passed over any part of it */
 
-    /* nicer hover: soft glow + gentle lift instead of a hard box-shadow snap 
+      /* nicer hover: soft glow + gentle lift instead of a hard box-shadow snap 
     (stylistic change) */
-    #forYou:hover,
-    #following:hover,
-    #blazing:hover {
-      color: var(--color-accent);
-      border: 1px solid rgba(var(--color-accent-rgb), 0.5);
-      background-color: rgba(var(--color-accent-rgb), 0.08);
-      box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.35);
-      transform: translateY(-2px);
-      transition: all 0.25s ease;
-    }
+      #forYou:hover,
+      #following:hover,
+      #blazing:hover {
+        color: var(--color-accent);
+        border: 1px solid rgba(var(--color-accent-rgb), 0.5);
+        background-color: rgba(var(--color-accent-rgb), 0.08);
+        box-shadow: 0 0 12px rgba(var(--color-accent-rgb), 0.35);
+        transform: translateY(-2px);
+        transition: all 0.25s ease;
+      }
 
-    .postCard {
-      display: flex;
-      flex-direction: column;
-      border: 1px solid var(--color-border);
-      border-radius: 16px;
-      padding: 16px;
-      margin-top: 20px;
-      transition: border-color 0.2s ease, transform 0.2s ease;
-    }
+      .postCard {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--color-border);
+        border-radius: 16px;
+        padding: 16px;
+        margin-top: 20px;
+        transition:
+          border-color 0.2s ease,
+          transform 0.2s ease;
+      }
 
-    .postCard:hover {
-      border-color: rgba(var(--color-accent-rgb), 0.4);
-      transform: translateY(-1px);
-    }
+      .postCard:hover {
+        border-color: rgba(var(--color-accent-rgb), 0.4);
+        transform: translateY(-1px);
+      }
 
-    .postMedia {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin-top: 14px;
-      overflow: hidden;
-      border-radius: 12px;
-    }
+      .postMedia {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 14px;
+        overflow: hidden;
+        border-radius: 12px;
+      }
 
-    .postMedia:has(img:only-child) { grid-template-columns: 1fr; }
-    .postMedia img { width: 100%; max-height: 360px; object-fit: cover; border-radius: 12px; }
+      .postMedia:has(img:only-child) {
+        grid-template-columns: 1fr;
+      }
+      .postMedia img {
+        width: 100%;
+        max-height: 360px;
+        object-fit: cover;
+        border-radius: 12px;
+      }
 
-    /* avatar is now a placeholder image slot instead of an emoji span */
-    .avatar {
-      display: inline-block;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      flex-shrink: 0;
-      border: 1px solid var(--color-border);
-    }
+      /* avatar is now a placeholder image slot instead of an emoji span */
+      .avatar {
+        display: inline-block;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 1px solid var(--color-border);
+      }
 
-    .userMeta {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-      align-items: center;
-      width: 100%;
-    }
+      .userMeta {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+        align-items: center;
+        width: 100%;
+      }
 
-    .postTime {
-      margin-left: auto;
-      color: var(--color-muted);
-      /* removed "gap: 70px" here, postTime isn't a flex/grid 
+      .postTime {
+        margin-left: auto;
+        color: var(--color-muted);
+        /* removed "gap: 70px" here, postTime isn't a flex/grid 
       container so that property had no effect; it was dead CSS */
-    }
-
-    .username {
-      color: var(--color-muted);
-    }
-
-    .tagRow {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .tag1,
-    .tag2 {
-      display: inline-block;
-      font-size: 14px;
-      color: var(--color-accent);
-    }
-
-    .tag1:hover,
-    .tag2:hover {
-      text-decoration: underline;
-      cursor: pointer;
-    }
-
-    .footerSpan {
-      display: flex;
-      gap: 20px;
-      margin-top: 10px;
-      align-items: center;
-      width: 100%;
-      color: var(--color-muted);
-      font-size: 13px;
-    }
-
-    .reaction {
-      display: inline-flex;
-      gap: 5px;
-      align-items: center;
-      padding: 0;
-      color: inherit;
-      background: none;
-      border: 0;
-      font: inherit;
-      cursor: pointer;
-      transition: color 0.2s ease;
-    }
-
-    .reaction svg {
-      width: 17px;
-      height: 17px;
-      fill: none;
-      stroke: currentColor;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-width: 1.8;
-    }
-
-    .likes:hover { color: greenyellow }
-    .retweets:hover { color: var(--color-accent);; }
-    .reply:hover {
-      color: var(--text);
-    }
-    .dislikes:hover { color: red; }
-
-    /* filled/active state once a user has actually reacted */
-    .likes.active { color: greenyellow; }
-    .retweets.active { color: var(--color-accent);; }
-    .dislikes.active { color: #ff5c5c; }
-    .reaction.active svg { fill: currentColor; }
-    .reaction:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .replySection {
-      margin-top: 12px;
-      display: none;
-    }
-
-    .replySection.open {
-      display: block;
-    }
-
-    .replyForm {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .replyForm textarea {
-      flex: 1;
-      resize: none;
-      min-height: 38px;
-      max-height: 100px;
-      background: var(--surface);
-      border: 1px solid var(--color-border);
-      border-radius: 10px;
-      color: var(--text);
-      font: inherit;
-      padding: 8px 10px;
-    }
-
-    .replyForm textarea:focus {
-      outline: 1px solid var(--color-accent);
-    }
-
-    .replySubmit {
-      background: var(--color-accent);
-      color: #111;
-      font-weight: 700;
-      border: none;
-      border-radius: 999px;
-      padding: 0 16px;
-      cursor: pointer;
-      font-size: 13px;
-    }
-
-    .replySubmit:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .replyList {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .replyItem {
-      display: flex;
-      gap: 8px;
-      font-size: 15px;
-      align-items: flex-start;
-    }
-
-    .replyItem .avatar {
-      width: 30px;
-      height: 30px;
-    }
-
-    .replyItem .replyMeta {
-      color: var(--color-muted);
-      margin-right: 6px;
-      font-size: 13px;
-    }
-
-    .replyItem .replyMeta .displayName {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    /* fade-in on load */
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .toppage {
-      animation: fadeIn 0.6s ease both;
-    }
-
-    .postCard {
-      opacity: 0;
-      animation: fadeIn 0.6s ease forwards;
-    }
-
-    /* stagger each card slightly so they don't all pop in at once */
-    .postCard:nth-child(1) { animation-delay: 0.1s; }
-    .postCard:nth-child(2) { animation-delay: 0.25s; }
-    .postCard:nth-child(3) { animation-delay: 0.4s; }
-    .postCard:nth-child(4) { animation-delay: 0.55s; }
-    .postCard:nth-child(5) { animation-delay: 0.7s; }
-
-    .bottomTab {
-      position: fixed;
-      left: 0;
-      bottom: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 40px;
-      width: 100%;
-      padding: 10px 20px;
-      background-color: var(--bg);
-      border-top: 1px solid var(--color-border);
-      z-index: 100;
-    }
-
-    .bottomTab a {
-      padding: 6px 14px;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      color: var(--text);
-      font: bold 16px 'Urbanist', Arial, sans-serif;
-      text-align: center;
-      text-decoration: none;
-      transition: all 0.25s ease;
-    }
-
-    .bottomTab a:hover,
-    .bottomTab a[aria-current="page"] {
-      color: #ffd166;
-      border-color: rgba(255, 209, 102, 0.5);
-      background-color: rgba(255, 209, 102, 0.08);
-      box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
-      transform: translateY(-2px);
-    }
-
-    .composeButton {
-      position: fixed;
-      right: 20px;
-      bottom: 92px;
-      display: grid;
-      width: 56px;
-      height: 56px;
-      place-items: center;
-      color: #111;
-      background: var(--color-accent);
-      border-radius: 50%;
-      box-shadow: 0 7px 20px rgba(0, 0, 0, 0.45);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      z-index: 101;
-    }
-
-    .composeButton:hover {
-      transform: translateY(-3px) scale(1.04);
-      box-shadow: 0 10px 24px rgba(var(--color-accent-rgb), 0.32);
-    }
-
-    .composeButton svg { width: 27px; height: 27px; }
-
-    @media (max-width: 480px) {
-      .composeButton { right: 16px; }
-      .bottomTab { gap: 8px; }
-      .bottomTab a { padding: 6px 8px; font-size: 14px; }
-    }
-  </style>
-</head>
-<body>
-
-  <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
-    <symbol id="icon-like" viewBox="0 0 24 24"><path d="M7 10v10H4V10h3Zm3 10h7.2a2 2 0 0 0 1.95-1.56l1.1-5A2 2 0 0 0 18.3 11H14l.55-3.2A2.9 2.9 0 0 0 11.7 4L8.5 10.4V20H10Z" /></symbol>
-    <symbol id="icon-retweet" viewBox="0 0 24 24"><path d="m17 3 4 4-4 4" /><path d="M3 7h18" /><path d="m7 21-4-4 4-4" /><path d="M21 17H3" /></symbol>
-    <symbol id="icon-reply" viewBox="0 0 24 24"><path d="M5 5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-5 3v-3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" /></symbol>
-    <symbol id="icon-dislike" viewBox="0 0 24 24"><path d="M7 14V4H4v10h3Zm3-10h7.2a2 2 0 0 1 1.95 1.56l1.1 5A2 2 0 0 1 18.3 13H14l.55 3.2A2.9 2.9 0 0 1 11.7 20l-3.2-6.4V4H10Z" /></symbol>
-  </svg>
-
-  <nav>
-    <div class="toppage">
-      <button id="theme-toggle" aria-label="Toggle light/dark mode">
-        <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="12" cy="12" r="4.5"></circle>
-          <line x1="12" y1="1.5" x2="12" y2="4"></line>
-          <line x1="12" y1="20" x2="12" y2="22.5"></line>
-          <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
-          <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
-          <line x1="1.5" y1="12" x2="4" y2="12"></line>
-          <line x1="20" y1="12" x2="22.5" y2="12"></line>
-          <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
-          <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
-        </svg>
-        <svg class="icon-moon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
-        </svg>
-      </button>
-      <!-- "light" wrapped in .logoAccent for the yellow accent color -->
-      <span class="Feed">Spot<span class="logoAccent">Light</span> Feed</span>
-      <div class="connectedPages">
-        <div id="forYou">For You</div>
-        <div id="following">Following</div>
-        <div id="blazing">🔥Blazing</div>
-      </div>
-    </div>
-  </nav>
-
-  <div class="posts">
-    <!-- static filler posts removed: posts are now loaded from supabase,
-    including AI-generated ones created via a supabase edge function -->
-  </div>
-
-  <a class="composeButton" href="tweet-tab.html" aria-label="Create a post">
-    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
-      <path d="m12 2 1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5L12 2Z" />
-      <path d="m19 15 .6 2.4L22 18l-2.4.6L19 21l-.6-2.4L16 18l2.4-.6L19 15Z" />
-    </svg>
-  </a>
-
-  <nav class="bottomTab" aria-label="Primary navigation">
-    <a href="Feed.html" aria-current="page">Feed</a>
-    <a href="events.html">Explore</a>
-    <a href="notifications.html">Beams</a>
-    <a href="Stage.html">Stage</a>
-    <a href="IconPage.html">Profile</a>
-  </nav>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="scripts/supabase.js"></script>
-  <script src="scripts/theme.js"></script>
-  <script src="scripts/worlds.js"></script>
-  <script>
-    // worlds.js defines a plain `const worlds` array with no window
-    // assignment of its own (that normally happens in world-scripts.js,
-    // which also does DOM setup that doesn't apply on this page). mirror
-    // just the id-assignment part here so resolveSelectedWorlds() can look
-    // pregen worlds up by the same ids saved in profiles.selected_worlds.
-    worlds.forEach((world, i) => { world.id = i; });
-    window.WORLDS = worlds;
-  </script>
-  <script>
-    // maps a footer button's class to the reaction_type value stored in post_reactions
-    const REACTION_TYPE_BY_CLASS = { likes: 'like', dislikes: 'dislike', retweets: 'repost' };
-
-    function createReaction(type, icon, count) {
-      const button = document.createElement('button');
-      button.className = `reaction ${type}`;
-      const label = { likes: 'Like', retweets: 'Retweet', dislikes: 'Dislike', reply: 'Reply' }[type];
-      button.setAttribute('aria-label', `${label} this post`);
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
-      use.setAttribute('href', `#${icon}`);
-      svg.appendChild(use);
-      const countSpan = document.createElement('span');
-      countSpan.className = 'reactionCount';
-      countSpan.textContent = count;
-      button.append(svg, countSpan);
-      return button;
-    }
-
-    function formatCount(value) {
-      return value >= 1000 ? `${(value / 1000).toFixed(1).replace('.0', '')}k` : value;
-    }
-
-    function timeSince(dateString) {
-      const minutes = Math.max(1, Math.floor((Date.now() - new Date(dateString)) / 60000));
-      if (minutes < 60) return `${minutes}m`;
-      const hours = Math.floor(minutes / 60);
-      if (hours < 24) return `${hours}h`;
-      return `${Math.floor(hours / 24)}d`;
-    }
-
-    function renderReplyItem(reply, profile) {
-      const item = document.createElement('div');
-      item.className = reply.is_ai_generated ? 'replyItem aiReply' : 'replyItem';
-      const avatar = document.createElement('img');
-      avatar.className = 'avatar';
-      avatar.src = profile?.avatar_url || 'https://placehold.co/26x26/png';
-      avatar.alt = `${profile?.display_name || 'User'} avatar`;
-      const body = document.createElement('div');
-      const metaSpan = document.createElement('span');
-      metaSpan.className = 'replyMeta';
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'displayName';
-      nameSpan.textContent = profile?.display_name || 'Spotlight user';
-      metaSpan.append(nameSpan, document.createTextNode(` @${profile?.handle?.replace(/^@/, '') || 'spotlightuser'} · ${timeSince(reply.created_at)}`));
-      const textDiv = document.createElement('div');
-      textDiv.textContent = reply.content;
-      body.append(metaSpan, textDiv);
-      item.append(avatar, body);
-      return item;
-    }
-
-    function renderUserPost(post, profile, currentUser, myReactions, replies, profileById, botProfileById) {
-      const card = document.createElement('article');
-      card.className = post.is_ai_generated ? 'postCard aiPost' : 'postCard';
-      card.dataset.postId = post.id;
-
-      const meta = document.createElement('div');
-      meta.className = 'userMeta';
-      const avatar = document.createElement('img');
-      avatar.className = 'avatar';
-      avatar.src = profile?.avatar_url || 'https://placehold.co/36x36/png';
-      avatar.alt = `${profile?.display_name || 'User'} avatar`;
-      const displayName = document.createElement('span');
-      displayName.className = 'displayName';
-      displayName.textContent = profile?.display_name || 'Spotlight user';
-      const handle = document.createElement('span');
-      handle.className = 'username';
-      handle.textContent = profile?.handle ? `@${profile.handle.replace(/^@/, '')}` : '@spotlightuser';
-      const time = document.createElement('span');
-      time.className = 'postTime';
-      time.textContent = timeSince(post.created_at);
-      meta.append(avatar, displayName, handle, time);
-
-      const content = document.createElement('div');
-      content.className = 'postContent';
-      if (post.content) {
-        const text = document.createElement('p');
-        text.textContent = post.content;
-        content.appendChild(text);
-      }
-      if (Array.isArray(post.image_urls) && post.image_urls.length) {
-        const media = document.createElement('div');
-        media.className = 'postMedia';
-        post.image_urls.forEach((url) => {
-          const image = document.createElement('img');
-          image.src = url;
-          image.alt = 'Post image';
-          media.appendChild(image);
-        });
-        content.appendChild(media);
       }
 
-      const footer = document.createElement('div');
-      footer.className = 'footerSpan';
-      const likeBtn = createReaction('likes', 'icon-like', formatCount(post.like_count || 0));
-      const retweetBtn = createReaction('retweets', 'icon-retweet', formatCount(post.repost_count || 0));
-      const dislikeBtn = createReaction('dislikes', 'icon-dislike', formatCount(post.dislike_count || 0));
-      const replyBtn = createReaction('reply', 'icon-reply', 'Reply');
+      .username {
+        color: var(--color-muted);
+      }
 
-      [likeBtn, dislikeBtn, retweetBtn].forEach((button) => {
-        const type = REACTION_TYPE_BY_CLASS[[...button.classList].find((c) => c in REACTION_TYPE_BY_CLASS)];
-        if (myReactions.has(type)) button.classList.add('active');
-        button.addEventListener('click', () => toggleReaction(post.id, type, button, currentUser));
-      });
+      .tagRow {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
 
-      footer.append(likeBtn, retweetBtn, dislikeBtn, replyBtn);
-      content.appendChild(footer);
+      .tag1,
+      .tag2 {
+        display: inline-block;
+        font-size: 14px;
+        color: var(--color-accent);
+      }
 
-      // reply section: hidden thread + composer, toggled by the Reply button
-      const replySection = document.createElement('div');
-      replySection.className = 'replySection';
+      .tag1:hover,
+      .tag2:hover {
+        text-decoration: underline;
+        cursor: pointer;
+      }
 
-      const replyList = document.createElement('div');
-      replyList.className = 'replyList';
-      replies.forEach((reply) => replyList.appendChild(renderReplyItem(
-        reply,
-        reply.bot_user_id ? botProfileById.get(reply.bot_user_id) : profileById.get(reply.user_id)
-      )));
+      .footerSpan {
+        display: flex;
+        gap: 20px;
+        margin-top: 10px;
+        align-items: center;
+        width: 100%;
+        color: var(--color-muted);
+        font-size: 13px;
+      }
 
-      const replyForm = document.createElement('div');
-      replyForm.className = 'replyForm';
-      const textarea = document.createElement('textarea');
-      textarea.placeholder = currentUser ? 'Post your reply' : 'Log in to reply';
-      textarea.disabled = !currentUser;
-      textarea.maxLength = 250;
-      const submitBtn = document.createElement('button');
-      submitBtn.className = 'replySubmit';
-      submitBtn.textContent = 'Reply';
-      submitBtn.disabled = !currentUser;
-      submitBtn.addEventListener('click', async () => {
-        const value = textarea.value.trim();
-        if (!value || !currentUser) return;
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Posting...';
-        const { data, error } = await supabaseClient
-          .from('post_replies')
-          .insert({ post_id: post.id, user_id: currentUser.id, content: value })
-          .select()
-          .single();
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Reply';
-        if (error) {
-          console.error('Could not post reply:', error);
-          return;
+      .reaction {
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+        padding: 0;
+        color: inherit;
+        background: none;
+        border: 0;
+        font: inherit;
+        cursor: pointer;
+        transition: color 0.2s ease;
+      }
+
+      .reaction svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 1.8;
+      }
+
+      .likes:hover {
+        color: greenyellow;
+      }
+      .retweets:hover {
+        color: var(--color-accent);
+      }
+      .reply:hover {
+        color: var(--text);
+      }
+      .dislikes:hover {
+        color: red;
+      }
+
+      /* filled/active state once a user has actually reacted */
+      .likes.active {
+        color: greenyellow;
+      }
+      .retweets.active {
+        color: var(--color-accent);
+      }
+      .dislikes.active {
+        color: #ff5c5c;
+      }
+      .reaction.active svg {
+        fill: currentColor;
+      }
+      .reaction:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .replySection {
+        margin-top: 12px;
+        display: none;
+      }
+
+      .replySection.open {
+        display: block;
+      }
+
+      .replyForm {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .replyForm textarea {
+        flex: 1;
+        resize: none;
+        min-height: 38px;
+        max-height: 100px;
+        background: var(--surface);
+        border: 1px solid var(--color-border);
+        border-radius: 10px;
+        color: var(--text);
+        font: inherit;
+        padding: 8px 10px;
+      }
+
+      .replyForm textarea:focus {
+        outline: 1px solid var(--color-accent);
+      }
+
+      .replySubmit {
+        background: var(--color-accent);
+        color: #111;
+        font-weight: 700;
+        border: none;
+        border-radius: 999px;
+        padding: 0 16px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .replySubmit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .replyList {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .replyItem {
+        display: flex;
+        gap: 8px;
+        font-size: 15px;
+        align-items: flex-start;
+      }
+
+      .replyItem .avatar {
+        width: 30px;
+        height: 30px;
+      }
+
+      .replyItem .replyMeta {
+        color: var(--color-muted);
+        margin-right: 6px;
+        font-size: 13px;
+      }
+
+      .replyItem .replyMeta .displayName {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      /* fade-in on load */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-        replyList.appendChild(renderReplyItem(data, profileById.get(currentUser.id)));
-        textarea.value = '';
-        triggerBotReplies('user_replied');
-      });
-      replyForm.append(textarea, submitBtn);
-      replySection.append(replyForm, replyList);
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-      // bot replies: triggered two ways -- (1) first time this thread is
-      // opened with zero replies, 3 random bots reply to the post itself,
-      // (2) every time the user submits their own reply, bots (chosen by
-      // @ mention if present, else random, capped at 3 replies per bot
-      // per thread) reply again to the thread. both calls hit a separate
-      // edge function so the caps/mentions logic stays isolated from the
-      // ai-post generation logic.
-      let hasTriggeredInitialBotReplies = replies.length > 0;
-      async function triggerBotReplies(reason) {
-        try {
-          const { data: result, error } = await supabaseClient.functions.invoke('generate-bot-replies', {
-            body: { post_id: post.id, reason }
+      .toppage {
+        animation: fadeIn 0.6s ease both;
+      }
+
+      .postCard {
+        opacity: 0;
+        animation: fadeIn 0.6s ease forwards;
+      }
+
+      /* stagger each card slightly so they don't all pop in at once */
+      .postCard:nth-child(1) {
+        animation-delay: 0.1s;
+      }
+      .postCard:nth-child(2) {
+        animation-delay: 0.25s;
+      }
+      .postCard:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      .postCard:nth-child(4) {
+        animation-delay: 0.55s;
+      }
+      .postCard:nth-child(5) {
+        animation-delay: 0.7s;
+      }
+
+      .bottomTab {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        width: 100%;
+        padding: 10px 20px;
+        background-color: var(--bg);
+        border-top: 1px solid var(--color-border);
+        z-index: 100;
+      }
+
+      .bottomTab a {
+        padding: 6px 14px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        color: var(--text);
+        font:
+          bold 16px "Urbanist",
+          Arial,
+          sans-serif;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.25s ease;
+      }
+
+      .bottomTab a:hover,
+      .bottomTab a[aria-current="page"] {
+        color: #ffd166;
+        border-color: rgba(255, 209, 102, 0.5);
+        background-color: rgba(255, 209, 102, 0.08);
+        box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
+        transform: translateY(-2px);
+      }
+
+      .composeButton {
+        position: fixed;
+        right: 20px;
+        bottom: 92px;
+        display: grid;
+        width: 56px;
+        height: 56px;
+        place-items: center;
+        color: #111;
+        background: var(--color-accent);
+        border-radius: 50%;
+        box-shadow: 0 7px 20px rgba(0, 0, 0, 0.45);
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease;
+        z-index: 101;
+      }
+
+      .composeButton:hover {
+        transform: translateY(-3px) scale(1.04);
+        box-shadow: 0 10px 24px rgba(var(--color-accent-rgb), 0.32);
+      }
+
+      .composeButton svg {
+        width: 27px;
+        height: 27px;
+      }
+
+      @media (max-width: 480px) {
+        .composeButton {
+          right: 16px;
+        }
+        .bottomTab {
+          gap: 8px;
+        }
+        .bottomTab a {
+          padding: 6px 8px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <svg
+      width="0"
+      height="0"
+      aria-hidden="true"
+      focusable="false"
+      style="position: absolute"
+    >
+      <symbol id="icon-like" viewBox="0 0 24 24">
+        <path
+          d="M7 10v10H4V10h3Zm3 10h7.2a2 2 0 0 0 1.95-1.56l1.1-5A2 2 0 0 0 18.3 11H14l.55-3.2A2.9 2.9 0 0 0 11.7 4L8.5 10.4V20H10Z"
+        />
+      </symbol>
+      <symbol id="icon-retweet" viewBox="0 0 24 24">
+        <path d="m17 3 4 4-4 4" />
+        <path d="M3 7h18" />
+        <path d="m7 21-4-4 4-4" />
+        <path d="M21 17H3" />
+      </symbol>
+      <symbol id="icon-reply" viewBox="0 0 24 24">
+        <path
+          d="M5 5h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-5 3v-3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"
+        />
+      </symbol>
+      <symbol id="icon-dislike" viewBox="0 0 24 24">
+        <path
+          d="M7 14V4H4v10h3Zm3-10h7.2a2 2 0 0 1 1.95 1.56l1.1 5A2 2 0 0 1 18.3 13H14l.55 3.2A2.9 2.9 0 0 1 11.7 20l-3.2-6.4V4H10Z"
+        />
+      </symbol>
+    </svg>
+
+    <nav>
+      <div class="toppage">
+        <button id="theme-toggle" aria-label="Toggle light/dark mode">
+          <svg
+            class="icon-sun"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="12" cy="12" r="4.5"></circle>
+            <line x1="12" y1="1.5" x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="22.5"></line>
+            <line x1="4.2" y1="4.2" x2="5.9" y2="5.9"></line>
+            <line x1="18.1" y1="18.1" x2="19.8" y2="19.8"></line>
+            <line x1="1.5" y1="12" x2="4" y2="12"></line>
+            <line x1="20" y1="12" x2="22.5" y2="12"></line>
+            <line x1="4.2" y1="19.8" x2="5.9" y2="18.1"></line>
+            <line x1="18.1" y1="5.9" x2="19.8" y2="4.2"></line>
+          </svg>
+          <svg
+            class="icon-moon"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"></path>
+          </svg>
+        </button>
+        <!-- "light" wrapped in .logoAccent for the yellow accent color -->
+        <span class="Feed">Spot<span class="logoAccent">Light</span> Feed</span>
+        <div class="connectedPages">
+          <div id="forYou">For You</div>
+          <div id="following">Following</div>
+          <div id="blazing">🔥Blazing</div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="posts">
+      <!-- static filler posts removed: posts are now loaded from supabase,
+    including AI-generated ones created via a supabase edge function -->
+    </div>
+
+    <a class="composeButton" href="tweet-tab.html" aria-label="Create a post">
+      <svg
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+      >
+        <path
+          d="m12 2 1.5 6.5L20 10l-6.5 1.5L12 18l-1.5-6.5L4 10l6.5-1.5L12 2Z"
+        />
+        <path
+          d="m19 15 .6 2.4L22 18l-2.4.6L19 21l-.6-2.4L16 18l2.4-.6L19 15Z"
+        />
+      </svg>
+    </a>
+
+    <nav class="bottomTab" aria-label="Primary navigation">
+      <a href="Feed.html" aria-current="page">Feed</a>
+      <a href="events.html">Explore</a>
+      <a href="notifications.html">Beams</a>
+      <a href="Stage.html">Stage</a>
+      <a href="IconPage.html">Profile</a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
+    <script src="scripts/theme.js"></script>
+    <script src="scripts/worlds.js"></script>
+    <script>
+      // worlds.js defines a plain `const worlds` array with no window
+      // assignment of its own (that normally happens in world-scripts.js,
+      // which also does DOM setup that doesn't apply on this page). mirror
+      // just the id-assignment part here so resolveSelectedWorlds() can look
+      // pregen worlds up by the same ids saved in profiles.selected_worlds.
+      worlds.forEach((world, i) => {
+        world.id = i;
+      });
+      window.WORLDS = worlds;
+    </script>
+    <script>
+      // maps a footer button's class to the reaction_type value stored in post_reactions
+      const REACTION_TYPE_BY_CLASS = {
+        likes: "like",
+        dislikes: "dislike",
+        retweets: "repost",
+      };
+
+      function createReaction(type, icon, count) {
+        const button = document.createElement("button");
+        button.className = `reaction ${type}`;
+        const label = {
+          likes: "Like",
+          retweets: "Retweet",
+          dislikes: "Dislike",
+          reply: "Reply",
+        }[type];
+        button.setAttribute("aria-label", `${label} this post`);
+        const svg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg",
+        );
+        const use = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "use",
+        );
+        use.setAttribute("href", `#${icon}`);
+        svg.appendChild(use);
+        const countSpan = document.createElement("span");
+        countSpan.className = "reactionCount";
+        countSpan.textContent = count;
+        button.append(svg, countSpan);
+        return button;
+      }
+
+      function formatCount(value) {
+        return value >= 1000
+          ? `${(value / 1000).toFixed(1).replace(".0", "")}k`
+          : value;
+      }
+
+      function timeSince(dateString) {
+        const minutes = Math.max(
+          1,
+          Math.floor((Date.now() - new Date(dateString)) / 60000),
+        );
+        if (minutes < 60) return `${minutes}m`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h`;
+        return `${Math.floor(hours / 24)}d`;
+      }
+
+      function renderReplyItem(reply, profile) {
+        const item = document.createElement("div");
+        item.className = reply.is_ai_generated
+          ? "replyItem aiReply"
+          : "replyItem";
+        const avatar = document.createElement("img");
+        avatar.className = "avatar";
+        avatar.src = profile?.avatar_url || "https://placehold.co/26x26/png";
+        avatar.alt = `${profile?.display_name || "User"} avatar`;
+        const body = document.createElement("div");
+        const metaSpan = document.createElement("span");
+        metaSpan.className = "replyMeta";
+        const nameSpan = document.createElement("span");
+        nameSpan.className = "displayName";
+        nameSpan.textContent = profile?.display_name || "Spotlight user";
+        metaSpan.append(
+          nameSpan,
+          document.createTextNode(
+            ` @${profile?.handle?.replace(/^@/, "") || "spotlightuser"} · ${timeSince(reply.created_at)}`,
+          ),
+        );
+        const textDiv = document.createElement("div");
+        textDiv.textContent = reply.content;
+        body.append(metaSpan, textDiv);
+        item.append(avatar, body);
+        return item;
+      }
+
+      function renderUserPost(
+        post,
+        profile,
+        currentUser,
+        myReactions,
+        replies,
+        profileById,
+        botProfileById,
+      ) {
+        const card = document.createElement("article");
+        card.className = post.is_ai_generated ? "postCard aiPost" : "postCard";
+        card.dataset.postId = post.id;
+
+        const meta = document.createElement("div");
+        meta.className = "userMeta";
+        const avatar = document.createElement("img");
+        avatar.className = "avatar";
+        avatar.src = profile?.avatar_url || "https://placehold.co/36x36/png";
+        avatar.alt = `${profile?.display_name || "User"} avatar`;
+        const displayName = document.createElement("span");
+        displayName.className = "displayName";
+        displayName.textContent = profile?.display_name || "Spotlight user";
+        const handle = document.createElement("span");
+        handle.className = "username";
+        handle.textContent = profile?.handle
+          ? `@${profile.handle.replace(/^@/, "")}`
+          : "@spotlightuser";
+        const time = document.createElement("span");
+        time.className = "postTime";
+        time.textContent = timeSince(post.created_at);
+        meta.append(avatar, displayName, handle, time);
+
+        const content = document.createElement("div");
+        content.className = "postContent";
+        if (post.content) {
+          const text = document.createElement("p");
+          text.textContent = post.content;
+          content.appendChild(text);
+        }
+        if (Array.isArray(post.image_urls) && post.image_urls.length) {
+          const media = document.createElement("div");
+          media.className = "postMedia";
+          post.image_urls.forEach((url) => {
+            const image = document.createElement("img");
+            image.src = url;
+            image.alt = "Post image";
+            media.appendChild(image);
           });
+          content.appendChild(media);
+        }
+
+        const footer = document.createElement("div");
+        footer.className = "footerSpan";
+        const likeBtn = createReaction(
+          "likes",
+          "icon-like",
+          formatCount(post.like_count || 0),
+        );
+        const retweetBtn = createReaction(
+          "retweets",
+          "icon-retweet",
+          formatCount(post.repost_count || 0),
+        );
+        const dislikeBtn = createReaction(
+          "dislikes",
+          "icon-dislike",
+          formatCount(post.dislike_count || 0),
+        );
+        const replyBtn = createReaction("reply", "icon-reply", "Reply");
+
+        [likeBtn, dislikeBtn, retweetBtn].forEach((button) => {
+          const type =
+            REACTION_TYPE_BY_CLASS[
+              [...button.classList].find((c) => c in REACTION_TYPE_BY_CLASS)
+            ];
+          if (myReactions.has(type)) button.classList.add("active");
+          button.addEventListener("click", () =>
+            toggleReaction(post.id, type, button, currentUser),
+          );
+        });
+
+        footer.append(likeBtn, retweetBtn, dislikeBtn, replyBtn);
+        content.appendChild(footer);
+
+        // reply section: hidden thread + composer, toggled by the Reply button
+        const replySection = document.createElement("div");
+        replySection.className = "replySection";
+
+        const replyList = document.createElement("div");
+        replyList.className = "replyList";
+        replies.forEach((reply) =>
+          replyList.appendChild(
+            renderReplyItem(
+              reply,
+              reply.bot_user_id
+                ? botProfileById.get(reply.bot_user_id)
+                : profileById.get(reply.user_id),
+            ),
+          ),
+        );
+
+        const replyForm = document.createElement("div");
+        replyForm.className = "replyForm";
+        const textarea = document.createElement("textarea");
+        textarea.placeholder = currentUser
+          ? "Post your reply"
+          : "Log in to reply";
+        textarea.disabled = !currentUser;
+        textarea.maxLength = 250;
+        const submitBtn = document.createElement("button");
+        submitBtn.className = "replySubmit";
+        submitBtn.textContent = "Reply";
+        submitBtn.disabled = !currentUser;
+        submitBtn.addEventListener("click", async () => {
+          const value = textarea.value.trim();
+          if (!value || !currentUser) return;
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Posting...";
+          const { data, error } = await supabaseClient
+            .from("post_replies")
+            .insert({
+              post_id: post.id,
+              user_id: currentUser.id,
+              content: value,
+            })
+            .select()
+            .single();
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Reply";
           if (error) {
-            console.error('Could not generate bot replies:', error);
+            console.error("Could not post reply:", error);
             return;
           }
-          (result?.inserted || []).forEach((reply) => {
-            const bot = botProfileById.get(reply.bot_user_id);
-            replyList.appendChild(renderReplyItem(reply, bot));
-          });
-        } catch (error) {
-          console.error('Could not generate bot replies:', error);
-        }
-      }
+          replyList.appendChild(
+            renderReplyItem(data, profileById.get(currentUser.id)),
+          );
+          textarea.value = "";
+          triggerBotReplies("user_replied");
+        });
+        replyForm.append(textarea, submitBtn);
+        replySection.append(replyForm, replyList);
 
-      replyBtn.addEventListener('click', () => {
-        replySection.classList.toggle('open');
-        if (replySection.classList.contains('open') && !hasTriggeredInitialBotReplies) {
-          hasTriggeredInitialBotReplies = true;
-          triggerBotReplies('reply_opened');
-        }
-      });
-
-      card.append(meta, content, replySection);
-      return card;
-    }
-
-    async function toggleReaction(postId, type, button, currentUser) {
-      if (!currentUser) return;
-      const countSpan = button.querySelector('.reactionCount');
-      const wasActive = button.classList.contains('active');
-      const rawCount = parseCount(countSpan.textContent);
-      button.disabled = true;
-      try {
-        if (wasActive) {
-          const { error } = await supabaseClient
-            .from('post_reactions')
-            .delete()
-            .eq('post_id', postId)
-            .eq('user_id', currentUser.id)
-            .eq('reaction_type', type);
-          if (error) throw error;
-          button.classList.remove('active');
-          countSpan.textContent = formatCount(Math.max(0, rawCount - 1));
-        } else {
-          const { error } = await supabaseClient
-            .from('post_reactions')
-            .insert({ post_id: postId, user_id: currentUser.id, reaction_type: type });
-          if (error) throw error;
-          button.classList.add('active');
-          countSpan.textContent = formatCount(rawCount + 1);
-
-          // likes and dislikes are mutually exclusive: dropping one clears the other
-          const opposite = type === 'like' ? 'dislike' : type === 'dislike' ? 'like' : null;
-          if (opposite) {
-            const card = button.closest('.postCard');
-            const oppositeClass = opposite === 'like' ? 'likes' : 'dislikes';
-            const oppositeBtn = card.querySelector(`.reaction.${oppositeClass}`);
-            if (oppositeBtn?.classList.contains('active')) {
-              const oppositeCountSpan = oppositeBtn.querySelector('.reactionCount');
-              const oppositeCount = parseCount(oppositeCountSpan.textContent);
-              await supabaseClient
-                .from('post_reactions')
-                .delete()
-                .eq('post_id', postId)
-                .eq('user_id', currentUser.id)
-                .eq('reaction_type', opposite);
-              oppositeBtn.classList.remove('active');
-              oppositeCountSpan.textContent = formatCount(Math.max(0, oppositeCount - 1));
+        // bot replies: triggered two ways -- (1) first time this thread is
+        // opened with zero replies, 3 random bots reply to the post itself,
+        // (2) every time the user submits their own reply, bots (chosen by
+        // @ mention if present, else random, capped at 3 replies per bot
+        // per thread) reply again to the thread. both calls hit a separate
+        // edge function so the caps/mentions logic stays isolated from the
+        // ai-post generation logic.
+        let hasTriggeredInitialBotReplies = replies.length > 0;
+        async function triggerBotReplies(reason) {
+          try {
+            const { data: result, error } =
+              await supabaseClient.functions.invoke("generate-bot-replies", {
+                body: { post_id: post.id, reason },
+              });
+            if (error) {
+              console.error("Could not generate bot replies:", error);
+              return;
             }
+            (result?.inserted || []).forEach((reply) => {
+              const bot = botProfileById.get(reply.bot_user_id);
+              replyList.appendChild(renderReplyItem(reply, bot));
+            });
+          } catch (error) {
+            console.error("Could not generate bot replies:", error);
           }
         }
-      } catch (error) {
-        console.error('Could not update reaction:', error);
-      } finally {
-        button.disabled = false;
-      }
-    }
 
-    function parseCount(text) {
-      if (text.endsWith('k')) return Math.round(parseFloat(text) * 1000);
-      return parseInt(text, 10) || 0;
-    }
-
-    async function loadUserPosts(currentUser) {
-      if (!currentUser) return;
-
-      // this feed is entirely private per user: only the logged-in user's
-      // own posts, plus the AI posts generated privately for them
-      // (ai_owner_id = them). nobody else's posts show up here at all.
-      const { data: posts, error } = await supabaseClient
-        .from('posts')
-        .select('id, user_id, bot_user_id, content, image_urls, like_count, dislike_count, repost_count, created_at, is_ai_generated, ai_owner_id')
-        .or(`user_id.eq.${currentUser.id},ai_owner_id.eq.${currentUser.id}`)
-        .order('created_at', { ascending: false })
-        .limit(25);
-      if (error) {
-        console.error('Could not load posts:', error);
-        return;
-      }
-
-      // clear out whatever's currently rendered before re-rendering, since
-      // this can now be called again after generating new AI posts
-      const feedEl = document.querySelector('.posts');
-      feedEl.innerHTML = '';
-
-      if (!posts?.length) return;
-
-      const postIds = posts.map((post) => post.id);
-
-      const { data: replies, error: repliesError } = await supabaseClient
-        .from('post_replies')
-        .select('id, post_id, user_id, bot_user_id, content, is_ai_generated, created_at')
-        .in('post_id', postIds)
-        .order('created_at', { ascending: true });
-      if (repliesError) console.error('Could not load replies:', repliesError);
-
-      let myReactionRows = [];
-      if (currentUser) {
-        const { data, error: reactionError } = await supabaseClient
-          .from('post_reactions')
-          .select('post_id, reaction_type')
-          .eq('user_id', currentUser.id)
-          .in('post_id', postIds);
-        if (reactionError) console.error('Could not load reactions:', reactionError);
-        myReactionRows = data || [];
-      }
-
-      const userIds = [...new Set([
-        ...posts.map((post) => post.user_id).filter(Boolean),
-        ...(replies || []).map((reply) => reply.user_id).filter(Boolean)
-      ])];
-      const { data: profiles, error: profileError } = await supabaseClient
-        .from('profiles')
-        .select('id, display_name, handle, avatar_url')
-        .in('id', userIds);
-      if (profileError) console.error('Could not load post profiles:', profileError);
-      const profileById = new Map((profiles || []).map((profile) => [profile.id, profile]));
-
-      // bot authors live in a separate table since they aren't real
-      // auth users. fetch those for any AI posts AND any AI replies (reply
-      // bots are a bigger pool than post bots, so a bot id can show up on
-      // a reply without ever having authored a post in this batch -- must
-      // collect from both or lookups for reply-only bots silently miss)
-      // and fold them into the same lookup keyed by post id (not user id,
-      // since bot ids and real profile ids come from different tables and
-      // could theoretically clash)
-      const botUserIds = [...new Set([
-        ...posts.map((post) => post.bot_user_id).filter(Boolean),
-        ...(replies || []).map((reply) => reply.bot_user_id).filter(Boolean)
-      ])];
-      let botProfileById = new Map();
-      if (botUserIds.length) {
-        const { data: botProfiles, error: botProfileError } = await supabaseClient
-          .from('bot_profiles')
-          .select('id, display_name, handle, avatar_url')
-          .in('id', botUserIds);
-        if (botProfileError) console.error('Could not load bot profiles:', botProfileError);
-        botProfileById = new Map((botProfiles || []).map((profile) => [profile.id, profile]));
-      }
-      const authorByPostId = new Map(posts.map((post) => [
-        post.id,
-        post.bot_user_id ? botProfileById.get(post.bot_user_id) : profileById.get(post.user_id)
-      ]));
-
-      const repliesByPost = new Map();
-      (replies || []).forEach((reply) => {
-        if (!repliesByPost.has(reply.post_id)) repliesByPost.set(reply.post_id, []);
-        repliesByPost.get(reply.post_id).push(reply);
-      });
-
-      const reactionsByPost = new Map();
-      myReactionRows.forEach((row) => {
-        if (!reactionsByPost.has(row.post_id)) reactionsByPost.set(row.post_id, new Set());
-        reactionsByPost.get(row.post_id).add(row.reaction_type);
-      });
-
-      const feed = document.querySelector('.posts');
-      posts.reverse().forEach((post) => feed.prepend(renderUserPost(
-        post,
-        authorByPostId.get(post.id),
-        currentUser,
-        reactionsByPost.get(post.id) || new Set(),
-        repliesByPost.get(post.id) || [],
-        profileById,
-        botProfileById
-      )));
-    }
-
-    const AI_POST_COOLDOWN_MS = 60 * 1000;
-    let lastAiPostGenerationAt = 0;
-
-    // pregen world ids are plain array indices (small numbers), custom
-    // world ids are Date.now() timestamps (always > 1,000,000) -- see
-    // world-scripts.js where each is assigned. use that to know which
-    // source to resolve each selected world against.
-    async function resolveSelectedWorlds(selectedWorlds) {
-      if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
-
-      const pregenIds = selectedWorlds.filter((w) => w.id < 1000000).map((w) => w.id);
-      const customIds = selectedWorlds.filter((w) => w.id >= 1000000).map((w) => w.id);
-
-      const pregenResolved = (window.WORLDS || [])
-        .filter((w) => pregenIds.includes(w.id))
-        .map((w) => ({ title: w.title, description: w.description || w.descripton || '', tags: w.tags || [], category: w.category }));
-
-      let customResolved = [];
-      if (customIds.length) {
-        const { data: customWorlds, error } = await supabaseClient
-          .from('custom_worlds')
-          .select('title, description, category, tags, characters, drama, cross_universe')
-          .in('id', customIds);
-        if (error) {
-          console.error('Could not load custom worlds:', error);
-        } else {
-          customResolved = customWorlds || [];
-        }
-      }
-
-      return [...pregenResolved, ...customResolved];
-    }
-
-    // calls the supabase edge function that generates AI posts via gemini
-    // and inserts them into the posts table. 
-
-    // the function itself decides how many posts to make (3) and does the 
-    // actual gemini call server-side so the api key never touches the client
-
-    // also enforced server-side since a client-side check alone can be bypassed
-    async function generateAiPosts(reason, currentUser) {
-      if (!currentUser) return;
-      console.log('generateAiPosts called, reason=' + reason);
-
-      const now = Date.now();
-      if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
-        console.log('AI post generation skipped: cooldown active');
-        alert("Slow down, you're on cooldown!");
-        return;
-      }
-      lastAiPostGenerationAt = now;
-
-      try {
-        // pull the profile fields that give the model context about this
-        // specific user, so generated posts feel personal instead of generic
-        const { data: profile, error: profileError } = await supabaseClient
-          .from('profiles')
-          .select('origin, fame_path, identity, display_name, handle, bio, selected_worlds')
-          .eq('id', currentUser.id)
-          .single();
-        if (profileError) {
-          console.error('Could not load profile context:', profileError);
-        }
-
-        const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
-
-        const { error } = await supabaseClient.functions.invoke('generate-ai-posts', {
-          body: {
-            reason,
-            user_id: currentUser.id,
-            profile: profile ? {
-              origin: profile.origin,
-              fame_path: profile.fame_path,
-              identity: profile.identity,
-              display_name: profile.display_name,
-              handle: profile.handle,
-              bio: profile.bio,
-            } : null,
-            worlds,
+        replyBtn.addEventListener("click", () => {
+          replySection.classList.toggle("open");
+          if (
+            replySection.classList.contains("open") &&
+            !hasTriggeredInitialBotReplies
+          ) {
+            hasTriggeredInitialBotReplies = true;
+            triggerBotReplies("reply_opened");
           }
         });
-        console.log('generate-ai-posts invoke returned, error=' + JSON.stringify(error));
+
+        card.append(meta, content, replySection);
+        return card;
+      }
+
+      async function toggleReaction(postId, type, button, currentUser) {
+        if (!currentUser) return;
+        const countSpan = button.querySelector(".reactionCount");
+        const wasActive = button.classList.contains("active");
+        const rawCount = parseCount(countSpan.textContent);
+        button.disabled = true;
+        try {
+          if (wasActive) {
+            const { error } = await supabaseClient
+              .from("post_reactions")
+              .delete()
+              .eq("post_id", postId)
+              .eq("user_id", currentUser.id)
+              .eq("reaction_type", type);
+            if (error) throw error;
+            button.classList.remove("active");
+            countSpan.textContent = formatCount(Math.max(0, rawCount - 1));
+          } else {
+            const { error } = await supabaseClient
+              .from("post_reactions")
+              .insert({
+                post_id: postId,
+                user_id: currentUser.id,
+                reaction_type: type,
+              });
+            if (error) throw error;
+            button.classList.add("active");
+            countSpan.textContent = formatCount(rawCount + 1);
+
+            // likes and dislikes are mutually exclusive: dropping one clears the other
+            const opposite =
+              type === "like" ? "dislike" : type === "dislike" ? "like" : null;
+            if (opposite) {
+              const card = button.closest(".postCard");
+              const oppositeClass = opposite === "like" ? "likes" : "dislikes";
+              const oppositeBtn = card.querySelector(
+                `.reaction.${oppositeClass}`,
+              );
+              if (oppositeBtn?.classList.contains("active")) {
+                const oppositeCountSpan =
+                  oppositeBtn.querySelector(".reactionCount");
+                const oppositeCount = parseCount(oppositeCountSpan.textContent);
+                await supabaseClient
+                  .from("post_reactions")
+                  .delete()
+                  .eq("post_id", postId)
+                  .eq("user_id", currentUser.id)
+                  .eq("reaction_type", opposite);
+                oppositeBtn.classList.remove("active");
+                oppositeCountSpan.textContent = formatCount(
+                  Math.max(0, oppositeCount - 1),
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Could not update reaction:", error);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      function parseCount(text) {
+        if (text.endsWith("k")) return Math.round(parseFloat(text) * 1000);
+        return parseInt(text, 10) || 0;
+      }
+
+      async function loadUserPosts(currentUser) {
+        if (!currentUser) return;
+
+        // this feed is entirely private per user: only the logged-in user's
+        // own posts, plus the AI posts generated privately for them
+        // (ai_owner_id = them). nobody else's posts show up here at all.
+        const { data: posts, error } = await supabaseClient
+          .from("posts")
+          .select(
+            "id, user_id, bot_user_id, content, image_urls, like_count, dislike_count, repost_count, created_at, is_ai_generated, ai_owner_id",
+          )
+          .or(`user_id.eq.${currentUser.id},ai_owner_id.eq.${currentUser.id}`)
+          .order("created_at", { ascending: false })
+          .limit(25);
         if (error) {
-          console.error('Could not generate AI posts:', error);
+          console.error("Could not load posts:", error);
           return;
         }
-        // pull in whatever got inserted so the feed reflects it without a full reload
+
+        // clear out whatever's currently rendered before re-rendering, since
+        // this can now be called again after generating new AI posts
+        const feedEl = document.querySelector(".posts");
+        feedEl.innerHTML = "";
+
+        if (!posts?.length) return;
+
+        const postIds = posts.map((post) => post.id);
+
+        const { data: replies, error: repliesError } = await supabaseClient
+          .from("post_replies")
+          .select(
+            "id, post_id, user_id, bot_user_id, content, is_ai_generated, created_at",
+          )
+          .in("post_id", postIds)
+          .order("created_at", { ascending: true });
+        if (repliesError)
+          console.error("Could not load replies:", repliesError);
+
+        let myReactionRows = [];
+        if (currentUser) {
+          const { data, error: reactionError } = await supabaseClient
+            .from("post_reactions")
+            .select("post_id, reaction_type")
+            .eq("user_id", currentUser.id)
+            .in("post_id", postIds);
+          if (reactionError)
+            console.error("Could not load reactions:", reactionError);
+          myReactionRows = data || [];
+        }
+
+        const userIds = [
+          ...new Set([
+            ...posts.map((post) => post.user_id).filter(Boolean),
+            ...(replies || []).map((reply) => reply.user_id).filter(Boolean),
+          ]),
+        ];
+        const { data: profiles, error: profileError } = await supabaseClient
+          .from("profiles")
+          .select("id, display_name, handle, avatar_url")
+          .in("id", userIds);
+        if (profileError)
+          console.error("Could not load post profiles:", profileError);
+        const profileById = new Map(
+          (profiles || []).map((profile) => [profile.id, profile]),
+        );
+
+        // bot authors live in a separate table since they aren't real
+        // auth users. fetch those for any AI posts AND any AI replies (reply
+        // bots are a bigger pool than post bots, so a bot id can show up on
+        // a reply without ever having authored a post in this batch -- must
+        // collect from both or lookups for reply-only bots silently miss)
+        // and fold them into the same lookup keyed by post id (not user id,
+        // since bot ids and real profile ids come from different tables and
+        // could theoretically clash)
+        const botUserIds = [
+          ...new Set([
+            ...posts.map((post) => post.bot_user_id).filter(Boolean),
+            ...(replies || [])
+              .map((reply) => reply.bot_user_id)
+              .filter(Boolean),
+          ]),
+        ];
+        let botProfileById = new Map();
+        if (botUserIds.length) {
+          const { data: botProfiles, error: botProfileError } =
+            await supabaseClient
+              .from("bot_profiles")
+              .select("id, display_name, handle, avatar_url")
+              .in("id", botUserIds);
+          if (botProfileError)
+            console.error("Could not load bot profiles:", botProfileError);
+          botProfileById = new Map(
+            (botProfiles || []).map((profile) => [profile.id, profile]),
+          );
+        }
+        const authorByPostId = new Map(
+          posts.map((post) => [
+            post.id,
+            post.bot_user_id
+              ? botProfileById.get(post.bot_user_id)
+              : profileById.get(post.user_id),
+          ]),
+        );
+
+        const repliesByPost = new Map();
+        (replies || []).forEach((reply) => {
+          if (!repliesByPost.has(reply.post_id))
+            repliesByPost.set(reply.post_id, []);
+          repliesByPost.get(reply.post_id).push(reply);
+        });
+
+        const reactionsByPost = new Map();
+        myReactionRows.forEach((row) => {
+          if (!reactionsByPost.has(row.post_id))
+            reactionsByPost.set(row.post_id, new Set());
+          reactionsByPost.get(row.post_id).add(row.reaction_type);
+        });
+
+        const feed = document.querySelector(".posts");
+        posts
+          .reverse()
+          .forEach((post) =>
+            feed.prepend(
+              renderUserPost(
+                post,
+                authorByPostId.get(post.id),
+                currentUser,
+                reactionsByPost.get(post.id) || new Set(),
+                repliesByPost.get(post.id) || [],
+                profileById,
+                botProfileById,
+              ),
+            ),
+          );
+      }
+
+      const AI_POST_COOLDOWN_MS = 60 * 1000;
+      let lastAiPostGenerationAt = 0;
+
+      // pregen world ids are plain array indices (small numbers), custom
+      // world ids are Date.now() timestamps (always > 1,000,000) -- see
+      // world-scripts.js where each is assigned. use that to know which
+      // source to resolve each selected world against.
+      async function resolveSelectedWorlds(selectedWorlds) {
+        if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
+
+        const pregenIds = selectedWorlds
+          .filter((w) => w.id < 1000000)
+          .map((w) => w.id);
+        const customIds = selectedWorlds
+          .filter((w) => w.id >= 1000000)
+          .map((w) => w.id);
+
+        const pregenResolved = (window.WORLDS || [])
+          .filter((w) => pregenIds.includes(w.id))
+          .map((w) => ({
+            title: w.title,
+            description: w.description || w.descripton || "",
+            tags: w.tags || [],
+            category: w.category,
+          }));
+
+        let customResolved = [];
+        if (customIds.length) {
+          const { data: customWorlds, error } = await supabaseClient
+            .from("custom_worlds")
+            .select(
+              "title, description, category, tags, characters, drama, cross_universe",
+            )
+            .in("id", customIds);
+          if (error) {
+            console.error("Could not load custom worlds:", error);
+          } else {
+            customResolved = customWorlds || [];
+          }
+        }
+
+        return [...pregenResolved, ...customResolved];
+      }
+
+      // calls the supabase edge function that generates AI posts via gemini
+      // and inserts them into the posts table.
+
+      // the function itself decides how many posts to make (3) and does the
+      // actual gemini call server-side so the api key never touches the client
+
+      // also enforced server-side since a client-side check alone can be bypassed
+      async function generateAiPosts(reason, currentUser) {
+        if (!currentUser) return;
+        console.log("generateAiPosts called, reason=" + reason);
+
+        const now = Date.now();
+        if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
+          console.log("AI post generation skipped: cooldown active");
+          alert("Slow down, you're on cooldown!");
+          return;
+        }
+        lastAiPostGenerationAt = now;
+
+        try {
+          // pull the profile fields that give the model context about this
+          // specific user, so generated posts feel personal instead of generic
+          const { data: profile, error: profileError } = await supabaseClient
+            .from("profiles")
+            .select(
+              "origin, fame_path, identity, display_name, handle, bio, selected_worlds",
+            )
+            .eq("id", currentUser.id)
+            .single();
+          if (profileError) {
+            console.error("Could not load profile context:", profileError);
+          }
+
+          const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
+
+          const { error } = await supabaseClient.functions.invoke(
+            "generate-ai-posts",
+            {
+              body: {
+                reason,
+                user_id: currentUser.id,
+                profile: profile
+                  ? {
+                      origin: profile.origin,
+                      fame_path: profile.fame_path,
+                      identity: profile.identity,
+                      display_name: profile.display_name,
+                      handle: profile.handle,
+                      bio: profile.bio,
+                    }
+                  : null,
+                worlds,
+              },
+            },
+          );
+          console.log(
+            "generate-ai-posts invoke returned, error=" + JSON.stringify(error),
+          );
+          if (error) {
+            console.error("Could not generate AI posts:", error);
+            return;
+          }
+          // pull in whatever got inserted so the feed reflects it without a full reload
+          await loadUserPosts(currentUser);
+        } catch (error) {
+          console.error("Could not generate AI posts:", error);
+        }
+      }
+
+      // per-user (not app-wide) "has this ever run for THIS user" check,
+      // backed by a column on profiles. so logging in on a new device never
+      // re-triggers it
+      async function maybeRunFirstLoadAiPosts(currentUser) {
+        if (!currentUser) return;
+
+        const { data, error } = await supabaseClient
+          .from("profiles")
+          .select("ai_posts_seeded")
+          .eq("id", currentUser.id)
+          .single();
+        if (error) {
+          console.error("Could not check profile ai_posts_seeded:", error);
+          return;
+        }
+        if (data?.ai_posts_seeded) return;
+
+        // flip the flag first so two tabs loading at the same moment
+        // can't both pass this check before the update lands
+        const { error: updateError } = await supabaseClient
+          .from("profiles")
+          .update({ ai_posts_seeded: true })
+          .eq("id", currentUser.id)
+          .eq("ai_posts_seeded", false);
+        if (updateError) {
+          console.error("Could not set ai_posts_seeded flag:", updateError);
+          return;
+        }
+        await generateAiPosts("first_load", currentUser);
+      }
+
+      async function initFeed() {
+        const {
+          data: { user: currentUser },
+        } = await supabaseClient.auth.getUser();
         await loadUserPosts(currentUser);
-      } catch (error) {
-        console.error('Could not generate AI posts:', error);
+        await maybeRunFirstLoadAiPosts(currentUser);
       }
-    }
 
-    // per-user (not app-wide) "has this ever run for THIS user" check,
-    // backed by a column on profiles. so logging in on a new device never
-    // re-triggers it
-    async function maybeRunFirstLoadAiPosts(currentUser) {
-      if (!currentUser) return;
-
-      const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('ai_posts_seeded')
-        .eq('id', currentUser.id)
-        .single();
-      if (error) {
-        console.error('Could not check profile ai_posts_seeded:', error);
-        return;
-      }
-      if (data?.ai_posts_seeded) return;
-
-      // flip the flag first so two tabs loading at the same moment
-      // can't both pass this check before the update lands
-      const { error: updateError } = await supabaseClient
-        .from('profiles')
-        .update({ ai_posts_seeded: true })
-        .eq('id', currentUser.id)
-        .eq('ai_posts_seeded', false);
-      if (updateError) {
-        console.error('Could not set ai_posts_seeded flag:', updateError);
-        return;
-      }
-      await generateAiPosts('first_load', currentUser);
-    }
-
-    async function initFeed() {
-      const { data: { user: currentUser } } = await supabaseClient.auth.getUser();
-      await loadUserPosts(currentUser);
-      await maybeRunFirstLoadAiPosts(currentUser);
-    }
-
-    initFeed();
-  </script>
-</body>
+      initFeed();
+    </script>
+  </body>
 </html>

@@ -1,354 +1,845 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blazing — Prototype</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg: #0a0a0d;
-    --card: #ffffff;
-    --card-border: #ece4c8;
-    --ink: #1c1810;
-    --ink-dim: #8a8064;
-    --gold: #caa036;
-    --gold-deep: #a87f1f;
-  }
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blazing — Prototype</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0a0a0d;
+        --card: #ffffff;
+        --card-border: #ece4c8;
+        --ink: #1c1810;
+        --ink-dim: #8a8064;
+        --gold: #caa036;
+        --gold-deep: #a87f1f;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
 
-  .bg-glow{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; }
-  .bg-glow span{ position:absolute; border-radius:50%; filter:blur(80px); opacity:.28; animation: drift 26s ease-in-out infinite alternate; }
-  .bg-glow span:nth-child(1){ width:420px; height:420px; background: radial-gradient(circle, #caa036, transparent 70%); top:-140px; left:-100px; animation-duration:29s; }
-  .bg-glow span:nth-child(2){ width:360px; height:360px; background: radial-gradient(circle, #8a6d1d, transparent 70%); bottom:-100px; right:-80px; animation-duration:33s; animation-delay:-6s; }
-  .bg-glow span:nth-child(3){ width:300px; height:300px; background: radial-gradient(circle, #6b5320, transparent 70%); top:35%; right:8%; animation-duration:23s; animation-delay:-3s; }
-  @keyframes drift{
-    0%{ transform: translate(0,0) scale(1); }
-    50%{ transform: translate(30px,-25px) scale(1.12); }
-    100%{ transform: translate(-20px,20px) scale(.96); }
-  }
+      .bg-glow {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      .bg-glow span {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.28;
+        animation: drift 26s ease-in-out infinite alternate;
+      }
+      .bg-glow span:nth-child(1) {
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, #caa036, transparent 70%);
+        top: -140px;
+        left: -100px;
+        animation-duration: 29s;
+      }
+      .bg-glow span:nth-child(2) {
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, #8a6d1d, transparent 70%);
+        bottom: -100px;
+        right: -80px;
+        animation-duration: 33s;
+        animation-delay: -6s;
+      }
+      .bg-glow span:nth-child(3) {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, #6b5320, transparent 70%);
+        top: 35%;
+        right: 8%;
+        animation-duration: 23s;
+        animation-delay: -3s;
+      }
+      @keyframes drift {
+        0% {
+          transform: translate(0, 0) scale(1);
+        }
+        50% {
+          transform: translate(30px, -25px) scale(1.12);
+        }
+        100% {
+          transform: translate(-20px, 20px) scale(0.96);
+        }
+      }
 
-  body{
-    background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
-    position:relative; overflow-x:hidden;
-    color: var(--ink);
-    font-family:'Inter', system-ui, sans-serif;
-    min-height:100vh;
-    display:flex; justify-content:center;
-    padding: 22px 0 50px;
-  }
-  .phone{ width:100%; max-width:430px; padding:0 18px; position:relative; z-index:1; }
+      body {
+        background: radial-gradient(ellipse at top, #131318 0%, var(--bg) 55%);
+        position: relative;
+        overflow-x: hidden;
+        color: var(--ink);
+        font-family: "Inter", system-ui, sans-serif;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 22px 0 50px;
+      }
+      .phone {
+        width: 100%;
+        max-width: 430px;
+        padding: 0 18px;
+        position: relative;
+        z-index: 1;
+      }
 
-  .screen{ display:none; animation: fadeIn .4s ease; }
-  .screen.active{ display:block; }
-  @keyframes fadeIn{ from{ opacity:0; transform:translateY(10px); } to{ opacity:1; transform:none; } }
+      .screen {
+        display: none;
+        animation: fadeIn 0.4s ease;
+      }
+      .screen.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
 
-  .gold-btn{
-    width:100%;
-    background: linear-gradient(135deg, #e6c568, var(--gold));
-    color:#1a1408;
-    border:none;
-    font-family:'Sora', sans-serif;
-    font-weight:800;
-    font-size:15.5px;
-    padding:15px;
-    border-radius:999px;
-    cursor:pointer;
-    box-shadow: 0 10px 26px rgba(202,160,54,.35);
-  }
-  .gold-btn:active{ transform: scale(.98); }
+      .gold-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #e6c568, var(--gold));
+        color: #1a1408;
+        border: none;
+        font-family: "Sora", sans-serif;
+        font-weight: 800;
+        font-size: 15.5px;
+        padding: 15px;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 10px 26px rgba(202, 160, 54, 0.35);
+      }
+      .gold-btn:active {
+        transform: scale(0.98);
+      }
 
+      /* ================= header ================= */
+      .feed-top {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        margin-bottom: 4px;
+      }
+      .feed-flame {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        flex-shrink: 0;
+        background: linear-gradient(145deg, #e6c568, var(--gold));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #1a1408;
+      }
+      .feed-title {
+        font-family: "Sora", sans-serif;
+        font-weight: 800;
+        font-size: 22px;
+        color: #fff;
+      }
+      .feed-subtitle {
+        font-size: 12.5px;
+        color: #8f8b7f;
+        margin-top: 1px;
+      }
 
-  /* ================= header ================= */
-  .feed-top{ display:flex; align-items:center; gap:11px; margin-bottom:4px; }
-  .feed-flame{
-    width:36px; height:36px; border-radius:11px; flex-shrink:0;
-    background: linear-gradient(145deg, #e6c568, var(--gold));
-    display:flex; align-items:center; justify-content:center; color:#1a1408;
-  }
-  .feed-title{ font-family:'Sora',sans-serif; font-weight:800; font-size:22px; color:#fff; }
-  .feed-subtitle{ font-size:12.5px; color:#8f8b7f; margin-top:1px; }
+      /* ================= tip banner ================= */
+      .tip-banner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(202, 160, 54, 0.1);
+        border: 1px solid rgba(202, 160, 54, 0.3);
+        border-radius: 14px;
+        padding: 11px 12px;
+        margin-top: 16px;
+        font-size: 12.5px;
+        color: #e8dfc0;
+        line-height: 1.4;
+      }
+      .tip-banner svg {
+        flex-shrink: 0;
+        color: var(--gold);
+      }
+      .tip-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: #8f8b7f;
+        font-size: 16px;
+        cursor: pointer;
+        line-height: 1;
+        flex-shrink: 0;
+        padding: 2px;
+      }
+      .tip-banner.hidden {
+        display: none;
+      }
 
-  /* ================= tip banner ================= */
-  .tip-banner{
-    display:flex; align-items:center; gap:10px;
-    background: rgba(202,160,54,.1);
-    border:1px solid rgba(202,160,54,.3);
-    border-radius:14px; padding:11px 12px;
-    margin-top:16px;
-    font-size:12.5px; color:#e8dfc0; line-height:1.4;
-  }
-  .tip-banner svg{ flex-shrink:0; color:var(--gold); }
-  .tip-close{
-    margin-left:auto; background:none; border:none; color:#8f8b7f;
-    font-size:16px; cursor:pointer; line-height:1; flex-shrink:0; padding:2px;
-  }
-  .tip-banner.hidden{ display:none; }
+      /* ================= world tabs ================= */
+      .world-tabs {
+        display: flex;
+        gap: 18px;
+        overflow-x: auto;
+        margin-top: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        -webkit-overflow-scrolling: touch;
+      }
+      .world-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      .world-tab {
+        flex-shrink: 0;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        color: #7d7a70;
+        padding-bottom: 10px;
+        position: relative;
+        white-space: nowrap;
+      }
+      .world-tab.active {
+        color: #fff;
+      }
+      .world-tab.active::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2.5px;
+        background: var(--gold);
+        border-radius: 2px;
+      }
 
-  /* ================= world tabs ================= */
-  .world-tabs{
-    display:flex; gap:18px; overflow-x:auto;
-    margin-top:20px; padding-bottom:10px;
-    border-bottom:1px solid rgba(255,255,255,.1);
-    -webkit-overflow-scrolling:touch;
-  }
-  .world-tabs::-webkit-scrollbar{ display:none; }
-  .world-tab{
-    flex-shrink:0; background:none; border:none; cursor:pointer;
-    font-family:'Sora',sans-serif; font-weight:700; font-size:13px;
-    color:#7d7a70; padding-bottom:10px; position:relative;
-    white-space:nowrap;
-  }
-  .world-tab.active{ color:#fff; }
-  .world-tab.active::after{
-    content:""; position:absolute; left:0; right:0; bottom:-1px;
-    height:2.5px; background: var(--gold); border-radius:2px;
-  }
+      /* ================= missions card ================= */
+      .missions-card {
+        background: #ffffff;
+        border: 1.5px solid rgba(202, 160, 54, 0.3);
+        border-radius: 20px;
+        padding: 18px 18px 16px;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+        margin-top: 18px;
+      }
+      .missions-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+      .missions-title {
+        font-family: "Sora", sans-serif;
+        font-weight: 800;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .missions-count {
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 12px;
+        color: var(--gold-deep);
+      }
+      .missions-progress-track {
+        height: 6px;
+        background: #f1ead2;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-bottom: 14px;
+      }
+      .missions-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #e6c568, var(--gold));
+        border-radius: 999px;
+        width: 0%;
+        transition: width 0.6s cubic-bezier(0.3, 0.8, 0.3, 1);
+      }
 
-  /* ================= missions card ================= */
-  .missions-card{
-    background:#ffffff; border:1.5px solid rgba(202,160,54,.3);
-    border-radius:20px; padding:18px 18px 16px;
-    box-shadow: 0 12px 28px rgba(0,0,0,.3);
-    margin-top:18px;
-  }
-  .missions-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .missions-title{ font-family:'Sora',sans-serif; font-weight:800; font-size:15px; display:flex; align-items:center; gap:7px; }
-  .missions-count{ font-family:'Sora',sans-serif; font-weight:700; font-size:12px; color:var(--gold-deep); }
-  .missions-progress-track{ height:6px; background:#f1ead2; border-radius:999px; overflow:hidden; margin-bottom:14px; }
-  .missions-progress-fill{ height:100%; background: linear-gradient(90deg, #e6c568, var(--gold)); border-radius:999px; width:0%; transition: width .6s cubic-bezier(.3,.8,.3,1); }
+      .mission-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+      }
+      .mission-check {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        border: 2px solid #e2d8b0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        transition:
+          background 0.3s ease,
+          border-color 0.3s ease,
+          transform 0.3s ease;
+      }
+      .mission-check.done {
+        background: var(--gold);
+        border-color: var(--gold);
+        transform: scale(1.05);
+      }
+      .mission-text {
+        flex: 1;
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .mission-row.done .mission-text {
+        color: #b5ac8f;
+        text-decoration: line-through;
+      }
+      .mission-xp {
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 11.5px;
+        color: var(--gold-deep);
+        white-space: nowrap;
+      }
 
-  .mission-row{ display:flex; align-items:center; gap:12px; padding:8px 0; }
-  .mission-check{
-    width:22px; height:22px; border-radius:50%; flex-shrink:0;
-    border:2px solid #e2d8b0; display:flex; align-items:center; justify-content:center;
-    color:#fff; transition: background .3s ease, border-color .3s ease, transform .3s ease;
-  }
-  .mission-check.done{ background: var(--gold); border-color:var(--gold); transform: scale(1.05); }
-  .mission-text{ flex:1; font-size:13px; color:var(--ink); }
-  .mission-row.done .mission-text{ color:#b5ac8f; text-decoration:line-through; }
-  .mission-xp{ font-family:'Sora',sans-serif; font-weight:700; font-size:11.5px; color:var(--gold-deep); white-space:nowrap; }
+      /* ================= feed ================= */
+      .feed-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 18px;
+      }
+      .feed-card {
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        border-radius: 18px;
+        padding: 15px 16px 13px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+        opacity: 0;
+        transform: translateY(8px);
+        animation: cardIn 0.4s ease forwards;
+        cursor: pointer;
+      }
+      @keyframes cardIn {
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
 
-  /* ================= feed ================= */
-  .feed-list{ display:flex; flex-direction:column; gap:12px; margin-top:18px; }
-  .feed-card{
-    background:#ffffff; border:1px solid var(--card-border);
-    border-radius:18px; padding:15px 16px 13px;
-    box-shadow: 0 8px 20px rgba(0,0,0,.22);
-    opacity:0; transform: translateY(8px);
-    animation: cardIn .4s ease forwards;
-    cursor:pointer;
-  }
-  @keyframes cardIn{ to{ opacity:1; transform:none; } }
+      .feed-kicker {
+        display: inline-block;
+        font-family: "Sora", sans-serif;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 5px;
+        margin-bottom: 8px;
+      }
+      .kicker-breaking {
+        background: #fbe4e2;
+        color: #c0392b;
+      }
+      .kicker-justin {
+        background: #fdeecb;
+        color: #a8790a;
+      }
+      .kicker-spotted {
+        background: #e6f2ec;
+        color: #2f7d51;
+      }
+      .kicker-sources {
+        background: #eaeef7;
+        color: #3a5aa8;
+      }
 
-  .feed-kicker{
-    display:inline-block;
-    font-family:'Sora',sans-serif; font-weight:800; font-size:10px;
-    letter-spacing:.06em; text-transform:uppercase;
-    padding:3px 8px; border-radius:5px;
-    margin-bottom:8px;
-  }
-  .kicker-breaking{ background:#fbe4e2; color:#c0392b; }
-  .kicker-justin{ background:#fdeecb; color:#a8790a; }
-  .kicker-spotted{ background:#e6f2ec; color:#2f7d51; }
-  .kicker-sources{ background:#eaeef7; color:#3a5aa8; }
+      .feed-meta {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 8px;
+      }
+      .feed-world-tag {
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 3px 8px;
+        border-radius: 999px;
+        color: #fff;
+      }
+      .feed-time {
+        font-size: 11px;
+        color: var(--ink-dim);
+      }
+      .feed-trending {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 10px;
+        color: #d9534f;
+      }
 
-  .feed-meta{ display:flex; align-items:center; gap:7px; margin-bottom:8px; }
-  .feed-world-tag{
-    font-family:'Sora',sans-serif; font-weight:700; font-size:10px;
-    text-transform:uppercase; letter-spacing:.03em;
-    padding:3px 8px; border-radius:999px; color:#fff;
-  }
-  .feed-time{ font-size:11px; color:var(--ink-dim); }
-  .feed-trending{
-    margin-left:auto; display:flex; align-items:center; gap:3px;
-    font-family:'Sora',sans-serif; font-weight:700; font-size:10px;
-    color:#d9534f;
-  }
+      .feed-headline {
+        font-size: 14.5px;
+        line-height: 1.5;
+        color: var(--ink);
+      }
+      .feed-headline .mention {
+        color: #1f6fb2;
+        font-weight: 600;
+      }
+      .feed-headline b {
+        font-weight: 700;
+      }
 
-  .feed-headline{ font-size:14.5px; line-height:1.5; color:var(--ink); }
-  .feed-headline .mention{ color:#1f6fb2; font-weight:600; }
-  .feed-headline b{ font-weight:700; }
+      .feed-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 11px;
+        padding-top: 10px;
+        border-top: 1px solid #f2ecd8;
+      }
+      .feed-stat {
+        font-size: 11.5px;
+        color: var(--ink-dim);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .draft-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        background: none;
+        border: none;
+        color: var(--ink-dim);
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 5px 8px;
+        border-radius: 8px;
+        transition:
+          background 0.15s ease,
+          color 0.15s ease;
+      }
+      .draft-btn:hover {
+        background: rgba(202, 160, 54, 0.1);
+        color: var(--gold-deep);
+      }
+      .draft-btn.used {
+        color: var(--gold-deep);
+      }
 
-  .feed-footer{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-top:11px; padding-top:10px; border-top:1px solid #f2ecd8;
-  }
-  .feed-stat{ font-size:11.5px; color:var(--ink-dim); display:flex; align-items:center; gap:5px; }
-  .draft-btn{
-    display:flex; align-items:center; gap:5px;
-    background:none; border:none; color:var(--ink-dim);
-    font-family:'Sora',sans-serif; font-weight:700; font-size:11px;
-    cursor:pointer; padding:5px 8px; border-radius:8px;
-    transition: background .15s ease, color .15s ease;
-  }
-  .draft-btn:hover{ background: rgba(202,160,54,.1); color: var(--gold-deep); }
-  .draft-btn.used{ color: var(--gold-deep); }
+      .toast {
+        position: fixed;
+        bottom: 26px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #1c1810;
+        color: #fff;
+        font-family: "Sora", sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 11px 18px;
+        border-radius: 999px;
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+        max-width: 90vw;
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.25s ease,
+          transform 0.25s ease;
+        z-index: 60;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
 
-  .toast{
-    position:fixed; bottom:26px; left:50%; transform:translateX(-50%) translateY(20px);
-    background:#1c1810; color:#fff; font-family:'Sora',sans-serif; font-weight:700;
-    font-size:13px; padding:11px 18px; border-radius:999px;
-    box-shadow: 0 10px 26px rgba(0,0,0,.4); max-width:90vw; text-align:center;
-    opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease;
-    z-index:60;
-  }
-  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
-
-  .note{ text-align:center; color:#6f6c66; font-size:12px; margin: 22px 4px 0; line-height:1.5; }
-</style>
-</head>
-<body>
-<div class="bg-glow"><span></span><span></span><span></span></div>
-<div class="phone">
-
-  <!-- ============ FEED SCREEN (now the only / default screen) ============ -->
-  <div class="screen active" id="screen-feed">
-    <div class="feed-top">
-      <div class="feed-flame">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
-      </div>
-      <div>
-        <div class="feed-title">Blazing</div>
-        <div class="feed-subtitle">What's happening around you</div>
-      </div>
-    </div>
-
-    <div class="tip-banner" id="tipBanner">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-      <span>Tap "Draft about this" on any headline to turn it into a post idea.</span>
-      <button class="tip-close" id="tipClose">✕</button>
-    </div>
-
-    <div class="world-tabs" id="worldTabs"></div>
-
-    <div class="missions-card">
-      <div class="missions-head">
-        <div class="missions-title">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#caa036" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/></svg>
-          Daily Missions
+      .note {
+        text-align: center;
+        color: #6f6c66;
+        font-size: 12px;
+        margin: 22px 4px 0;
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-glow"><span></span><span></span><span></span></div>
+    <div class="phone">
+      <!-- ============ FEED SCREEN (now the only / default screen) ============ -->
+      <div class="screen active" id="screen-feed">
+        <div class="feed-top">
+          <div class="feed-flame">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"
+              />
+            </svg>
+          </div>
+          <div>
+            <div class="feed-title">Blazing</div>
+            <div class="feed-subtitle">What's happening around you</div>
+          </div>
         </div>
-        <div class="missions-count" id="missionsCount">0/3</div>
+
+        <div class="tip-banner" id="tipBanner">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 16v-4" />
+            <path d="M12 8h.01" />
+          </svg>
+          <span
+            >Tap "Draft about this" on any headline to turn it into a post
+            idea.</span
+          >
+          <button class="tip-close" id="tipClose">✕</button>
+        </div>
+
+        <div class="world-tabs" id="worldTabs"></div>
+
+        <div class="missions-card">
+          <div class="missions-head">
+            <div class="missions-title">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#caa036"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+                <path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12" />
+              </svg>
+              Daily Missions
+            </div>
+            <div class="missions-count" id="missionsCount">0/3</div>
+          </div>
+          <div class="missions-progress-track">
+            <div class="missions-progress-fill" id="missionsProgressFill"></div>
+          </div>
+          <div id="missionsList"></div>
+        </div>
+
+        <div class="feed-list" id="feedList"></div>
+
+        <div class="note">
+          Prototype only — headlines are placeholder content and will be pulled
+          from real feed events later.
+        </div>
       </div>
-      <div class="missions-progress-track"><div class="missions-progress-fill" id="missionsProgressFill"></div></div>
-      <div id="missionsList"></div>
     </div>
 
-    <div class="feed-list" id="feedList"></div>
+    <div class="toast" id="toast"></div>
 
-    <div class="note">Prototype only — headlines are placeholder content and will be pulled from real feed events later.</div>
-  </div>
+    <script>
+      /* ================= worlds ================= */
+      const WORLDS = [
+        "All",
+        "Pop Culture",
+        "Fashion",
+        "Business",
+        "Drama",
+        "Sports",
+      ];
+      let activeWorld = "All";
+      const WORLD_COLORS = {
+        "Pop Culture": "#a878c9",
+        Fashion: "#c9891f",
+        Business: "#4a9bd1",
+        Drama: "#d9534f",
+        Sports: "#2f9e64",
+      };
 
-</div>
+      /* ================= character-driven headlines ================= */
+      const HEADLINES = [
+        {
+          world: "Pop Culture",
+          kicker: "justin",
+          type: "good",
+          text: "Aria Vance quietly covered a fan's tuition after her story went viral — no announcement, just receipts leaking out days later.",
+          stat: "6.2K reactions",
+          trending: true,
+          age: "1h",
+        },
+        {
+          world: "Business",
+          kicker: "justin",
+          type: "good",
+          text: "Orion Page's new single just hit a career milestone, and he's already teasing a surprise follow-up.",
+          stat: "2.8K reactions",
+          trending: false,
+          age: "5h",
+        },
+        {
+          world: "Fashion",
+          kicker: "justin",
+          type: "good",
+          text: "Lumen Rae and Zara Flint's long-teased collab finally dropped — early reactions are glowing.",
+          stat: "4.1K reactions",
+          trending: false,
+          age: "3h",
+        },
 
-<div class="toast" id="toast"></div>
+        {
+          world: "Drama",
+          kicker: "sources",
+          type: "rumor",
+          text: "Nora Noire was seen with mystery entrepreneur Milo Sinclair last night — and it's looking messy. Sources say Kai Velvet has already seen the photos.",
+          stat: "18.3K reactions",
+          trending: true,
+          age: "20m",
+        },
+        {
+          world: "Drama",
+          kicker: "spotted",
+          type: "rumor",
+          text: "Kai Velvet and Theo Marsh were seen leaving the same afterparty separately — twenty minutes apart. Timing, or coincidence?",
+          stat: "9.2K reactions",
+          trending: true,
+          age: "45m",
+        },
+        {
+          world: "Pop Culture",
+          kicker: "sources",
+          type: "rumor",
+          text: "Theo Marsh confirmed he's 'seeing someone' hours after being spotted with Echo Monroe at a private event. She has not responded.",
+          stat: "27.1K reactions",
+          trending: true,
+          age: "25m",
+        },
+        {
+          world: "Fashion",
+          kicker: "sources",
+          type: "rumor",
+          text: "Dash Wilder's subtweet about 'fake friends' dropped minutes after Zara Flint's new campaign post. The comments don't think it's a coincidence.",
+          stat: "12.6K reactions",
+          trending: true,
+          age: "50m",
+        },
+        {
+          world: "Business",
+          kicker: "sources",
+          type: "rumor",
+          text: "Sources close to Orion Page say the 'creative differences' with his label are actually about a certain someone he's been seen with.",
+          stat: "4.9K reactions",
+          trending: false,
+          age: "2h",
+        },
+        {
+          world: "Pop Culture",
+          kicker: "sources",
+          type: "rumor",
+          text: "Riva Jax's cryptic story has fans speculating about a new project — or a new someone.",
+          stat: "2.9K reactions",
+          trending: false,
+          age: "40m",
+        },
+        {
+          world: "Drama",
+          kicker: "sources",
+          type: "rumor",
+          text: "Echo Monroe liked a post about 'letting go of people who don't show up.' The internet has thoughts.",
+          stat: "5.4K reactions",
+          trending: false,
+          age: "1h",
+        },
+        {
+          world: "Drama",
+          kicker: "sources",
+          type: "rumor",
+          text: "Aria Vance's silence on the group chat leak is being read as either classy — or very telling.",
+          stat: "14.2K reactions",
+          trending: true,
+          age: "1h",
+        },
 
-<script>
-/* ================= worlds ================= */
-const WORLDS = ['All','Pop Culture','Fashion','Business','Drama','Sports'];
-let activeWorld = 'All';
-const WORLD_COLORS = {
-  'Pop Culture': '#a878c9', 'Fashion': '#c9891f', 'Business': '#4a9bd1',
-  'Drama': '#d9534f', 'Sports': '#2f9e64',
-};
+        {
+          world: "Drama",
+          kicker: "breaking",
+          type: "bad",
+          text: "Riva Jax might be cooked for the foreseeable future after leaked messages surfaced showing a very different tone than her public persona — and the internet has receipts.",
+          stat: "21.4K reactions",
+          trending: true,
+          age: "35m",
+        },
+        {
+          world: "Drama",
+          kicker: "breaking",
+          type: "bad",
+          text: "A leaked voice note has half the timeline convinced Kai Velvet and Nora Noire are done for good — and neither has denied it.",
+          stat: "32.7K reactions",
+          trending: true,
+          age: "12m",
+        },
+        {
+          world: "Drama",
+          kicker: "breaking",
+          type: "bad",
+          text: "Dash Wilder and Riva Jax's group chat leak has screenshots, timestamps, and absolutely nobody backing down tonight.",
+          stat: "41.5K reactions",
+          trending: true,
+          age: "8m",
+        },
+        {
+          world: "Fashion",
+          kicker: "justin",
+          type: "bad",
+          text: "Zara Flint's team just released a statement — and it only made things messier.",
+          stat: "19.8K reactions",
+          trending: false,
+          age: "1h",
+        },
+        {
+          world: "Pop Culture",
+          kicker: "breaking",
+          type: "bad",
+          text: "Aria Vance is trending for all the wrong reasons after an old clip resurfaced mid-feud.",
+          stat: "36.9K reactions",
+          trending: true,
+          age: "6m",
+        },
+      ];
 
-/* ================= character-driven headlines ================= */
-const HEADLINES = [
-  { world:'Pop Culture', kicker:'justin', type:'good', text:"Aria Vance quietly covered a fan's tuition after her story went viral — no announcement, just receipts leaking out days later.", stat:'6.2K reactions', trending:true, age:'1h' },
-  { world:'Business', kicker:'justin', type:'good', text:"Orion Page's new single just hit a career milestone, and he's already teasing a surprise follow-up.", stat:'2.8K reactions', trending:false, age:'5h' },
-  { world:'Fashion', kicker:'justin', type:'good', text:"Lumen Rae and Zara Flint's long-teased collab finally dropped — early reactions are glowing.", stat:'4.1K reactions', trending:false, age:'3h' },
+      const KICKER_LABEL = {
+        breaking: "Breaking",
+        justin: "Just In",
+        spotted: "Spotted",
+        sources: "Sources Say",
+      };
 
-  { world:'Drama', kicker:'sources', type:'rumor', text:"Nora Noire was seen with mystery entrepreneur Milo Sinclair last night — and it's looking messy. Sources say Kai Velvet has already seen the photos.", stat:'18.3K reactions', trending:true, age:'20m' },
-  { world:'Drama', kicker:'spotted', type:'rumor', text:"Kai Velvet and Theo Marsh were seen leaving the same afterparty separately — twenty minutes apart. Timing, or coincidence?", stat:'9.2K reactions', trending:true, age:'45m' },
-  { world:'Pop Culture', kicker:'sources', type:'rumor', text:"Theo Marsh confirmed he's 'seeing someone' hours after being spotted with Echo Monroe at a private event. She has not responded.", stat:'27.1K reactions', trending:true, age:'25m' },
-  { world:'Fashion', kicker:'sources', type:'rumor', text:"Dash Wilder's subtweet about 'fake friends' dropped minutes after Zara Flint's new campaign post. The comments don't think it's a coincidence.", stat:'12.6K reactions', trending:true, age:'50m' },
-  { world:'Business', kicker:'sources', type:'rumor', text:"Sources close to Orion Page say the 'creative differences' with his label are actually about a certain someone he's been seen with.", stat:'4.9K reactions', trending:false, age:'2h' },
-  { world:'Pop Culture', kicker:'sources', type:'rumor', text:"Riva Jax's cryptic story has fans speculating about a new project — or a new someone.", stat:'2.9K reactions', trending:false, age:'40m' },
-  { world:'Drama', kicker:'sources', type:'rumor', text:"Echo Monroe liked a post about 'letting go of people who don't show up.' The internet has thoughts.", stat:'5.4K reactions', trending:false, age:'1h' },
-  { world:'Drama', kicker:'sources', type:'rumor', text:"Aria Vance's silence on the group chat leak is being read as either classy — or very telling.", stat:'14.2K reactions', trending:true, age:'1h' },
+      function highlightMentions(text) {
+        const names = [
+          "Kai Velvet",
+          "Nora Noire",
+          "Lumen Rae",
+          "Dash Wilder",
+          "Echo Monroe",
+          "Zara Flint",
+          "Orion Page",
+          "Riva Jax",
+          "Aria Vance",
+          "Milo Sinclair",
+          "Theo Marsh",
+        ];
+        let out = text;
+        names.forEach((n) => {
+          out = out.split(n).join(`<b>${n}</b>`);
+        });
+        return out;
+      }
 
-  { world:'Drama', kicker:'breaking', type:'bad', text:"Riva Jax might be cooked for the foreseeable future after leaked messages surfaced showing a very different tone than her public persona — and the internet has receipts.", stat:'21.4K reactions', trending:true, age:'35m' },
-  { world:'Drama', kicker:'breaking', type:'bad', text:"A leaked voice note has half the timeline convinced Kai Velvet and Nora Noire are done for good — and neither has denied it.", stat:'32.7K reactions', trending:true, age:'12m' },
-  { world:'Drama', kicker:'breaking', type:'bad', text:"Dash Wilder and Riva Jax's group chat leak has screenshots, timestamps, and absolutely nobody backing down tonight.", stat:'41.5K reactions', trending:true, age:'8m' },
-  { world:'Fashion', kicker:'justin', type:'bad', text:"Zara Flint's team just released a statement — and it only made things messier.", stat:'19.8K reactions', trending:false, age:'1h' },
-  { world:'Pop Culture', kicker:'breaking', type:'bad', text:"Aria Vance is trending for all the wrong reasons after an old clip resurfaced mid-feud.", stat:'36.9K reactions', trending:true, age:'6m' },
-];
+      /* ================= toast ================= */
+      const toastEl = document.getElementById("toast");
+      let toastTimer = null;
+      function showToast(msg) {
+        toastEl.textContent = msg;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2200);
+      }
 
-const KICKER_LABEL = { breaking:'Breaking', justin:'Just In', spotted:'Spotted', sources:'Sources Say' };
+      /* ================= tip banner ================= */
+      document.getElementById("tipClose").addEventListener("click", () => {
+        document.getElementById("tipBanner").classList.add("hidden");
+      });
 
-function highlightMentions(text){
-  const names = ['Kai Velvet','Nora Noire','Lumen Rae','Dash Wilder','Echo Monroe','Zara Flint','Orion Page','Riva Jax','Aria Vance','Milo Sinclair','Theo Marsh'];
-  let out = text;
-  names.forEach(n => {
-    out = out.split(n).join(`<b>${n}</b>`);
-  });
-  return out;
-}
+      /* ================= world tabs ================= */
+      const worldTabsWrap = document.getElementById("worldTabs");
+      function renderWorldTabs() {
+        worldTabsWrap.innerHTML = "";
+        WORLDS.forEach((w) => {
+          const tab = document.createElement("button");
+          tab.className = "world-tab" + (w === activeWorld ? " active" : "");
+          tab.textContent = w;
+          tab.addEventListener("click", () => {
+            activeWorld = w;
+            renderWorldTabs();
+            renderFeed();
+            if (w !== "All") markMissionProgress("world");
+          });
+          worldTabsWrap.appendChild(tab);
+        });
+      }
 
-/* ================= toast ================= */
-const toastEl = document.getElementById('toast');
-let toastTimer = null;
-function showToast(msg){
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
-}
+      /* ================= feed ================= */
+      const feedList = document.getElementById("feedList");
 
-/* ================= tip banner ================= */
-document.getElementById('tipClose').addEventListener('click', () => {
-  document.getElementById('tipBanner').classList.add('hidden');
-});
+      function renderFeed() {
+        const items = HEADLINES.filter(
+          (h) => activeWorld === "All" || h.world === activeWorld,
+        );
 
-/* ================= world tabs ================= */
-const worldTabsWrap = document.getElementById('worldTabs');
-function renderWorldTabs(){
-  worldTabsWrap.innerHTML = '';
-  WORLDS.forEach(w => {
-    const tab = document.createElement('button');
-    tab.className = 'world-tab' + (w === activeWorld ? ' active' : '');
-    tab.textContent = w;
-    tab.addEventListener('click', () => {
-      activeWorld = w;
-      renderWorldTabs();
-      renderFeed();
-      if (w !== 'All') markMissionProgress('world');
-    });
-    worldTabsWrap.appendChild(tab);
-  });
-}
+        feedList.innerHTML = "";
+        if (items.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "note";
+          empty.textContent = "Nothing here right now — try another world.";
+          feedList.appendChild(empty);
+          return;
+        }
 
-/* ================= feed ================= */
-const feedList = document.getElementById('feedList');
-
-function renderFeed(){
-  const items = HEADLINES.filter(h => activeWorld === 'All' || h.world === activeWorld);
-
-  feedList.innerHTML = '';
-  if (items.length === 0){
-    const empty = document.createElement('div');
-    empty.className = 'note';
-    empty.textContent = "Nothing here right now — try another world.";
-    feedList.appendChild(empty);
-    return;
-  }
-
-  items.forEach((h, i) => {
-    const card = document.createElement('div');
-    card.className = 'feed-card';
-    card.style.animationDelay = (i * 0.05) + 's';
-    const wc = WORLD_COLORS[h.world] || '#caa036';
-    card.innerHTML = `
+        items.forEach((h, i) => {
+          const card = document.createElement("div");
+          card.className = "feed-card";
+          card.style.animationDelay = i * 0.05 + "s";
+          const wc = WORLD_COLORS[h.world] || "#caa036";
+          card.innerHTML = `
       <div class="feed-kicker kicker-${h.kicker}">${KICKER_LABEL[h.kicker]}</div>
       <div class="feed-meta">
         <span class="feed-world-tag" style="background:${wc};">${h.world}</span>
         <span class="feed-time">${h.age} ago</span>
-        ${h.trending ? `<div class="feed-trending">
+        ${
+          h.trending
+            ? `<div class="feed-trending">
           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg> Trending
-        </div>` : ''}
+        </div>`
+            : ""
+        }
       </div>
       <div class="feed-headline">${highlightMentions(h.text)}</div>
       <div class="feed-footer">
@@ -363,67 +854,89 @@ function renderFeed(){
       </div>
     `;
 
-    const draftBtn = card.querySelector('.draft-btn');
-    draftBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      draftBtn.classList.add('used');
-      showToast('Draft started from this headline ✍️');
-      markMissionProgress('idea');
-    });
+          const draftBtn = card.querySelector(".draft-btn");
+          draftBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            draftBtn.classList.add("used");
+            showToast("Draft started from this headline ✍️");
+            markMissionProgress("idea");
+          });
 
-    card.addEventListener('click', () => {
-      if (!card.dataset.read){
-        card.dataset.read = '1';
-        markMissionProgress('read');
+          card.addEventListener("click", () => {
+            if (!card.dataset.read) {
+              card.dataset.read = "1";
+              markMissionProgress("read");
+            }
+          });
+
+          feedList.appendChild(card);
+        });
       }
-    });
 
-    feedList.appendChild(card);
-  });
-}
+      /* ================= daily missions ================= */
+      const MISSIONS = [
+        {
+          id: "read",
+          label: "Read 3 headlines",
+          target: 3,
+          progress: 0,
+          xp: 10,
+        },
+        {
+          id: "idea",
+          label: "Draft a post from a headline",
+          target: 1,
+          progress: 0,
+          xp: 15,
+        },
+        {
+          id: "world",
+          label: "Browse a different world",
+          target: 1,
+          progress: 0,
+          xp: 20,
+        },
+      ];
 
-/* ================= daily missions ================= */
-const MISSIONS = [
-  { id:'read', label:'Read 3 headlines', target:3, progress:0, xp:10 },
-  { id:'idea', label:'Draft a post from a headline', target:1, progress:0, xp:15 },
-  { id:'world', label:'Browse a different world', target:1, progress:0, xp:20 },
-];
-
-function renderMissions(){
-  const list = document.getElementById('missionsList');
-  list.innerHTML = '';
-  MISSIONS.forEach(m => {
-    const done = m.progress >= m.target;
-    const row = document.createElement('div');
-    row.className = 'mission-row' + (done ? ' done' : '');
-    row.innerHTML = `
-      <div class="mission-check${done ? ' done' : ''}">
-        ${done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : ''}
+      function renderMissions() {
+        const list = document.getElementById("missionsList");
+        list.innerHTML = "";
+        MISSIONS.forEach((m) => {
+          const done = m.progress >= m.target;
+          const row = document.createElement("div");
+          row.className = "mission-row" + (done ? " done" : "");
+          row.innerHTML = `
+      <div class="mission-check${done ? " done" : ""}">
+        ${done ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : ""}
       </div>
       <div class="mission-text">${m.label}</div>
       <div class="mission-xp">+${m.xp} XP</div>
     `;
-    list.appendChild(row);
-  });
-  const completedCount = MISSIONS.filter(m => m.progress >= m.target).length;
-  document.getElementById('missionsCount').textContent = `${completedCount}/${MISSIONS.length}`;
-  document.getElementById('missionsProgressFill').style.width = (completedCount / MISSIONS.length * 100) + '%';
-}
+          list.appendChild(row);
+        });
+        const completedCount = MISSIONS.filter(
+          (m) => m.progress >= m.target,
+        ).length;
+        document.getElementById("missionsCount").textContent =
+          `${completedCount}/${MISSIONS.length}`;
+        document.getElementById("missionsProgressFill").style.width =
+          (completedCount / MISSIONS.length) * 100 + "%";
+      }
 
-function markMissionProgress(id){
-  const m = MISSIONS.find(mm => mm.id === id);
-  if (!m || m.progress >= m.target) return;
-  m.progress += 1;
-  renderMissions();
-  if (m.progress >= m.target){
-    showToast(`Mission complete — +${m.xp} XP`);
-  }
-}
+      function markMissionProgress(id) {
+        const m = MISSIONS.find((mm) => mm.id === id);
+        if (!m || m.progress >= m.target) return;
+        m.progress += 1;
+        renderMissions();
+        if (m.progress >= m.target) {
+          showToast(`Mission complete — +${m.xp} XP`);
+        }
+      }
 
-/* ================= boot straight into the feed ================= */
-renderWorldTabs();
-renderFeed();
-renderMissions();
-</script>
-</body>
+      /* ================= boot straight into the feed ================= */
+      renderWorldTabs();
+      renderFeed();
+      renderMissions();
+    </script>
+  </body>
 </html>
