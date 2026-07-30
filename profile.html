@@ -55,7 +55,7 @@
       --faint: #c9c2b0;
       --divider: #e5e3dd;
       --avatar-bg: #e3e1da;
-      --avatar-ring: #1e1e1e;
+      --avatar-ring: #5c5c5c;
       --avatar-text: #1e1e1e;
       --enigma-border: #4a4a4a;
       --back-border: #cccccc;
@@ -573,6 +573,117 @@
       font-weight: 600;
     }
 
+    /* trait slider rows (repeated inside .slider-container) */
+    .trait-row {
+      margin-bottom: 18px;
+    }
+
+    .trait-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .trait-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    /* personality summary (chips + overall) */
+    .personality-summary {
+      margin-top: 12px;
+      padding: 14px;
+      background-color: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+    }
+
+    .trait-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .trait-chip {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background-color: var(--bg);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+    }
+
+    .overall-line {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted2);
+      border-top: 1px solid var(--divider);
+      padding-top: 10px;
+    }
+
+    .overall-line span {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .overall-line {
+      position: relative;
+    }
+
+    .overall-trigger {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .overall-underline {
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 3px;
+    }
+
+    .overall-popup {
+      display: none;
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 0;
+      width: 220px;
+      background-color: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      z-index: 40;
+      cursor: default;
+    }
+
+    .overall-trigger:hover .overall-popup,
+    .overall-popup.visible {
+      display: block;
+    }
+
+    .overall-popup-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .overall-popup-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
     /* ------------------ */
 
     .cont {
@@ -680,17 +791,24 @@
       <span class="gameplay-badge">⚡AFFECTS GAMEPLAY</span>
     </div>
 
-      <div class="slider-container">
-        <div class="slider-row">
-          <span class="per-label-edge">Compassionate</span>
-          <input type="range" id="perSlider" min="1" max="11" value="6" class="per-slider">
-          <span class="per-label-edge">Vindictive</span>
-        </div>
-        <div class="per-value">
-          Personality: <span id="perValue">Independent</span>
-        </div>
+    <div class="slider-container" id="traits-container">
+      <!-- trait slider rows get injected here by JS -->
+    </div>
+
+    <div class="personality-summary" id="personality-summary">
+      <div class="trait-tags" id="trait-tags"></div>
+      <div class="overall-line">
+        Overall:
+        <span class="overall-trigger" id="overallTrigger">
+          <span class="overall-underline" id="overallType">Independent</span>
+          <div class="overall-popup" id="overallPopup">
+            <div class="overall-popup-title" id="overallPopupTitle">Independent</div>
+            <div class="overall-popup-text" id="overallPopupText"></div>
+          </div>
+        </span>
       </div>
     </div>
+  </div>
 
   <div class="bio-selection">
     <div class="header">
@@ -843,6 +961,20 @@
       const avatarUrl = avatarImgEl.src.startsWith('data:') ? avatarImgEl.src : null;
       const headerUrl = headerImgEl.src.startsWith('data:') ? headerImgEl.src : null;
 
+      // build the personality payload from the live trait sliders + derived overall type.
+      // stored as a single jsonb column so we don't need one column per trait.
+      const personalityPayload = {
+        traits: traits.reduce((acc, trait) => {
+          acc[trait.id] = {
+            value: trait.value,
+            label: trait.labels[trait.value],
+            axis: trait.axis
+          };
+          return acc;
+        }, {}),
+        overallType: overallTypeEl.textContent
+      };
+
       const { error } = await supabaseClient
         .from('profiles')
         .upsert({
@@ -852,7 +984,8 @@
           handle: handleVal,
           bio: bioVal,
           avatar_url: avatarUrl,
-          header_url: headerUrl
+          header_url: headerUrl,
+          personality: personalityPayload
         });
 
       if (error) {
@@ -872,31 +1005,145 @@
       window.location.href = 'origin.html';
     });
 
-    // personality slider
-    const perSlider = document.getElementById('perSlider');
-    const perValue = document.getElementById('perValue');
+    // personality traits — each slider runs 1-11 with its own full label at every point,
+    // same style as the original Compassionate --> Vindictive slider.
+    const traits = [
+      {
+        id: 'kindness',
+        name: 'Kindness',
+        axis: 'warmth', // this is the only trait that decides warmth (sweet vs mean)
+        value: 6,
+        labels: {
+          1: 'Compassionate', 2: 'Kind', 3: 'Patient', 4: 'Honest', 5: 'Pragmatic',
+          6: 'Balanced', 7: 'Stubborn', 8: 'Competitive', 9: 'Arrogant',
+          10: 'Cynical', 11: 'Vindictive'
+        }
+      },
+      {
+        id: 'courage',
+        name: 'Courage',
+        axis: 'energy', // courage + charisma decide energy (bold vs low-key)
+        value: 6,
+        labels: {
+          1: 'Timid', 2: 'Fearful', 3: 'Cautious', 4: 'Careful', 5: 'Guarded',
+          6: 'Balanced', 7: 'Confident', 8: 'Assertive', 9: 'Daring',
+          10: 'Reckless', 11: 'Bold'
+        }
+      },
+      {
+        id: 'charisma',
+        name: 'Charisma',
+        axis: 'energy',
+        value: 6,
+        labels: {
+          1: 'Reserved', 2: 'Guarded', 3: 'Shy', 4: 'Modest', 5: 'Composed',
+          6: 'Balanced', 7: 'Playful', 8: 'Charming', 9: 'Flirty',
+          10: 'Seductive', 11: 'Irresistible'
+        }
+      }
+    ];
 
-    const perLabels = {
-      1: 'Compassionate',
-      2: 'Kind',
-      3: 'Patient',
-      4: 'Honest',
-      5: 'Pragmatic',
-      6: 'Independent',
-      7: 'Stubborn',
-      8: 'Competitive',
-      9: 'Arrogant',
-      10: 'Cynical',
-      11: 'Vindictive'
+    const traitsContainer = document.getElementById('traits-container');
+    const traitTagsEl = document.getElementById('trait-tags');
+    const overallTypeEl = document.getElementById('overallType');
+
+    // build the slider rows once -- labels for both ends come straight off each trait's own list
+    traits.forEach(trait => {
+      const row = document.createElement('div');
+      row.className = 'trait-row';
+      row.innerHTML = `
+        <div class="trait-name">${trait.name}</div>
+        <div class="slider-row">
+          <span class="per-label-edge">${trait.labels[1]}</span>
+          <input type="range" min="1" max="11" value="${trait.value}" class="per-slider" data-trait="${trait.id}">
+          <span class="per-label-edge">${trait.labels[11]}</span>
+        </div>
+      `;
+      traitsContainer.appendChild(row);
+    });
+
+    // 3x3 grid: warmth (from Kindness) × energy (from Courage + Charisma combined)
+    // warmth alone decides sweet vs mean. energy alone decides bold vs low-key.
+    // the two combine so "mean + bold + reserved" reads as Rebel, for example
+    const overallGrid = {
+      'high-high':    'Icon',
+      'high-neutral': 'Sweetheart',
+      'high-low':     'Guardian',
+      'neutral-high': 'Maverick',
+      'neutral-neutral': 'Independent',
+      'neutral-low':  'Wallflower',
+      'low-high':     'Villain',
+      'low-neutral':  'Rebel',
+      'low-low':      'Enigma'
     };
 
-    function updatePerLabel() {
-      perValue.textContent = perLabels[perSlider.value];
-      perSlider.style.setProperty('--val', perSlider.value);
+    function bandFromScore(score) {
+      if (score >= 2) return 'high';
+      if (score <= -2) return 'low';
+      return 'neutral';
     }
 
-    perSlider.addEventListener('input', updatePerLabel);
-    updatePerLabel();
+    const overallDescriptions = {
+      Icon: 'Warm and high-energy. People are drawn to you, and you know how to work a room without losing your heart.',
+      Sweetheart: 'High warmth, low-key energy. Genuinely kind, easy to trust, and not out to prove anything.',
+      Guardian: 'Warm but guarded. You care deeply and protect the people close to you, even if you don\u2019t show it loudly.',
+      Maverick: 'Neutral warmth, big energy. Bold, unpredictable, and doing your own thing regardless of who\u2019s watching.',
+      Independent: 'Balanced across the board. Not driven by warmth or energy extremes; you make your own calls.',
+      Wallflower: 'Neutral warmth, low-key energy. Quiet and steady, more comfortable observing than performing.',
+      Villain: 'Low warmth, high energy. Sharp, intense, and not afraid to make enemies to get where you\u2019re going.',
+      Rebel: 'Low warmth, neutral energy. Cold on the surface and allergic to rules, but not chasing chaos for its own sake.',
+      Enigma: 'Low warmth, low-key energy. Hard to read, keeps people guessing, and gives away very little.'
+    };
+
+    const overallTrigger = document.getElementById('overallTrigger');
+    const overallPopup = document.getElementById('overallPopup');
+    const overallPopupTitle = document.getElementById('overallPopupTitle');
+    const overallPopupText = document.getElementById('overallPopupText');
+
+    // hover shows/hides via CSS; click is for tap devices where hover doesn't apply
+    overallTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      overallPopup.classList.toggle('visible');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!overallTrigger.contains(e.target)) {
+        overallPopup.classList.remove('visible');
+      }
+    });
+
+    function updatePersonality() {
+      traitTagsEl.innerHTML = '';
+      let warmthScore = 0;
+      let energyScore = 0;
+
+      traits.forEach(trait => {
+        const input = traitsContainer.querySelector(`[data-trait="${trait.id}"]`);
+        const val = parseInt(input.value, 10);
+        trait.value = val;
+        input.style.setProperty('--val', val);
+
+        // deviation from the center (6) of an 11-point scale, range -5..5
+        const deviation = 6 - val;
+        if (trait.axis === 'warmth') warmthScore += deviation;
+        if (trait.axis === 'energy') energyScore += -deviation; // higher value = more energy
+
+        const chip = document.createElement('span');
+        chip.className = 'trait-chip';
+        chip.textContent = `${trait.name}: ${trait.labels[val]}`;
+        traitTagsEl.appendChild(chip);
+      });
+
+      const warmthBand = bandFromScore(warmthScore);
+      const energyBand = bandFromScore(energyScore);
+      const overallLabel = overallGrid[`${warmthBand}-${energyBand}`];
+      overallTypeEl.textContent = overallLabel;
+      overallPopupTitle.textContent = overallLabel;
+      overallPopupText.textContent = overallDescriptions[overallLabel];
+    }
+
+    traitsContainer.addEventListener('input', updatePersonality);
+    updatePersonality();
 
     //bio dictionary
   const dictionaryKeyWords = {
