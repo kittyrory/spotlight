@@ -5,8 +5,6 @@
 // below.
 //
 // HOW THE ROLL WORKS (deliberately dumb/random, per spec):
-// ("roll" refers to the bot reaction randomization, e.g.
-// "bot 1 liked your post!")
 //   1. Roll how many bots react this time: a random number from 1 to
 //      however many ids are currently in BOT_PROFILE_IDS (read
 //      dynamically off the array's length, so adding more bots later
@@ -24,13 +22,15 @@
 //
 // This function does NOT decide *when* to run -- it expects to be
 // invoked by the client right after a user's own post insert succeeds,
-// the same way generate-ai-posts is invoked on "new_post".
+// the same way generate-ai-posts is invoked on "new_post". See the
+// bottom of this file for the expected request body.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+// note for future me: move to a shared `_shared/bot-profile-ids.ts`for convenience
 const BOT_PROFILE_IDS = [
   "9c99876a-cef5-4f3c-b379-5e59bf6039b3",
   "698b21a4-238c-46b8-856d-171ff94ac60f",
@@ -63,12 +63,10 @@ function jsonResponse(body: unknown, status = 200) {
 
 type Roll = { botId: string; reaction: ReactionType };
 
-// FUTURE HOOK: once relationships exist, this is the function to change --
-// e.g. instead of `pickRandomBot` drawing uniformly from `pool`, weight the
-// draw by relationship closeness, and instead of a flat 1..N roll for
-// reactionCount, bias it upward for bots with a close-friend/lover
-// relationship to this user. Everything downstream (insert shape,
-// notification shape) stays the same.
+// FUTURE HOOK: once relationships exist, this is the function to change
+// weight the draw by relationship closeness instead of uniform, and bias
+// reactionCount upward for close-friend/lover relationships. downstream
+// insert/notification shape stays the same.
 function rollBotReactions(botIds: string[]): Roll[] {
   const reactionCount = 1 + Math.floor(Math.random() * botIds.length);
   const reactionsByBot = new Map<string, Set<ReactionType>>();
@@ -156,7 +154,7 @@ Deno.serve(async (req) => {
 
     const reactionRows = rolls.map((roll) => ({
       post_id: postId,
-      user_id: userId, // whose feed this reflects on, per the existing schema
+      user_id: userId, // post owner, whose feed this reflects on
       bot_user_id: roll.botId,
       reaction_type: roll.reaction,
     }));
@@ -166,8 +164,6 @@ Deno.serve(async (req) => {
       .insert(reactionRows);
     if (reactionError) throw reactionError;
 
-    // bump the denormalized counters on the post. read-then-write, same
-    // as the rest of this codebase does for reaction counts
     const likeIncrement = rolls.filter((r) => r.reaction === "like").length;
     const repostIncrement = rolls.filter((r) => r.reaction === "repost").length;
     if (likeIncrement || repostIncrement) {
@@ -195,8 +191,7 @@ Deno.serve(async (req) => {
       console.error("Could not insert reaction notifications:", notifError);
     }
 
-    // handy for the client to show an immediate toast without waiting on
-    // the notifications page, e.g. "AriaMonroe liked your tweet!"
+    // lets the client show an immediate toast, e.g. "AriaMonroe liked your tweet!"
     const reactions = rolls.map((roll) => ({
       bot_id: roll.botId,
       bot_display_name: botById.get(roll.botId)?.display_name ?? "A bot",
@@ -205,7 +200,16 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ reactions });
   } catch (err) {
-    console.error(err);
-    return jsonResponse({ error: String(err) }, 500);
+    const details =
+      err && typeof err === "object"
+        ? {
+            message: (err as any).message ?? null,
+            code: (err as any).code ?? null,
+            details: (err as any).details ?? null,
+            hint: (err as any).hint ?? null,
+          }
+        : { message: String(err) };
+    console.error("generate-bot-reactions failed:", JSON.stringify(details));
+    return jsonResponse({ error: details }, 500);
   }
 });
