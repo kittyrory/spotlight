@@ -911,15 +911,31 @@
       const baseLikes = Math.floor(Math.random() * 900) + 50;
       const baseDislikes = Math.floor(Math.random() * 90) + 1;
       const baseReposts = Math.floor(Math.random() * 200) + 1;
-      const { error } = await supabaseClient.from('posts').insert({
+      const { data: newPost, error } = await supabaseClient.from('posts').insert({
         user_id: user.id,
         content,
         image_urls: imageUrls,
         like_count: baseLikes,
         dislike_count: baseDislikes,
         repost_count: baseReposts
-      });
+      }).select().single();
       if (error) throw error;
+
+      // roll a random set of bots to like/retweet this post. same
+      // fire-and-forget pattern as generate-ai-posts below -- if this
+      // fails, the post itself is still live, so we just log it rather
+      // than blocking the redirect over a reactions hiccup.
+      try {
+        await supabaseClient.functions.invoke('generate-bot-reactions', {
+          body: {
+            post_id: newPost.id,
+            user_id: user.id,
+          }
+        });
+      } catch (err) {
+        console.error('Could not generate bot reactions:', err);
+      }
+
       try {
         // pull the same profile fields + resolved worlds that Feed.html
         // sends, so posts triggered from composing here aren't stuck

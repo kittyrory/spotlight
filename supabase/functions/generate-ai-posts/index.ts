@@ -15,15 +15,11 @@
 // return these rows. Other users never see them, even though the posts
 // are attributed to shared "bot" profiles for display purposes.
 //
-// Expects a `posts` table with at least:
-//   id (uuid, pk, default gen_random_uuid())
-//   user_id (uuid, fk -> profiles.id)       <- the bot's profile id
-//   ai_owner_id (uuid, fk -> profiles.id, nullable)  <- who this is private to
-//   content (text)
-//   image_urls (text[], nullable)
-//   like_count / dislike_count / repost_count (int, default 0)
-//   created_at (timestamptz, default now())
-//   is_ai_generated (bool, default false)
+// NOTIFICATIONS:
+// Since the prompt explicitly allows the model to @ mention the user's
+// handle, any generated post that does gets a `mention_post` row written
+// to `notifications` right after insert, so it shows up on the user's
+// notifications page.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -259,6 +255,28 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// checks each newly-inserted post's content for an @ mention of the
+// recipient's own handle, and builds one `notifications` row per hit.
+// kept as its own function since it's a pure transform -- easy to test,
+// and easy to see at a glance what it does and doesn't touch.
+function buildMentionNotifications(
+  insertedPosts: { id: string; content: string; bot_user_id: string }[],
+  recipientId: string,
+  recipientHandle: string | undefined,
+) {
+  if (!recipientHandle) return [];
+  const mentionRegex = new RegExp(`@${recipientHandle}\\b`, "i");
+  return insertedPosts
+    .filter((post) => mentionRegex.test(post.content))
+    .map((post) => ({
+      user_id: recipientId,
+      type: "mention_post",
+      post_id: post.id,
+      actor_bot_id: post.bot_user_id,
+      preview: post.content,
+    }));
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -369,6 +387,23 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     console.log("Inserted result:", JSON.stringify(data));
+
+    // NEW: notify the user for any inserted post that @ mentions them.
+    // non-fatal if this fails -- the posts themselves already succeeded,
+    // so we log and move on rather than throwing and losing that result.
+    const notificationRows = buildMentionNotifications(
+      data ?? [],
+      userId,
+      body.profile?.handle,
+    );
+    if (notificationRows.length) {
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert(notificationRows);
+      if (notifError) {
+        console.error("Could not insert mention notifications:", notifError);
+      }
+    }
 
     return new Response(JSON.stringify({ inserted: data }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
