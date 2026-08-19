@@ -20,6 +20,10 @@
 //        reactions per bot per post).
 //   4. Insert one post_reactions row + one notifications row per roll.
 //
+// Expects a `bot_reactions` table (post_id, bot_user_id, reaction_type) and
+// a `notifications` table. bot_reactions is separate from post_reactions,
+// which holds real users' likes/dislikes/reposts.
+//
 // This function does NOT decide *when* to run -- it expects to be
 // invoked by the client right after a user's own post insert succeeds,
 // the same way generate-ai-posts is invoked on "new_post". See the
@@ -30,7 +34,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-// note for future me: move to a shared `_shared/bot-profile-ids.ts`for convenience
 const BOT_PROFILE_IDS = [
   "9c99876a-cef5-4f3c-b379-5e59bf6039b3",
   "698b21a4-238c-46b8-856d-171ff94ac60f",
@@ -45,6 +48,9 @@ const BOT_PROFILE_IDS = [
 
 const MAX_REACTIONS_PER_BOT = 2;
 
+// "repost" is the DB value (post_reactions.reaction_type, posts.repost_count);
+// user-facing copy calls it "retweet". Same mapping as REACTION_TYPE_BY_CLASS
+// in Feed.html.
 type ReactionType = "like" | "repost";
 
 const corsHeaders = {
@@ -63,9 +69,9 @@ function jsonResponse(body: unknown, status = 200) {
 
 type Roll = { botId: string; reaction: ReactionType };
 
-// FUTURE HOOK: once relationships exist, this is the function to change
+// FUTURE HOOK: once relationships exist, this is the function to change --
 // weight the draw by relationship closeness instead of uniform, and bias
-// reactionCount upward for close-friend/lover relationships. downstream
+// reactionCount upward for close-friend/lover relationships. Downstream
 // insert/notification shape stays the same.
 function rollBotReactions(botIds: string[]): Roll[] {
   const reactionCount = 1 + Math.floor(Math.random() * botIds.length);
@@ -154,16 +160,17 @@ Deno.serve(async (req) => {
 
     const reactionRows = rolls.map((roll) => ({
       post_id: postId,
-      user_id: userId, // post owner, whose feed this reflects on
       bot_user_id: roll.botId,
       reaction_type: roll.reaction,
     }));
 
     const { error: reactionError } = await supabase
-      .from("post_reactions")
+      .from("bot_reactions")
       .insert(reactionRows);
     if (reactionError) throw reactionError;
 
+    // bump the denormalized counters on the post. read-then-write; not
+    // safe against a concurrent update landing between the read and write.
     const likeIncrement = rolls.filter((r) => r.reaction === "like").length;
     const repostIncrement = rolls.filter((r) => r.reaction === "repost").length;
     if (likeIncrement || repostIncrement) {
