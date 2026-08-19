@@ -411,16 +411,10 @@
         // Save data package to browser memory
         localStorage.setItem("savedProfile", JSON.stringify(profileData));
 
-<<<<<<< HEAD
-  window.location.href = iconPage;
+  editProfileBtn.addEventListener('click', () => {
+  sessionStorage.setItem('spotlight-last-page', window.location.href);
+  window.location.href = 'IconPage.html'; 
 });
 </script>
 </body>
 </html>
-=======
-        window.location.href = iconPage;
-      });
-    </script>
-  </body>
-</html>
->>>>>>> bf93164e8626a9b52f8f677c86055b619138c40b
