@@ -18,11 +18,7 @@
 //      - If this bot has already reacted twice this run, it's excluded
 //        from the pool entirely for the rest of the rounds (max 2
 //        reactions per bot per post).
-//   4. Insert one post_reactions row + one notifications row per roll.
-//
-// Expects a `bot_reactions` table (post_id, bot_user_id, reaction_type) and
-// a `notifications` table. bot_reactions is separate from post_reactions,
-// which holds real users' likes/dislikes/reposts.
+//   4. Insert one bot _reactions row + one notifications row per roll.
 //
 // This function does NOT decide *when* to run -- it expects to be
 // invoked by the client right after a user's own post insert succeeds,
@@ -48,7 +44,7 @@ const BOT_PROFILE_IDS = [
 
 const MAX_REACTIONS_PER_BOT = 2;
 
-// "repost" is the DB value (post_reactions.reaction_type, posts.repost_count);
+// "repost" is the DB value (bot_reactions.reaction_type, posts.repost_count);
 // user-facing copy calls it "retweet". Same mapping as REACTION_TYPE_BY_CLASS
 // in Feed.html.
 type ReactionType = "like" | "repost";
