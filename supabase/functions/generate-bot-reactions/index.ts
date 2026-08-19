@@ -5,6 +5,8 @@
 // below.
 //
 // HOW THE ROLL WORKS (deliberately dumb/random, per spec):
+// ("roll" refers to the bot reaction randomization, e.g.
+// "bot 1 liked your post!")
 //   1. Roll how many bots react this time: a random number from 1 to
 //      however many ids are currently in BOT_PROFILE_IDS (read
 //      dynamically off the array's length, so adding more bots later
@@ -20,24 +22,15 @@
 //        reactions per bot per post).
 //   4. Insert one post_reactions row + one notifications row per roll.
 //
-// Expects a `post_reactions` table with a `bot_user_id` column (see
-// notifications_migration.sql) and a `notifications` table (same file).
-//
 // This function does NOT decide *when* to run -- it expects to be
 // invoked by the client right after a user's own post insert succeeds,
-// the same way generate-ai-posts is invoked on "new_post". See the
-// bottom of this file for the expected request body.
+// the same way generate-ai-posts is invoked on "new_post".
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-// keep this list in sync with the other two edge functions -- edge
-// functions don't share code by default, so there are three copies of
-// this array across the project right now. worth moving to a
-// `_shared/bot-profile-ids.ts` import if you want a single source of
-// truth later, but that's a refactor, not required for this to work.
 const BOT_PROFILE_IDS = [
   "9c99876a-cef5-4f3c-b379-5e59bf6039b3",
   "698b21a4-238c-46b8-856d-171ff94ac60f",
@@ -52,10 +45,7 @@ const BOT_PROFILE_IDS = [
 
 const MAX_REACTIONS_PER_BOT = 2;
 
-type ReactionType = "like" | "repost"; // "repost" matches the DB value used
-// elsewhere (post_reactions.reaction_type, posts.repost_count) even though
-// the user-facing word is "retweet" -- see REACTION_TYPE_BY_CLASS in
-// Feed.html, which maps the same way.
+type ReactionType = "like" | "repost";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,9 +63,6 @@ function jsonResponse(body: unknown, status = 200) {
 
 type Roll = { botId: string; reaction: ReactionType };
 
-// the actual randomizer. no relationship weighting, no logic beyond the
-// caps described above -- this is intentionally "dumb" per spec.
-//
 // FUTURE HOOK: once relationships exist, this is the function to change --
 // e.g. instead of `pickRandomBot` drawing uniformly from `pool`, weight the
 // draw by relationship closeness, and instead of a flat 1..N roll for
@@ -180,9 +167,7 @@ Deno.serve(async (req) => {
     if (reactionError) throw reactionError;
 
     // bump the denormalized counters on the post. read-then-write, same
-    // as the rest of this codebase does for reaction counts -- fine at
-    // this scale, but note it's not safe against a concurrent update
-    // landing between the read above and this write.
+    // as the rest of this codebase does for reaction counts
     const likeIncrement = rolls.filter((r) => r.reaction === "like").length;
     const repostIncrement = rolls.filter((r) => r.reaction === "repost").length;
     if (likeIncrement || repostIncrement) {
