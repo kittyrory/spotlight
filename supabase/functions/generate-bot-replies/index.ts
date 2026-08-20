@@ -15,6 +15,15 @@
 // googleapis.com) using GEMINI_API_KEY, so usage draws down Google's free
 // tier first. If that call fails for any reason (quota exhausted, network
 // error, malformed response), it falls back once to OpenRouter
+//
+// NOTIFICATIONS:
+// After inserting the bot replies, one `notifications` row gets written
+// per reply so it shows up on the post owner's notifications page --
+// type is `mention_reply` if the reply @ mentions the recipient's handle,
+// otherwise `bot_reply`. The recipient is whoever privately owns this
+// post's feed slot: `ai_owner_id` if it's an AI-generated post, otherwise
+// `user_id` (this mirrors the RLS logic already used elsewhere: posts.
+// user_id = auth.uid() OR posts.ai_owner_id = auth.uid()).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -212,10 +221,10 @@ async function callGemini(userMessage: string): Promise<{ content: string }[]> {
   }
 }
 
-// builds the prompt for one bot's reply. Crucially, this now tells the
-// bot (a) who actually wrote the original post, so a bot that ISN'T the
-// poster doesn't answer questions as if it had firsthand knowledge of
-// something it never posted, and (b) whether the latest message was
+// builds the prompt for one bot's reply. this now tells the
+// bot (a) who actually wrote the original post, so a bot that ISN'T 
+// the poster doesn't answer questions as if it had firsthand knowledge 
+// of something it never posted, and (b) whether the latest message was
 // actually directed at it (@mentioned) vs. just part of the general
 // thread it's reacting to.
 function buildReplyPrompt(
@@ -298,12 +307,13 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // NOTE: also fetching user_id (the bot who actually made the post) --
-    // previously this only grabbed id/content, so no reply prompt ever
-    // knew who the original poster was.
+    // fetching bot_user_id -- this is where bot authorship actually
+    // lives per the posts schema (mutually exclusive with user_id: a
+    // post is authored by either a real user OR a bot, never both).
+    // ai_owner_id is needed separately to know who to notify.
     const { data: post, error: postError } = await supabase
       .from("posts")
-      .select("id, content, user_id")
+      .select("id, content, user_id, bot_user_id, ai_owner_id")
       .eq("id", postId)
       .single();
     if (postError) throw postError;
@@ -324,8 +334,17 @@ Deno.serve(async (req) => {
     const botsList = (bots || []) as BotProfile[];
     const botById = new Map(botsList.map((b) => [b.id, b]));
 
-    const postAuthor = post.user_id ? botById.get(post.user_id) : undefined;
+    // FIX: made an error; before it was "post.user_id", not
+    // "post.bot_user_id", meaning it would silently error out
+    // and not tell the bot its role
+    const postAuthor = post.bot_user_id
+      ? botById.get(post.bot_user_id)
+      : undefined;
     const postAuthorName = postAuthor?.display_name ?? null;
+
+    // who this thread privately belongs to -- same either/or the RLS
+    // policies use (posts.user_id = auth.uid() OR posts.ai_owner_id = auth.uid())
+    const recipientId: string | null = post.ai_owner_id ?? post.user_id ?? null;
 
     // how many times has each bot already replied in this thread
     const replyCountByBot = new Map<string, number>();
@@ -373,7 +392,7 @@ Deno.serve(async (req) => {
 
     const insertedRows = [];
     for (const bot of replyBots) {
-      const isPostAuthor = post.user_id === bot.id;
+      const isPostAuthor = post.bot_user_id === bot.id;
       const isDirectlyAddressed = mentionedBotIds.includes(bot.id);
       const prompt = buildReplyPrompt(
         post.content,
@@ -405,6 +424,7 @@ Deno.serve(async (req) => {
         // previously a failed call here just silently vanished with no
         // trace -- if this happened to be the @mentioned bot, it would
         // look like "the tagged bot never replied" with zero clue why.
+        // added it for future bug catching & less headache :)
         console.error(
           `Reply generation failed for bot ${bot.handle} (${bot.id}):`,
           err,
@@ -422,6 +442,49 @@ Deno.serve(async (req) => {
       .insert(insertedRows)
       .select();
     if (insertError) throw insertError;
+
+    // notify the post owner for every bot reply, unless there's no
+    // recipient to notify (shouldn't happen in practice, but to be safe).
+    // type is mention_reply if the reply @ mentions the recipient's own
+    // handle, otherwise bot_reply. non-fatal on failure -- the replies
+    // themselves already succeeded and shouldn't be rolled back over a
+    // notification insert issue.
+    if (recipientId) {
+      const { data: recipientProfile, error: recipientError } = await supabase
+        .from("profiles")
+        .select("handle")
+        .eq("id", recipientId)
+        .single();
+      if (recipientError) {
+        console.error(
+          "Could not load recipient profile for notifications:",
+          recipientError,
+        );
+      }
+      const recipientHandle = recipientProfile?.handle;
+      const mentionRegex = recipientHandle
+        ? new RegExp(`@${recipientHandle}\\b`, "i")
+        : null;
+
+      const notificationRows = (inserted ?? []).map((reply) => ({
+        user_id: recipientId,
+        type:
+          mentionRegex && mentionRegex.test(reply.content)
+            ? "mention_reply"
+            : "bot_reply",
+        post_id: reply.post_id,
+        reply_id: reply.id,
+        actor_bot_id: reply.bot_user_id,
+        preview: reply.content,
+      }));
+
+      const { error: notifError } = await supabase
+        .from("notifications")
+        .insert(notificationRows);
+      if (notifError) {
+        console.error("Could not insert reply notifications:", notifError);
+      }
+    }
 
     return jsonResponse({ inserted });
   } catch (err) {
