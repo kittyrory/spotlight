@@ -13,14 +13,14 @@
     <script>
       window.addEventListener("error", function (e) {
         console.error(
-          "DEBUG ERROR:",
+          "ERROR:",
           e.message,
           (e.filename || "") + ":" + (e.lineno || ""),
         );
       });
       window.addEventListener("unhandledrejection", function (e) {
         console.error(
-          "DEBUG PROMISE REJECTION:",
+          "PROMISE REJECTION:",
           e.reason?.message || e.reason,
         );
       });
@@ -35,20 +35,42 @@
     </script>
 
     <style>
-      /* added repeated colors to root 
-    you can bring back the old colors if you want */
       :root,
       [data-theme="dark"] {
-        --bg: #0e0e0e; /* softer black (was #000 */
+        --bg: #0e0e0e;
         --text: #ffffff;
         --surface: #1a1a1a;
         --color-border: #333;
         --color-muted: #888;
-        --color-accent: #e2bb00; /* changed to fit the same accent as the other pages (was: #dd991b) */
-        --color-accent-rgb:
-          226, 187, 0; /* was 221, 153, 27, left over from the old accent hex above */
+        --color-accent: #e2bb00;
+        --accent-dim: #c99a37;
+        --color-accent-rgb: 226, 187, 0;
         --toggle-border: rgba(255, 255, 255, 0.25);
         --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+        --panel: #161514;
+        --panel-2: #201c14;
+        --ink: #f5f0e8;
+        --ink-dim: #9b968d;
+        --line: rgba(244,193,78,0.14);
+        --amused: #f9d480;
+        --outraged: #d94f4f;
+        --swooning: #ff7fb0;
+        --skeptical: #a1d7ec;
+        --gold: #f5c451;
+        --gold-light: #e0b84e;
+        --gold-deep: #c99a2e;
+        --gold-rgb: 245, 196, 81;
+        --gold-glow: rgba(245,196,81,.18);
+        /* solid fills for buttons/sparkles/bars - stays bright gold in
+           both themes, unlike --gold which darkens in light mode for
+           text contrast and looked muddy as a button background */
+        --gold-solid: #f5c451;
+        --gold-solid-deep: #c99a2e;
+        --overlay-dim: rgba(0, 0, 0, 0.6);
+        --fame-grad-1: #1c1a13;
+        --fame-grad-2: #19170f;
+        --fame-grad-3: #16140d;
+        --fame-edge: #17140d;
       }
 
       [data-theme="light"] {
@@ -61,6 +83,27 @@
         --color-accent-rgb: 226, 187, 0;
         --toggle-border: rgba(0, 0, 0, 0.25);
         --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
+        --panel: #f7f0dc;
+        --panel-2: #efe3c2;
+        --ink: #1e1e1e;
+        --ink-dim: #6b6558;
+        --line: rgba(66, 65, 63, 0.14);
+        --amused: #f9d480;
+        --outraged: #d94f4f;
+        --swooning: #ff7fb0;
+        --skeptical: #a1d7ec;
+        --gold: #9d8420;
+        --gold-light: #b89a30;
+        --gold-deep: #7a6418;
+        --gold-rgb: 157, 132, 32;
+        --gold-glow: rgba(157,132,32,.14);
+        --gold-solid: #f5c451;
+        --gold-solid-deep: #c99a2e;
+        --overlay-dim: rgba(30, 28, 20, 0.35);
+        --fame-grad-1: #fffaf0;
+        --fame-grad-2: #fbf2dc;
+        --fame-grad-3: #f5e9c8;
+        --fame-edge: #fbf2dc;
       }
 
       * {
@@ -141,7 +184,6 @@
         display: block;
         color: var(--text);
         font-weight: bold;
-        /* fixed positioning so Feed / For You / Following / Blazing stay on top while scrolling */
         position: fixed;
         top: 0;
         left: 0;
@@ -188,12 +230,6 @@
         }
       }
 
-      /* removed a leftover .connectedPages:hover rule that shrank the
-    container's own padding to 5px on hover, it made the whole row 
-    jump/shift whenever the cursor passed over any part of it */
-
-      /* nicer hover: soft glow + gentle lift instead of a hard box-shadow snap 
-    (stylistic change) */
       #forYou:hover,
       #following:hover,
       #blazing:hover {
@@ -263,8 +299,6 @@
       .postTime {
         margin-left: auto;
         color: var(--color-muted);
-        /* removed "gap: 70px" here, postTime isn't a flex/grid 
-      container so that property had no effect; it was dead CSS */
       }
 
       .username {
@@ -547,6 +581,603 @@
           font-size: 14px;
         }
       }
+
+      /* shown after a successful post */
+      .analyticsToast {
+        position: fixed;
+        left: 50%;
+        top: 16px;
+        transform: translateX(-50%) translateY(-16px);
+        width: calc(100% - 32px);
+        max-width: 420px;
+        background: linear-gradient(
+          165deg,
+          var(--fame-grad-1) 0%,
+          var(--fame-grad-2) 60%,
+          var(--fame-grad-3) 100%
+        );
+        border: 1.5px solid rgba(var(--gold-rgb), 0.28);
+        border-radius: 16px;
+        padding: 16px 18px;
+        box-shadow:
+          0 12px 32px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(var(--gold-rgb), 0.05) inset;
+        z-index: 200;
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
+        transition:
+          opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 0.35s ease;
+      }
+
+      /* soft gold sweep that plays once across the toast when it appears */
+      .analyticsToast::after {
+        content: "";
+        position: absolute;
+        top: -60%;
+        left: -40%;
+        width: 55%;
+        height: 220%;
+        background: linear-gradient(
+          75deg,
+          transparent 35%,
+          rgba(245, 220, 160, 0.14) 48%,
+          transparent 60%
+        );
+        transform: rotate(8deg);
+        pointer-events: none;
+      }
+
+      .analyticsToast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+        box-shadow:
+          0 12px 32px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
+          0 0 22px rgba(var(--gold-rgb), 0.3);
+        animation: toastGlowPulse 2.6s ease-in-out 0.35s infinite;
+      }
+
+      .analyticsToast.show::after {
+        animation: shine 10s ease-in-out 0.15s 1;
+      }
+
+      @keyframes shine {
+        0% {
+          left: -60%;
+        }
+        35% {
+          left: 130%;
+        }
+        100% {
+          left: 130%;
+        }
+      }
+
+      @keyframes toastGlowPulse {
+        0%,
+        100% {
+          box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45),
+            0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
+            0 0 16px rgba(var(--gold-rgb), 0.22);
+        }
+        50% {
+          box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45),
+            0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
+            0 0 28px rgba(var(--gold-rgb), 0.4);
+        }
+      }
+
+      .analyticsToast p {
+        position: relative;
+        z-index: 1;
+        margin: 0 0 12px;
+        font:
+          600 15px "Urbanist",
+          Arial,
+          sans-serif;
+        color: var(--text);
+      }
+
+      .analyticsToastActions {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        gap: 10px;
+      }
+
+      .analyticsToastActions button {
+        flex: 1;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 0;
+        font:
+          bold 14px "Urbanist",
+          Arial,
+          sans-serif;
+        cursor: pointer;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.2s ease,
+          filter 0.2s ease;
+      }
+
+      #analyticsViewBtn {
+        position: relative;
+        overflow: hidden;
+        color: #241a08;
+        background: linear-gradient(135deg, var(--gold-solid), var(--gold-solid-deep));
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+      }
+
+      #analyticsViewBtn::after {
+        content: "";
+        position: absolute;
+        top: -60%;
+        left: -40%;
+        width: 35%;
+        height: 220%;
+        background: linear-gradient(
+          75deg,
+          transparent 35%,
+          rgba(255, 255, 255, 0.55) 48%,
+          transparent 60%
+        );
+        transform: rotate(10deg);
+        transition: left 1.1s ease;
+      }
+
+      #analyticsViewBtn:hover::after {
+        left: 130%;
+      }
+
+      #analyticsViewBtn:hover {
+        background-position: 100% 0%;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(var(--gold-rgb), 0.45);
+      }
+
+      #analyticsSkipBtn {
+        color: var(--color-muted);
+        background-color: transparent;
+        border: 1px solid var(--color-border);
+      }
+
+      #analyticsSkipBtn:hover {
+        color: var(--text);
+        border-color: rgba(var(--color-accent-rgb), 0.5);
+        transform: translateY(-1px);
+      }
+
+      .analyticsToastActions button:active {
+        transform: translateY(0);
+      }
+
+      .toastSparkle {
+        position: absolute;
+        z-index: 1;
+        border-radius: 50%;
+        background: var(--gold-solid);
+        box-shadow: 0 0 6px 1px rgba(var(--gold-rgb), 0.7);
+        animation: twinkle 3.2s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      @keyframes twinkle {
+        0%,
+        100% {
+          opacity: 0.15;
+          transform: scale(0.7);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+      }
+
+      /* analytics modal (opened via the toast's "View" button) */
+      .analyticsOverlay {
+        position: fixed;
+        inset: 0;
+        background-color: var(--overlay-dim);
+        z-index: 300;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .analyticsOverlay.show {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .analyticsModal {
+        position: relative;
+        width: 90%;
+        max-width: 460px;
+        height: 78vh;
+        max-height: 720px;
+        background: linear-gradient(
+          165deg,
+          var(--fame-grad-1) 0%,
+          var(--fame-grad-2) 60%,
+          var(--fame-grad-3) 100%
+        );
+        border: 1.5px solid rgba(var(--gold-rgb), 0.28);
+        border-radius: 28px;
+        box-shadow:
+          0 12px 32px rgba(0, 0, 0, 0.45),
+          0 0 0 1px rgba(var(--gold-rgb), 0.05) inset;
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(14px) scale(0.97);
+      }
+
+      .analyticsModalScroll {
+        height: 100%;
+        padding: 28px 24px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .analyticsOverlay.show .analyticsModal {
+        animation:
+          modalRise 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.15) forwards,
+          modalGlowPulse 2.6s ease-in-out 0.5s infinite;
+      }
+
+      @keyframes modalRise {
+        from {
+          opacity: 0;
+          transform: translateY(14px) scale(0.97);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .analyticsModal::after {
+        content: "";
+        position: absolute;
+        top: -60%;
+        left: -40%;
+        width: 55%;
+        height: 220%;
+        background: linear-gradient(
+          75deg,
+          transparent 35%,
+          rgba(245, 220, 160, 0.14) 48%,
+          transparent 60%
+        );
+        transform: rotate(8deg);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .analyticsOverlay.show .analyticsModal::after {
+        animation: shine 10s ease-in-out 0.2s 1;
+      }
+
+      @keyframes modalGlowPulse {
+        0%,
+        100% {
+          box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45),
+            0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
+            0 0 18px rgba(var(--gold-rgb), 0.2);
+        }
+        50% {
+          box-shadow:
+            0 12px 32px rgba(0, 0, 0, 0.45),
+            0 0 0 1px rgba(var(--gold-rgb), 0.05) inset,
+            0 0 32px rgba(var(--gold-rgb), 0.4);
+        }
+      }
+
+      .modalSparkle {
+        position: absolute;
+        z-index: 1;
+        border-radius: 50%;
+        background: var(--gold-solid);
+        box-shadow: 0 0 6px 1px rgba(var(--gold-rgb), 0.7);
+        animation: twinkle 3.2s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      .analyticsModal h2 {
+        margin: 0 0 14px;
+        font: 800 24px "Urbanist", Arial, sans-serif;
+        color: var(--text);
+      }
+
+      .analyticsModal p {
+        margin: 0;
+        font: 400 15px "Open Sans", Arial, sans-serif;
+        line-height: 1.6;
+        color: var(--color-muted);
+      }
+          
+    /* LEVEL / XP */
+      .level-block {
+        position: relative; 
+        z-index: 1;
+        padding: 14px 20px 18px;
+        text-align: center;
+      }
+      .level-eyebrow {
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 700;
+        letter-spacing: 0.28em;
+        font-size: 12px;
+        color: var(--gold);
+      }
+      .level-num {
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 800;
+        font-size: 44px; 
+        line-height: 1;
+        color: var(--gold);
+        text-shadow: 0 0 24px rgba(var(--gold-rgb), 0.35);
+        margin-top:2px;
+      }
+
+      .xp-row {
+        display: flex; 
+        align-items: center; 
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .xp-track {
+        flex: 1; 
+        height: 8px; 
+        border-radius: 99px;
+        background: rgba(255,255,255,0.07);
+        overflow: hidden;
+      }
+      .xp-fill {
+        height: 100%; 
+        width: 0%; 
+        border-radius: 99px;
+        background: linear-gradient(90deg, var(--gold-solid-deep), var(--gold-solid));
+        transition: width 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.4s;
+      }
+
+      .analyticsOverlay.show .xp-fill {
+        width: 44%;
+      }
+      .xp-label {
+        font-size: 12px; 
+        font-weight: 700; 
+        color: var(--ink-dim);
+        white-space:nowrap;
+      }
+      .xp-gain {
+        font-size: 11.5px; 
+        font-weight:700; 
+        color:#7ee0a8;
+        margin-top:6px;
+      }
+
+      /* SECTIONS */
+      .section {
+        padding: 16px 20px;
+        border-top: 1px solid var(--line);
+      }
+      .section-head {
+        display: flex; 
+        align-items: center; 
+        gap:8px;
+        font-family: "Urbanist", Arial, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 15px;
+      }
+      .section-head .tag {
+        font-size: 11px;
+        background: var(--panel-2);
+        color: var(--ink-dim);
+        padding: 2px 8px; 
+        border-radius: 999px;
+        letter-spacing: 0.04em;
+        font-family: 'Manrope', sans-serif;
+        font-weight: 700;
+      }
+
+      .tweet-card {
+        margin-top: 10px;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--color-accent);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 13.5px; 
+        line-height:1.55;
+        color: var(--ink);
+      }
+
+      .outcome-text {
+        margin-top: 10px;
+        font-size: 13.5px; 
+        line-height:1.65;
+        color: var(--ink-dim);
+      }
+      .outcome-text b { 
+         color: var(--ink); 
+      }
+
+      /* CONSEQUENCES */
+      .consequences-head {
+        font-family: "Urbanist", Arial, sans-serif;
+        letter-spacing: 0.08em;
+        font-size: 15px;
+        color: var(--ink);
+      }
+
+      .sub {
+        font-size: 11.5px; 
+        color: var(--ink-dim); 
+        margin-top: 2px;
+      }
+
+      .followers-card {
+        margin-top: 12px;
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between;
+        background: linear-gradient(135deg, rgba(var(--gold-rgb), 0.16), rgba(var(--gold-rgb), 0.05));
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px 16px;
+      }
+      .followers-left {
+         display: flex;
+          align-items: center; 
+          gap: 10px; 
+        }
+      .followers-icon {
+        width: 34px; 
+        height: 34px; 
+        border-radius: 10px;
+        background: var(--panel);
+        display: flex;
+         align-items: center; 
+        justify-content: center;
+        font-size:16px;
+      }
+      .followers-label { 
+        font-family: 'Urbanist', sans-serif;
+        font-size: 10.5px; 
+        color: var(--ink-dim); 
+        font-weight: 700; 
+        letter-spacing: 0.04em; 
+        text-transform: uppercase;
+      }
+      .followers-value { 
+        font-family: 'Urbanist', sans-serif; 
+        font-weight: 800;
+        font-size: 22px; 
+        color:#7ee0a8; 
+        margin-top: 1px; 
+      }
+
+      .feelings-block { 
+        margin-top: 16px;
+       }
+      .feelings-label {
+        font-size: 11.5px; 
+        font-weight: 700; 
+        color: var(--ink-dim);
+        letter-spacing:0.03em; margin-bottom:8px;
+      }
+      .feelings-bar {
+        display: flex; 
+        height: 12px; 
+        border-radius: 99px; 
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.06);
+      }
+      .fb-seg { 
+        height:100%;
+       }
+
+      .feelings-legend {
+        display: flex; 
+        flex-wrap: wrap;
+         gap: 8px 14px;
+        margin-top:12px;
+      }
+      .fl-item {
+        display:flex; 
+        align-items:center; 
+        gap:6px;
+        font-size:12px; 
+        color: var(--ink-dim);
+      }
+      .fl-dot { 
+        width:8px; 
+        height:8px; 
+        border-radius:50%; 
+      }
+      .fl-item b {
+         color: var(--ink); 
+         font-weight:800; 
+      }
+
+      .flavor{
+        margin-top: 14px;
+        font-size: 12.5px; 
+        font-style: italic;
+        color: var(--ink-dim);
+        border-top: 1px dashed var(--line);
+        padding-top: 12px;
+      }
+
+      .cont-row { 
+        position: relative;
+        z-index: 1;
+        padding:18px 20px 22px; 
+      }
+      .cont{
+        position: relative;
+        overflow: hidden;
+        width: 100%; 
+        padding: 13px;
+        border-radius: 14px; 
+        border: none;
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 800;
+        letter-spacing:0.04em;
+        font-size:16px;
+        background: linear-gradient(135deg, var(--gold-solid), var(--gold-solid-deep));
+        background-size: 200% 100%;
+        background-position: 0% 0%;
+        color:#1a1408;
+        cursor:pointer;
+        transition:
+          background-position 0.25s ease,
+          transform 0.15s ease,
+          box-shadow 0.2s ease;
+      }
+
+      .cont::after {
+        content: "";
+        position: absolute;
+        top: -60%;
+        left: -40%;
+        width: 35%;
+        height: 220%;
+        background: linear-gradient(
+          75deg,
+          transparent 35%,
+          rgba(255, 255, 255, 0.55) 48%,
+          transparent 60%
+        );
+        transform: rotate(10deg);
+        transition: left 1.1s ease;
+      }
+
+      .cont:hover::after {
+        left: 130%;
+      }
+
+      .cont:hover {
+        background-position: 100% 0%;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(var(--gold-rgb), 0.45);
+      }
+
+      .cont:active {
+        transform: translateY(0);
+      }
     </style>
   </head>
   <body>
@@ -648,641 +1279,118 @@
       <a href="IconPage.html">Profile</a>
     </nav>
 
+    <!-- shown once, right after a successful post, prompting the user to
+    check their post analytics -->
+    <div class="analyticsToast" id="analyticsToast" role="status">
+      <span class="toastSparkle" style="top: 10px; right: 34px; width: 4px; height: 4px; animation-delay: 0s;"></span>
+      <span class="toastSparkle" style="top: 28px; right: 14px; width: 3px; height: 3px; animation-delay: 0.6s;"></span>
+      <span class="toastSparkle" style="bottom: 12px; right: 60px; width: 3px; height: 3px; animation-delay: 1.1s;"></span>
+      <p>Check your analytics!</p>
+      <div class="analyticsToastActions">
+        <button type="button" id="analyticsViewBtn">View</button>
+        <button type="button" id="analyticsSkipBtn">Skip</button>
+      </div>
+    </div>
+
+    <div
+      class="analyticsOverlay"
+      id="analyticsOverlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="analyticsModalTitle"
+    >
+      <div class="analyticsModal">
+        <div class="analyticsModalScroll">
+        <span class="modalSparkle" style="top: 18px; right: 28px; width: 4px; height: 4px; animation-delay: 0s;"></span>
+        <span class="modalSparkle" style="top: 42px; right: 54px; width: 3px; height: 3px; animation-delay: 0.7s;"></span>
+        <span class="modalSparkle" style="top: 64px; left: 30px; width: 3px; height: 3px; animation-delay: 1.3s;"></span>
+        <div class="level-block">
+          <div class="level-eyebrow">LEVEL UP</div>
+          <div class="level-num">12</div>
+          <div class="xp-row">
+            <div class="xp-track"><div class="xp-fill"></div></div>
+            <div class="xp-label">24 / 55 XP</div>
+          </div>
+          <div class="xp-gain">+18 XP earned</div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">TWEET <span class="tag">ACTION</span></div>
+          <div class="tweet-card">
+            "the discourse main character is currently me and honestly? deserved."
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-head">RESULT <span class="tag">OUTCOME</span></div>
+          <div class="outcome-text">
+            Your post ignited a full-blown feed war. <b>@min_cyber</b> roasted the take, <b>@glitch_bakura</b> hyped it into orbit, and two rival accounts quote-tweeted just to disagree. The replies were a mess of laughing-crying reactions and mock outrage — exactly the kind of chaos the feed lives for.
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="consequences-head">CONSEQUENCES</div>
+          <div class="sub">How the feed reacted, and what it did to your reach</div>
+
+          <div class="followers-card">
+            <div class="followers-left">
+              <div class="followers-icon">👥</div>
+              <div>
+                <div class="followers-label">FOLLOWERS</div>
+                <div class="followers-value">+42,524</div>
+              </div>
+            </div>
+            <div style="font-size:20px;">📈</div>
+          </div>
+
+          <div class="feelings-block">
+            <div class="feelings-label">FEED FEELINGS</div>
+            <div class="feelings-bar">
+              <div class="fb-seg" style="width:54%; background:var(--amused);"></div>
+              <div class="fb-seg" style="width:21%; background:var(--outraged);"></div>
+              <div class="fb-seg" style="width:15%; background:var(--swooning);"></div>
+              <div class="fb-seg" style="width:10%; background:var(--skeptical);"></div>
+            </div>
+            <div class="feelings-legend">
+              <div class="fl-item"><span class="fl-dot" style="background:var(--amused);"></span>😂 Amused <b>54%</b></div>
+              <div class="fl-item"><span class="fl-dot" style="background:var(--outraged);"></span>😡 Outraged <b>21%</b></div>
+              <div class="fl-item"><span class="fl-dot" style="background:var(--swooning);"></span>😍 Swooning <b>15%</b></div>
+              <div class="fl-item"><span class="fl-dot" style="background:var(--skeptical);"></span>🤔 Skeptical <b>10%</b></div>
+            </div>
+          </div>
+
+          <div class="flavor">"Main character energy is attracting new devotees — and a few enemies."</div>
+        </div>
+
+        <div class="cont-row">
+          <button class="cont" id="analyticsContinueBtn" type="button">CONTINUE</button>
+        </div>
+        </div>
+      </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
     <script src="scripts/theme.js"></script>
     <script src="scripts/worlds.js"></script>
     <script>
       // worlds.js defines a plain `const worlds` array with no window
-      // assignment of its own (that normally happens in world-scripts.js,
-      // which also does DOM setup that doesn't apply on this page). mirror
-      // just the id-assignment part here so resolveSelectedWorlds() can look
-      // pregen worlds up by the same ids saved in profiles.selected_worlds.
+      // assignment of its own
       worlds.forEach((world, i) => {
-        world.id = i;
+      world.id = i;
       });
       window.WORLDS = worlds;
     </script>
+    <script src="scripts/feed.js"></script> <!-- now separate since this file is becoming lengthy -->
     <script>
-      // maps a footer button's class to the reaction_type value stored in post_reactions
-      const REACTION_TYPE_BY_CLASS = {
-        likes: "like",
-        dislikes: "dislike",
-        retweets: "repost",
-      };
-
-      function createReaction(type, icon, count) {
-        const button = document.createElement("button");
-        button.className = `reaction ${type}`;
-        const label = {
-          likes: "Like",
-          retweets: "Retweet",
-          dislikes: "Dislike",
-          reply: "Reply",
-        }[type];
-        button.setAttribute("aria-label", `${label} this post`);
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg",
-        );
-        const use = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "use",
-        );
-        use.setAttribute("href", `#${icon}`);
-        svg.appendChild(use);
-        const countSpan = document.createElement("span");
-        countSpan.className = "reactionCount";
-        countSpan.textContent = count;
-        button.append(svg, countSpan);
-        return button;
-      }
-
-      function formatCount(value) {
-        return value >= 1000
-          ? `${(value / 1000).toFixed(1).replace(".0", "")}k`
-          : value;
-      }
-
-      function timeSince(dateString) {
-        const minutes = Math.max(
-          1,
-          Math.floor((Date.now() - new Date(dateString)) / 60000),
-        );
-        if (minutes < 60) return `${minutes}m`;
-        const hours = Math.floor(minutes / 60);
-        if (hours < 24) return `${hours}h`;
-        return `${Math.floor(hours / 24)}d`;
-      }
-
-      function renderReplyItem(reply, profile) {
-        const item = document.createElement("div");
-        item.className = reply.is_ai_generated
-          ? "replyItem aiReply"
-          : "replyItem";
-        const avatar = document.createElement("img");
-        avatar.className = "avatar";
-        avatar.src = profile?.avatar_url || "https://placehold.co/26x26/png";
-        avatar.alt = `${profile?.display_name || "User"} avatar`;
-        const body = document.createElement("div");
-        const metaSpan = document.createElement("span");
-        metaSpan.className = "replyMeta";
-        const nameSpan = document.createElement("span");
-        nameSpan.className = "displayName";
-        nameSpan.textContent = profile?.display_name || "Spotlight user";
-        metaSpan.append(
-          nameSpan,
-          document.createTextNode(
-            ` @${profile?.handle?.replace(/^@/, "") || "spotlightuser"} · ${timeSince(reply.created_at)}`,
-          ),
-        );
-        const textDiv = document.createElement("div");
-        textDiv.textContent = reply.content;
-        body.append(metaSpan, textDiv);
-        item.append(avatar, body);
-        return item;
-      }
-
-      function renderUserPost(
-        post,
-        profile,
-        currentUser,
-        myReactions,
-        replies,
-        profileById,
-        botProfileById,
-      ) {
-        const card = document.createElement("article");
-        card.className = post.is_ai_generated ? "postCard aiPost" : "postCard";
-        card.dataset.postId = post.id;
-
-        const meta = document.createElement("div");
-        meta.className = "userMeta";
-        const avatar = document.createElement("img");
-        avatar.className = "avatar";
-        avatar.src = profile?.avatar_url || "https://placehold.co/36x36/png";
-        avatar.alt = `${profile?.display_name || "User"} avatar`;
-        const displayName = document.createElement("span");
-        displayName.className = "displayName";
-        displayName.textContent = profile?.display_name || "Spotlight user";
-        const handle = document.createElement("span");
-        handle.className = "username";
-        handle.textContent = profile?.handle
-          ? `@${profile.handle.replace(/^@/, "")}`
-          : "@spotlightuser";
-        const time = document.createElement("span");
-        time.className = "postTime";
-        time.textContent = timeSince(post.created_at);
-        meta.append(avatar, displayName, handle, time);
-
-        const content = document.createElement("div");
-        content.className = "postContent";
-        if (post.content) {
-          const text = document.createElement("p");
-          text.textContent = post.content;
-          content.appendChild(text);
-        }
-        if (Array.isArray(post.image_urls) && post.image_urls.length) {
-          const media = document.createElement("div");
-          media.className = "postMedia";
-          post.image_urls.forEach((url) => {
-            const image = document.createElement("img");
-            image.src = url;
-            image.alt = "Post image";
-            media.appendChild(image);
+      (function () {
+        var continueBtn = document.getElementById("analyticsContinueBtn");
+        var overlay = document.getElementById("analyticsOverlay");
+        if (continueBtn && overlay) {
+          continueBtn.addEventListener("click", function () {
+            overlay.classList.remove("show");
           });
-          content.appendChild(media);
         }
-
-        const footer = document.createElement("div");
-        footer.className = "footerSpan";
-        const likeBtn = createReaction(
-          "likes",
-          "icon-like",
-          formatCount(post.like_count || 0),
-        );
-        const retweetBtn = createReaction(
-          "retweets",
-          "icon-retweet",
-          formatCount(post.repost_count || 0),
-        );
-        const dislikeBtn = createReaction(
-          "dislikes",
-          "icon-dislike",
-          formatCount(post.dislike_count || 0),
-        );
-        const replyBtn = createReaction("reply", "icon-reply", "Reply");
-
-        [likeBtn, dislikeBtn, retweetBtn].forEach((button) => {
-          const type =
-            REACTION_TYPE_BY_CLASS[
-              [...button.classList].find((c) => c in REACTION_TYPE_BY_CLASS)
-            ];
-          if (myReactions.has(type)) button.classList.add("active");
-          button.addEventListener("click", () =>
-            toggleReaction(post.id, type, button, currentUser),
-          );
-        });
-
-        footer.append(likeBtn, retweetBtn, dislikeBtn, replyBtn);
-        content.appendChild(footer);
-
-        // reply section: hidden thread + composer, toggled by the Reply button
-        const replySection = document.createElement("div");
-        replySection.className = "replySection";
-
-        const replyList = document.createElement("div");
-        replyList.className = "replyList";
-        replies.forEach((reply) =>
-          replyList.appendChild(
-            renderReplyItem(
-              reply,
-              reply.bot_user_id
-                ? botProfileById.get(reply.bot_user_id)
-                : profileById.get(reply.user_id),
-            ),
-          ),
-        );
-
-        const replyForm = document.createElement("div");
-        replyForm.className = "replyForm";
-        const textarea = document.createElement("textarea");
-        textarea.placeholder = currentUser
-          ? "Post your reply"
-          : "Log in to reply";
-        textarea.disabled = !currentUser;
-        textarea.maxLength = 250;
-        const submitBtn = document.createElement("button");
-        submitBtn.className = "replySubmit";
-        submitBtn.textContent = "Reply";
-        submitBtn.disabled = !currentUser;
-        submitBtn.addEventListener("click", async () => {
-          const value = textarea.value.trim();
-          if (!value || !currentUser) return;
-          submitBtn.disabled = true;
-          submitBtn.textContent = "Posting...";
-          const { data, error } = await supabaseClient
-            .from("post_replies")
-            .insert({
-              post_id: post.id,
-              user_id: currentUser.id,
-              content: value,
-            })
-            .select()
-            .single();
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Reply";
-          if (error) {
-            console.error("Could not post reply:", error);
-            return;
-          }
-          replyList.appendChild(
-            renderReplyItem(data, profileById.get(currentUser.id)),
-          );
-          textarea.value = "";
-          triggerBotReplies("user_replied");
-        });
-        replyForm.append(textarea, submitBtn);
-        replySection.append(replyForm, replyList);
-
-        // bot replies: triggered two ways -- (1) first time this thread is
-        // opened with zero replies, 3 random bots reply to the post itself,
-        // (2) every time the user submits their own reply, bots (chosen by
-        // @ mention if present, else random, capped at 3 replies per bot
-        // per thread) reply again to the thread. both calls hit a separate
-        // edge function so the caps/mentions logic stays isolated from the
-        // ai-post generation logic.
-        let hasTriggeredInitialBotReplies = replies.length > 0;
-        async function triggerBotReplies(reason) {
-          try {
-            const { data: result, error } =
-              await supabaseClient.functions.invoke("generate-bot-replies", {
-                body: { post_id: post.id, reason },
-              });
-            if (error) {
-              console.error("Could not generate bot replies:", error);
-              return;
-            }
-            (result?.inserted || []).forEach((reply) => {
-              const bot = botProfileById.get(reply.bot_user_id);
-              replyList.appendChild(renderReplyItem(reply, bot));
-            });
-          } catch (error) {
-            console.error("Could not generate bot replies:", error);
-          }
-        }
-
-        replyBtn.addEventListener("click", () => {
-          replySection.classList.toggle("open");
-          if (
-            replySection.classList.contains("open") &&
-            !hasTriggeredInitialBotReplies
-          ) {
-            hasTriggeredInitialBotReplies = true;
-            triggerBotReplies("reply_opened");
-          }
-        });
-
-        card.append(meta, content, replySection);
-        return card;
-      }
-
-      async function toggleReaction(postId, type, button, currentUser) {
-        if (!currentUser) return;
-        const countSpan = button.querySelector(".reactionCount");
-        const wasActive = button.classList.contains("active");
-        const rawCount = parseCount(countSpan.textContent);
-        button.disabled = true;
-        try {
-          if (wasActive) {
-            const { error } = await supabaseClient
-              .from("post_reactions")
-              .delete()
-              .eq("post_id", postId)
-              .eq("user_id", currentUser.id)
-              .eq("reaction_type", type);
-            if (error) throw error;
-            button.classList.remove("active");
-            countSpan.textContent = formatCount(Math.max(0, rawCount - 1));
-          } else {
-            const { error } = await supabaseClient
-              .from("post_reactions")
-              .insert({
-                post_id: postId,
-                user_id: currentUser.id,
-                reaction_type: type,
-              });
-            if (error) throw error;
-            button.classList.add("active");
-            countSpan.textContent = formatCount(rawCount + 1);
-
-            // likes and dislikes are mutually exclusive: dropping one clears the other
-            const opposite =
-              type === "like" ? "dislike" : type === "dislike" ? "like" : null;
-            if (opposite) {
-              const card = button.closest(".postCard");
-              const oppositeClass = opposite === "like" ? "likes" : "dislikes";
-              const oppositeBtn = card.querySelector(
-                `.reaction.${oppositeClass}`,
-              );
-              if (oppositeBtn?.classList.contains("active")) {
-                const oppositeCountSpan =
-                  oppositeBtn.querySelector(".reactionCount");
-                const oppositeCount = parseCount(oppositeCountSpan.textContent);
-                await supabaseClient
-                  .from("post_reactions")
-                  .delete()
-                  .eq("post_id", postId)
-                  .eq("user_id", currentUser.id)
-                  .eq("reaction_type", opposite);
-                oppositeBtn.classList.remove("active");
-                oppositeCountSpan.textContent = formatCount(
-                  Math.max(0, oppositeCount - 1),
-                );
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Could not update reaction:", error);
-        } finally {
-          button.disabled = false;
-        }
-      }
-
-      function parseCount(text) {
-        if (text.endsWith("k")) return Math.round(parseFloat(text) * 1000);
-        return parseInt(text, 10) || 0;
-      }
-
-      async function loadUserPosts(currentUser) {
-        if (!currentUser) return;
-
-        // this feed is entirely private per user: only the logged-in user's
-        // own posts, plus the AI posts generated privately for them
-        // (ai_owner_id = them). nobody else's posts show up here at all.
-        const { data: posts, error } = await supabaseClient
-          .from("posts")
-          .select(
-            "id, user_id, bot_user_id, content, image_urls, like_count, dislike_count, repost_count, created_at, is_ai_generated, ai_owner_id",
-          )
-          .or(`user_id.eq.${currentUser.id},ai_owner_id.eq.${currentUser.id}`)
-          .order("created_at", { ascending: false })
-          .limit(25);
-        if (error) {
-          console.error("Could not load posts:", error);
-          return;
-        }
-
-        // clear out whatever's currently rendered before re-rendering, since
-        // this can now be called again after generating new AI posts
-        const feedEl = document.querySelector(".posts");
-        feedEl.innerHTML = "";
-
-        if (!posts?.length) return;
-
-        const postIds = posts.map((post) => post.id);
-
-        const { data: replies, error: repliesError } = await supabaseClient
-          .from("post_replies")
-          .select(
-            "id, post_id, user_id, bot_user_id, content, is_ai_generated, created_at",
-          )
-          .in("post_id", postIds)
-          .order("created_at", { ascending: true });
-        if (repliesError)
-          console.error("Could not load replies:", repliesError);
-
-        let myReactionRows = [];
-        if (currentUser) {
-          const { data, error: reactionError } = await supabaseClient
-            .from("post_reactions")
-            .select("post_id, reaction_type")
-            .eq("user_id", currentUser.id)
-            .in("post_id", postIds);
-          if (reactionError)
-            console.error("Could not load reactions:", reactionError);
-          myReactionRows = data || [];
-        }
-
-        const userIds = [
-          ...new Set([
-            ...posts.map((post) => post.user_id).filter(Boolean),
-            ...(replies || []).map((reply) => reply.user_id).filter(Boolean),
-          ]),
-        ];
-        const { data: profiles, error: profileError } = await supabaseClient
-          .from("profiles")
-          .select("id, display_name, handle, avatar_url")
-          .in("id", userIds);
-        if (profileError)
-          console.error("Could not load post profiles:", profileError);
-        const profileById = new Map(
-          (profiles || []).map((profile) => [profile.id, profile]),
-        );
-
-        // bot authors live in a separate table since they aren't real
-        // auth users. fetch those for any AI posts AND any AI replies (reply
-        // bots are a bigger pool than post bots, so a bot id can show up on
-        // a reply without ever having authored a post in this batch -- must
-        // collect from both or lookups for reply-only bots silently miss)
-        // and fold them into the same lookup keyed by post id (not user id,
-        // since bot ids and real profile ids come from different tables and
-        // could theoretically clash)
-        const botUserIds = [
-          ...new Set([
-            ...posts.map((post) => post.bot_user_id).filter(Boolean),
-            ...(replies || [])
-              .map((reply) => reply.bot_user_id)
-              .filter(Boolean),
-          ]),
-        ];
-        let botProfileById = new Map();
-        if (botUserIds.length) {
-          const { data: botProfiles, error: botProfileError } =
-            await supabaseClient
-              .from("bot_profiles")
-              .select("id, display_name, handle, avatar_url")
-              .in("id", botUserIds);
-          if (botProfileError)
-            console.error("Could not load bot profiles:", botProfileError);
-          botProfileById = new Map(
-            (botProfiles || []).map((profile) => [profile.id, profile]),
-          );
-        }
-        const authorByPostId = new Map(
-          posts.map((post) => [
-            post.id,
-            post.bot_user_id
-              ? botProfileById.get(post.bot_user_id)
-              : profileById.get(post.user_id),
-          ]),
-        );
-
-        const repliesByPost = new Map();
-        (replies || []).forEach((reply) => {
-          if (!repliesByPost.has(reply.post_id))
-            repliesByPost.set(reply.post_id, []);
-          repliesByPost.get(reply.post_id).push(reply);
-        });
-
-        const reactionsByPost = new Map();
-        myReactionRows.forEach((row) => {
-          if (!reactionsByPost.has(row.post_id))
-            reactionsByPost.set(row.post_id, new Set());
-          reactionsByPost.get(row.post_id).add(row.reaction_type);
-        });
-
-        const feed = document.querySelector(".posts");
-        posts
-          .reverse()
-          .forEach((post) =>
-            feed.prepend(
-              renderUserPost(
-                post,
-                authorByPostId.get(post.id),
-                currentUser,
-                reactionsByPost.get(post.id) || new Set(),
-                repliesByPost.get(post.id) || [],
-                profileById,
-                botProfileById,
-              ),
-            ),
-          );
-      }
-
-      const AI_POST_COOLDOWN_MS = 60 * 1000;
-      let lastAiPostGenerationAt = 0;
-
-      // pregen world ids are plain array indices (small numbers), custom
-      // world ids are Date.now() timestamps (always > 1,000,000) -- see
-      // world-scripts.js where each is assigned. use that to know which
-      // source to resolve each selected world against.
-      async function resolveSelectedWorlds(selectedWorlds) {
-        if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
-
-        const pregenIds = selectedWorlds
-          .filter((w) => w.id < 1000000)
-          .map((w) => w.id);
-        const customIds = selectedWorlds
-          .filter((w) => w.id >= 1000000)
-          .map((w) => w.id);
-
-        const pregenResolved = (window.WORLDS || [])
-          .filter((w) => pregenIds.includes(w.id))
-          .map((w) => ({
-            title: w.title,
-            description: w.description || w.descripton || "",
-            tags: w.tags || [],
-            category: w.category,
-          }));
-
-        let customResolved = [];
-        if (customIds.length) {
-          const { data: customWorlds, error } = await supabaseClient
-            .from("custom_worlds")
-            .select(
-              "title, description, category, tags, characters, drama, cross_universe",
-            )
-            .in("id", customIds);
-          if (error) {
-            console.error("Could not load custom worlds:", error);
-          } else {
-            customResolved = customWorlds || [];
-          }
-        }
-
-        return [...pregenResolved, ...customResolved];
-      }
-
-      // calls the supabase edge function that generates AI posts via gemini
-      // and inserts them into the posts table.
-
-      // the function itself decides how many posts to make (3) and does the
-      // actual gemini call server-side so the api key never touches the client
-
-      // also enforced server-side since a client-side check alone can be bypassed
-      async function generateAiPosts(reason, currentUser) {
-        if (!currentUser) return;
-        console.log("generateAiPosts called, reason=" + reason);
-
-        const now = Date.now();
-        if (now - lastAiPostGenerationAt < AI_POST_COOLDOWN_MS) {
-          console.log("AI post generation skipped: cooldown active");
-          alert("Slow down, you're on cooldown!");
-          return;
-        }
-        lastAiPostGenerationAt = now;
-
-        try {
-          // pull the profile fields that give the model context about this
-          // specific user, so generated posts feel personal instead of generic
-          const { data: profile, error: profileError } = await supabaseClient
-            .from("profiles")
-            .select(
-              "origin, fame_path, identity, display_name, handle, bio, selected_worlds",
-            )
-            .eq("id", currentUser.id)
-            .single();
-          if (profileError) {
-            console.error("Could not load profile context:", profileError);
-          }
-
-          const worlds = await resolveSelectedWorlds(profile?.selected_worlds);
-
-          const { error } = await supabaseClient.functions.invoke(
-            "generate-ai-posts",
-            {
-              body: {
-                reason,
-                user_id: currentUser.id,
-                profile: profile
-                  ? {
-                      origin: profile.origin,
-                      fame_path: profile.fame_path,
-                      identity: profile.identity,
-                      display_name: profile.display_name,
-                      handle: profile.handle,
-                      bio: profile.bio,
-                    }
-                  : null,
-                worlds,
-              },
-            },
-          );
-          console.log(
-            "generate-ai-posts invoke returned, error=" + JSON.stringify(error),
-          );
-          if (error) {
-            console.error("Could not generate AI posts:", error);
-            return;
-          }
-          // pull in whatever got inserted so the feed reflects it without a full reload
-          await loadUserPosts(currentUser);
-        } catch (error) {
-          console.error("Could not generate AI posts:", error);
-        }
-      }
-
-      // per-user (not app-wide) "has this ever run for THIS user" check,
-      // backed by a column on profiles. so logging in on a new device never
-      // re-triggers it
-      async function maybeRunFirstLoadAiPosts(currentUser) {
-        if (!currentUser) return;
-
-        const { data, error } = await supabaseClient
-          .from("profiles")
-          .select("ai_posts_seeded")
-          .eq("id", currentUser.id)
-          .single();
-        if (error) {
-          console.error("Could not check profile ai_posts_seeded:", error);
-          return;
-        }
-        if (data?.ai_posts_seeded) return;
-
-        // flip the flag first so two tabs loading at the same moment
-        // can't both pass this check before the update lands
-        const { error: updateError } = await supabaseClient
-          .from("profiles")
-          .update({ ai_posts_seeded: true })
-          .eq("id", currentUser.id)
-          .eq("ai_posts_seeded", false);
-        if (updateError) {
-          console.error("Could not set ai_posts_seeded flag:", updateError);
-          return;
-        }
-        await generateAiPosts("first_load", currentUser);
-      }
-
-      async function initFeed() {
-        const {
-          data: { user: currentUser },
-        } = await supabaseClient.auth.getUser();
-        await loadUserPosts(currentUser);
-        await maybeRunFirstLoadAiPosts(currentUser);
-      }
-
-      initFeed();
+      })();
     </script>
   </body>
 </html>

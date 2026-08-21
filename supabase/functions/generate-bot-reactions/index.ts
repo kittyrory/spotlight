@@ -147,10 +147,7 @@ Deno.serve(async (req) => {
     const { data: bots, error: botsError } = await supabase
       .from("bot_profiles")
       .select("id, display_name, handle")
-      .in(
-        "id",
-        [...new Set(rolls.map((r) => r.botId))],
-      );
+      .in("id", [...new Set(rolls.map((r) => r.botId))]);
     if (botsError) throw botsError;
     const botById = new Map((bots || []).map((b) => [b.id, b]));
 

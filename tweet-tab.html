@@ -640,10 +640,8 @@
 <script src="scripts/theme.js"></script>
 <script src="scripts/worlds.js"></script>
 <script>
-  // worlds.js defines a plain `const worlds` array with no window
-  // assignment of its own. mirror the id-assignment from Feed.html so
-  // resolveSelectedWorlds() can look pregen worlds up by the same ids
-  // saved in profiles.selected_worlds.
+  //  mirror the id-assignment from Feed.html
+  // looks pregen worlds up by the same ids in profiles.selected_worlds.
   worlds.forEach((world, i) => { world.id = i; });
   window.WORLDS = worlds;
 </script>
@@ -869,8 +867,8 @@
 
   // resolves a user's selected_worlds (array of {id}) into full world
   // objects, mixing pregen worlds (from window.WORLDS) with custom worlds
-  // (from the custom_worlds table). ported from Feed.html so this page's
-  // AI post generation call gets the same world context.
+  // (from the custom_worlds table). 
+  // ported from Feed.html so this page's AI post generation call gets the same world context.
   async function resolveSelectedWorlds(selectedWorlds) {
     if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
 
@@ -922,9 +920,7 @@
       if (error) throw error;
 
       // roll a random set of bots to like/retweet this post. same
-      // fire-and-forget pattern as generate-ai-posts below -- if this
-      // fails, the post itself is still live, so we just log it rather
-      // than blocking the redirect over a reactions hiccup.
+      // fire-and-forget pattern as generate-ai-posts below
       try {
         await supabaseClient.functions.invoke('generate-bot-reactions', {
           body: {
@@ -937,9 +933,7 @@
       }
 
       try {
-        // pull the same profile fields + resolved worlds that Feed.html
-        // sends, so posts triggered from composing here aren't stuck
-        // falling back to the generic "no context available" prompt
+        // pull the same profile fields + resolved worlds that Feed.html sends
         const { data: profile, error: profileError } = await supabaseClient
           .from('profiles')
           .select('origin, fame_path, identity, display_name, handle, bio, selected_worlds')
@@ -971,6 +965,9 @@
       }
 
       localStorage.removeItem(DRAFT_KEY);
+      // shows analytics toast
+      // sessionStorage fires it only for this specific visit
+      sessionStorage.setItem('analytics-toast', '1');
       window.location.href = 'Feed.html';
     } catch (error) {
       console.log('Could not publish post:', error);

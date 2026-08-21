@@ -222,8 +222,8 @@ async function callGemini(userMessage: string): Promise<{ content: string }[]> {
 }
 
 // builds the prompt for one bot's reply. this now tells the
-// bot (a) who actually wrote the original post, so a bot that ISN'T 
-// the poster doesn't answer questions as if it had firsthand knowledge 
+// bot (a) who actually wrote the original post, so a bot that ISN'T
+// the poster doesn't answer questions as if it had firsthand knowledge
 // of something it never posted, and (b) whether the latest message was
 // actually directed at it (@mentioned) vs. just part of the general
 // thread it's reacting to.

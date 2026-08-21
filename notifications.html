@@ -286,8 +286,17 @@
         <!-- populated dynamically by the script at the bottom of this file -->
       </div>
 
-      <p class="empty-state" style="display: none; text-align: center; color: var(--text-secondary); padding: 40px 20px;">
-        Nothing yet. Once bots start replying to your posts or tagging you, it'll show up here.
+      <p
+        class="empty-state"
+        style="
+          display: none;
+          text-align: center;
+          color: var(--text-secondary);
+          padding: 40px 20px;
+        "
+      >
+        Nothing yet. Once bots start replying to your posts or tagging you,
+        it'll show up here.
       </p>
 
       <nav class="bottomTab" aria-label="Primary navigation">
@@ -418,9 +427,7 @@
             .select("id, display_name, handle, avatar_url")
             .in("id", botIds);
           if (botError) console.error("Could not load bot profiles:", botError);
-          botProfileById = new Map(
-            (botProfiles || []).map((b) => [b.id, b]),
-          );
+          botProfileById = new Map((botProfiles || []).map((b) => [b.id, b]));
         }
 
         notifications.forEach((n) =>
