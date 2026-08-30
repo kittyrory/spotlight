@@ -294,7 +294,12 @@ Deno.serve(async (req) => {
     );
   }
 
-  let body: { post_id?: string; reason?: string; user_id?: string };
+  let body: {
+    post_id?: string;
+    reason?: string;
+    user_id?: string;
+    parent_reply_id?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -303,6 +308,7 @@ Deno.serve(async (req) => {
 
   const postId = body.post_id;
   if (!postId) return jsonResponse({ error: "post_id is required" }, 400);
+  const parentReplyId = body.parent_reply_id ?? null;
 
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -334,9 +340,6 @@ Deno.serve(async (req) => {
     const botsList = (bots || []) as BotProfile[];
     const botById = new Map(botsList.map((b) => [b.id, b]));
 
-    // FIX: made an error; before it was "post.user_id", not
-    // "post.bot_user_id", meaning it would silently error out
-    // and not tell the bot its role
     const postAuthor = post.bot_user_id
       ? botById.get(post.bot_user_id)
       : undefined;
@@ -416,6 +419,7 @@ Deno.serve(async (req) => {
 
         insertedRows.push({
           post_id: postId,
+          parent_reply_id: parentReplyId,
           bot_user_id: bot.id,
           content,
           is_ai_generated: true,

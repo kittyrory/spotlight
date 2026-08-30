@@ -204,7 +204,7 @@ attachClickListeners();
           '" title="' +
           w.title +
           '" ' +
-          'style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1.5px solid var(--accent);">'
+          'style="width:32px;height:32px;border-radius:6px;object-fit:cover;border:1.5px solid var(--gold);">'
         );
       })
       .join("");

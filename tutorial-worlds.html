@@ -4,13 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spotlight | Tutorial</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap"
-      rel="stylesheet"
-    />
-
     <script>
       // apply saved theme immediately to avoid a flash of the wrong theme.
       (function () {
@@ -19,6 +12,7 @@
       })();
     </script>
 
+    <link rel="stylesheet" href="style.css" />
     <style>
       *,
       *::before,
@@ -26,47 +20,6 @@
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-      }
-
-      :root,
-      [data-theme="dark"] {
-        --gold: #ffd500;
-        --gold2: #ffd500;
-        --white: #ffffff;
-        --bg: #000000;
-        --muted: rgba(255, 255, 255, 0.35);
-        --body-text: rgba(255, 255, 255, 0.45);
-        --body-readable: rgba(255, 255, 255, 0.78);
-        --button-border: rgba(255, 246, 202, 0.6);
-        --glow-1: rgba(255, 213, 0, 0.7);
-        --glow-2: rgba(255, 213, 0, 0.4);
-        --glow-3: rgba(255, 213, 0, 0.15);
-        --pulse-base: rgba(255, 255, 255, 0.2);
-        --pulse-1: rgba(255, 213, 0, 0.45);
-        --pulse-2: rgba(255, 255, 255, 0.15);
-        --hover-shadow-1: rgba(255, 213, 0, 0.55);
-        --hover-shadow-2: rgba(255, 213, 0, 0.3);
-        --card-border: rgba(255, 255, 255, 0.08);
-      }
-
-      [data-theme="light"] {
-        --gold: #ffec3f;
-        --gold2: #9d9129;
-        --white: #1e1e1e;
-        --bg: #eceaea;
-        --muted: rgba(0, 0, 0, 0.35);
-        --body-text: rgba(0, 0, 0, 0.5);
-        --body-readable: rgba(0, 0, 0, 0.72);
-        --button-border: rgba(0, 0, 0, 0.3);
-        --glow-1: rgba(163, 118, 10, 0.35);
-        --glow-2: rgba(163, 118, 10, 0.18);
-        --glow-3: rgba(163, 118, 10, 0.08);
-        --pulse-base: rgba(0, 0, 0, 0.1);
-        --pulse-1: rgba(163, 118, 10, 0.3);
-        --pulse-2: rgba(0, 0, 0, 0.08);
-        --hover-shadow-1: rgba(163, 118, 10, 0.3);
-        --hover-shadow-2: rgba(163, 118, 10, 0.15);
-        --card-border: rgba(0, 0, 0, 0.1);
       }
 
       html,
@@ -82,7 +35,6 @@
         min-height: 100vh;
         overflow: hidden;
         background-color: var(--bg);
-        font-family: "Anek Latin", Arial, sans-serif;
         transition: background-color 0.25s ease;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
@@ -105,10 +57,9 @@
       }
 
       .tutorial-title {
-        font-family: "Anek Latin", Arial, sans-serif;
         font-weight: 700;
         font-size: clamp(1.8rem, 5.5vw, 3rem);
-        color: var(--white);
+        color: var(--ink);
         line-height: 1.1;
         opacity: 0;
         transform: translateY(6px);
@@ -131,7 +82,6 @@
       }
 
       .tutorial-subtitle {
-        font-family: "DM Mono", monospace;
         font-size: clamp(0.6rem, 0.85vw, 0.7rem);
         font-weight: 300;
         letter-spacing: 0.35em;
@@ -146,7 +96,6 @@
       }
 
       .tutorial-body {
-        font-family: "Anek Latin", Arial, sans-serif;
         font-weight: 400;
         font-size: clamp(0.95rem, 1.4vw, 1.15rem);
         line-height: 1.65;
@@ -161,7 +110,6 @@
       }
 
       .tap-hint {
-        font-family: "DM Mono", monospace;
         font-size: clamp(0.55rem, 0.75vw, 0.65rem);
         font-weight: 300;
         letter-spacing: 0.3em;
@@ -198,12 +146,11 @@
         border-radius: 100px;
         background-color: transparent;
         border: 1.5px solid var(--button-border);
-        font-family: "Source Code Pro", monospace;
         font-weight: 700;
         font-size: clamp(0.65rem, 0.9vw, 0.75rem);
         text-transform: uppercase;
         letter-spacing: 0.12em;
-        color: var(--white);
+        color: var(--ink);
         text-decoration: none;
         transition:
           background-color 0.25s ease,
@@ -214,7 +161,7 @@
 
       .glow-button:hover {
         background-color: var(--gold);
-        color: var(--white);
+        color: var(--black);
         border-color: var(--gold);
         box-shadow:
           0 0 10px var(--hover-shadow-1),
@@ -243,9 +190,18 @@
         background: var(--gold2);
         transform: scale(1.3);
       }
+
+      [data-theme="light"] .tutorial-title,
+      [data-theme="light"] .glow-button {
+        color: #1e1e1e !important;
+      }
+
+      [data-theme="light"] .glow-button:hover {
+        color: #1e1e1e !important;
+      }
     </style>
   </head>
-  <body>
+  <body class="page-minimal">
     <div class="progress-dots" id="progress-dots"></div>
 
     <div class="tutorial-wrap">

@@ -1,35 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Settings</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
+    <script>
+      (function () {
+        var saved = localStorage.getItem("spotlight-theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+      })();
+    </script>
+
+    <link rel="stylesheet" href="style.css" />
     <style>
-      :root {
-        --gold: #c9a24b;
-        --gold-bright: #e8c77a;
-        --black: #0a0908;
-        --stage: #121110;
-        --card: #17151300;
-        --card-solid: #171512;
-        --line: #2a2620;
-        --ivory: #f3efe6;
-        --muted: #948c7a;
-        --danger: #c1553f;
+      :root, [data-theme="dark"] {
+        --card-solid: #111114;
       }
 
-      html.light {
-        --black: #f3efe6;
-        --stage: #eae4d4;
+      [data-theme="light"] {
         --card-solid: #ffffff;
-        --line: #dad2bc;
-        --ivory: #1a1712;
-        --muted: #6b6455;
       }
 
       * {
@@ -38,9 +27,8 @@
 
       body {
         margin: 0;
-        background: var(--black);
-        color: var(--ivory);
-        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
         min-height: 100vh;
         transition:
           background 0.5s ease,
@@ -83,11 +71,11 @@
         transition: opacity 0.5s ease;
       }
 
-      html.light .beam {
+      [data-theme="light"] .beam {
         background: radial-gradient(
           circle at 50% 30%,
-          rgba(201, 162, 75, 0.45),
-          rgba(201, 162, 75, 0.12) 45%,
+          rgba(245, 196, 81, 0.28),
+          rgba(224, 184, 78, 0.06) 45%,
           transparent 70%
         );
       }
@@ -102,7 +90,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: "Cormorant Garamond", serif;
         font-size: 34px;
         font-weight: 600;
         color: var(--gold-bright);
@@ -113,7 +100,6 @@
       }
 
       .name {
-        font-family: "Cormorant Garamond", serif;
         font-size: 30px;
         font-weight: 600;
         margin: 18px 0 2px;
@@ -142,7 +128,7 @@
       }
 
       .group {
-        border: 1px solid var(--line);
+        border: 1px solid var(--divider);
         border-radius: 14px;
         overflow: hidden;
         background: linear-gradient(
@@ -157,7 +143,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 16px 18px;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1px solid var(--divider);
         cursor: pointer;
         transition: background 0.2s ease;
       }
@@ -189,7 +175,7 @@
         align-items: center;
         justify-content: center;
         background: rgba(201, 162, 75, 0.1);
-        border: 1px solid var(--line);
+        border: 1px solid var(--divider);
         flex-shrink: 0;
       }
 
@@ -202,7 +188,7 @@
       .row-title {
         font-size: 14.5px;
         font-weight: 500;
-        color: var(--ivory);
+        color: var(--ink);
       }
 
       .row-sub {
@@ -230,8 +216,8 @@
         width: 46px;
         height: 26px;
         border-radius: 100px;
-        background: var(--line);
-        border: 1px solid var(--line);
+        background: var(--divider);
+        border: 1px solid var(--divider);
         cursor: pointer;
         flex-shrink: 0;
         transition: background 0.3s ease;
@@ -280,7 +266,7 @@
         width: 100%;
         max-width: 480px;
         background: var(--card-solid);
-        border: 1px solid var(--line);
+        border: 1px solid var(--divider);
         border-bottom: none;
         border-radius: 18px 18px 0 0;
         padding: 8px 0 10px;
@@ -301,18 +287,17 @@
       .modal-handle {
         width: 36px;
         height: 4px;
-        background: var(--line);
+        background: var(--divider);
         border-radius: 4px;
         margin: 10px auto 6px;
       }
 
       .modal-title {
-        font-family: "Cormorant Garamond", serif;
         font-size: 20px;
         font-weight: 600;
         text-align: center;
         padding: 6px 0 12px;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1px solid var(--divider);
       }
 
       .lang-option {
@@ -322,7 +307,7 @@
         padding: 14px 22px;
         font-size: 14.5px;
         cursor: pointer;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1px solid var(--divider);
       }
       .lang-option:last-of-type {
         border-bottom: none;
@@ -353,13 +338,13 @@
 
       /* --- Danger zone --- */
       .danger-text {
-        color: var(--danger);
+        color: var(--hard);
       }
       .icon.danger {
         background: rgba(193, 85, 63, 0.1);
       }
       .icon.danger svg {
-        stroke: var(--danger);
+        stroke: var(--hard);
       }
 
       /* --- World log --- */
@@ -368,14 +353,14 @@
         justify-content: space-between;
         align-items: center;
         padding: 13px 18px;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1px solid var(--divider);
         font-size: 13px;
       }
       .log-item:last-child {
         border-bottom: none;
       }
       .log-name {
-        color: var(--ivory);
+        color: var(--ink);
         font-weight: 500;
       }
       .log-meta {
@@ -410,7 +395,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="page-minimal">
     <div class="page">
       <div class="spotlight-wrap">
         <div class="beam"></div>
@@ -623,7 +608,7 @@
             stroke-width="1.6"
             stroke-linecap="round"
             stroke-linejoin="round"
-            style="stroke: var(--danger)"
+            style="stroke: var(--hard)"
           >
             <path d="M9 6l6 6-6 6" />
           </svg>
@@ -727,14 +712,24 @@
         const html = document.documentElement;
         const sw = document.getElementById("theme-switch");
         const sub = document.getElementById("mode-sub");
-        html.classList.toggle("light");
-        sw.classList.toggle("on");
-        if (html.classList.contains("light")) {
+        const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
+        html.setAttribute("data-theme", next);
+        localStorage.setItem("spotlight-theme", next);
+        sw.classList.toggle("on", next === "dark");
+        if (next === "light") {
           sub.textContent = "House lights up";
         } else {
           sub.textContent = "Stage lights dimmed";
         }
       }
+
+      (function syncThemeSwitch() {
+        const isDark = document.documentElement.getAttribute("data-theme") !== "light";
+        const sw = document.getElementById("theme-switch");
+        const sub = document.getElementById("mode-sub");
+        sw.classList.toggle("on", isDark);
+        sub.textContent = isDark ? "Stage lights dimmed" : "House lights up";
+      })();
 
       function openLangModal() {
         document.getElementById("lang-modal").classList.add("open");

@@ -1,36 +1,24 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Following</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <script>
+      (function () {
+        var saved = localStorage.getItem("spotlight-theme");
+        if (saved) document.documentElement.setAttribute("data-theme", saved);
+      })();
+    </script>
+
+    <link rel="stylesheet" href="style.css" />
     <style>
-      :root {
-        --gold: #c9a24b;
-        --gold-bright: #e8c77a;
-        --black: #0a0908;
-        --line: #2a2620;
-        --ivory: #f3efe6;
-        --muted-onblack: #948c7a;
+      :root, [data-theme="dark"] {
+      --rel-lover: #c14f79;
+      }
 
-        /* card (white) surface */
-        --card-bg: #ffffff;
-        --card-border: #ede7d6;
-        --ink: #1c1810;
-        --ink-dim: #8a8064;
-
-        /* relationship accent colors */
-        --rel-acquaintance: #8c8676;
-        --rel-friend: #c9a24b;
-        --rel-close: #b8862f;
-        --rel-rival: #c97a3f;
-        --rel-enemy: #c1553f;
-        --rel-lover: #c14f79;
+      [data-theme="light"] {
+      --rel-lover: #b34a70;
       }
 
       * {
@@ -39,9 +27,8 @@
 
       body {
         margin: 0;
-        background: var(--black);
-        color: var(--ivory);
-        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
         min-height: 100vh;
         padding: 40px 20px 80px;
       }
@@ -49,6 +36,24 @@
       .page {
         max-width: 640px;
         margin: 0 auto;
+      }
+
+      #theme-toggle {
+        position: fixed;
+        top: 18px;
+        left: 18px;
+        z-index: 20;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--toggle-border);
+        border-radius: 50%;
+        background: transparent;
+        color: var(--ink);
+        font-size: 1.1rem;
+        cursor: pointer;
       }
 
       .header {
@@ -74,10 +79,9 @@
       }
 
       .title {
-        font-family: "Cormorant Garamond", serif;
         font-size: 32px;
         font-weight: 600;
-        color: var(--ivory);
+        color: var(--ink);
         position: relative;
         z-index: 1;
       }
@@ -97,9 +101,9 @@
         flex-shrink: 0;
         padding: 7px 15px;
         border-radius: 100px;
-        border: 1px solid var(--line);
+        border: 1px solid var(--divider);
         font-size: 12px;
-        color: var(--muted-onblack);
+        color: var(--ink-dim);
         cursor: pointer;
         transition: all 0.2s ease;
         white-space: nowrap;
@@ -121,7 +125,7 @@
         display: flex;
         align-items: center;
         gap: 16px;
-        background: var(--card-bg);
+        background: var(--card);
         border: 1px solid var(--card-border);
         border-radius: 16px;
         padding: 14px 18px;
@@ -146,7 +150,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-family: "Cormorant Garamond", serif;
         font-size: 21px;
         font-weight: 600;
         color: var(--card-accent, var(--gold-bright));
@@ -169,7 +172,6 @@
       }
 
       .char-name {
-        font-family: "Cormorant Garamond", serif;
         font-size: 18px;
         font-weight: 600;
         line-height: 1.15;
@@ -210,7 +212,7 @@
         color: #2e8b57;
       }
       .xp.down {
-        color: var(--rel-enemy);
+        color: var(--red);
       }
       .activity-text {
         color: var(--ink-dim);
@@ -238,7 +240,7 @@
         color: #2e8b57;
       }
       .meter-value.neg {
-        color: var(--rel-enemy);
+        color: var(--red);
       }
 
       .meter-track {
@@ -246,7 +248,7 @@
         width: 100%;
         height: 7px;
         border-radius: 100px;
-        background: #efe9d8;
+        background: var(--track-bg);
         overflow: visible;
       }
 
@@ -256,7 +258,7 @@
         left: 50%;
         width: 2px;
         height: 13px;
-        background: #d8cfaf;
+        background: var(--divider);
         transform: translateX(-50%);
         border-radius: 2px;
       }
@@ -275,14 +277,14 @@
         font-size: 11px;
         letter-spacing: 1.5px;
         text-transform: uppercase;
-        color: var(--muted-onblack);
+        color: var(--ink-dim);
       }
       footer span {
         color: var(--gold);
       }
     </style>
   </head>
-  <body>
+  <body class="page-minimal">
     <div class="page">
       <div class="header">
         <div class="beam"></div>
@@ -323,7 +325,7 @@
           name: "Lena Marchetti",
           handle: "@lenamarchetti",
           initial: "L",
-          accent: "var(--rel-close)",
+          accent: "var(--gold-light)",
           badge: "Close Friend",
           xp: 30,
           xpDir: "up",
@@ -334,7 +336,7 @@
           name: "Jonas Everhart",
           handle: "@jonaseverhart",
           initial: "J",
-          accent: "var(--rel-friend)",
+          accent: "var(--gold)",
           badge: "Friend",
           xp: 15,
           xpDir: "up",
@@ -345,7 +347,7 @@
           name: "Aria Delacroix",
           handle: "@ariadelacroix",
           initial: "A",
-          accent: "var(--rel-acquaintance)",
+          accent: "var(--ink-faint)",
           badge: "Acquaintance",
           xp: 8,
           xpDir: "up",
@@ -356,7 +358,7 @@
           name: "Selina Voss",
           handle: "@selinavoss",
           initial: "S",
-          accent: "var(--rel-rival)",
+          accent: "var(--medium)",
           badge: "Rival",
           xp: 12,
           xpDir: "down",
@@ -367,7 +369,7 @@
           name: "Viktor Sorrentino",
           handle: "@viktorsorrentino",
           initial: "V",
-          accent: "var(--rel-enemy)",
+          accent: "var(--red)",
           badge: "Enemy",
           xp: 30,
           xpDir: "down",
@@ -431,5 +433,6 @@
         });
       });
     </script>
+    <script src="scripts/theme.js"></script>
   </body>
 </html>
