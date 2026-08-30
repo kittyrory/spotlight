@@ -214,16 +214,14 @@ function renderPostsList(renderReady, currentUser) {
     );
 }
 
-async function loadUserPosts(currentUser, { useCache = false } = {}) {
-  if (!currentUser) return;
-
-  // render whatever we last cached for this user immediately,
-  // so the feed isn't blank while the network calls below are in flight.
-  // this always gets replaced by the fresh network result further down.
-  if (useCache) {
-    const cached = window.SpotlightPostCache?.readFeed(currentUser.id);
-    if (cached?.length) renderPostsList(cached, currentUser);
-  }
+// does the real supabase round trip and writes the result to the cache.
+// deliberately has no DOM dependency (no ".posts" lookup, no rendering)
+// so it can be called from pages that don't render a feed at all, like
+// loadingpage.html, which just wants the cache warmed before Feed.html loads.
+//
+// returns the render-ready array (possibly empty), or null on error.
+async function fetchAndCacheUserPosts(currentUser) {
+  if (!currentUser) return null;
 
   console.log("[feed] doing full fetch");
   console.log("[feed] if cache is newer than 10s & new content wasnt added, this is a bug!");
@@ -237,15 +235,12 @@ async function loadUserPosts(currentUser, { useCache = false } = {}) {
     .limit(25);
   if (error) {
     console.error("Could not load posts:", error);
-    return;
+    return null;
   }
 
-  const feedEl = document.querySelector(".posts");
-
   if (!posts?.length) {
-    feedEl.innerHTML = "";
     window.SpotlightPostCache?.writeFeed(currentUser.id, []);
-    return;
+    return [];
   }
 
   const postIds = posts.map((post) => post.id);
@@ -320,7 +315,6 @@ async function loadUserPosts(currentUser, { useCache = false } = {}) {
     reactions: [...(reactionsByPost.get(post.id) || [])],
   }));
 
-  renderPostsList(renderReady, currentUser);
   window.SpotlightPostCache?.writeFeed(currentUser.id, renderReady);
   console.log(
     "[feed] wrote cache at",
@@ -328,6 +322,36 @@ async function loadUserPosts(currentUser, { useCache = false } = {}) {
     "for user",
     currentUser.id,
   );
+
+  return renderReady;
+}
+
+// thin wrapper used by Feed.html: renders the cache immediately (if asked),
+// then does the real fetch/cache via fetchAndCacheUserPosts and renders
+// the fresh result over top.
+async function loadUserPosts(currentUser, { useCache = false } = {}) {
+  if (!currentUser) return;
+
+  // render whatever we last cached for this user immediately,
+  // so the feed isn't blank while the network call below is in flight.
+  // this always gets replaced by the fresh network result further down.
+  if (useCache) {
+    const cached = window.SpotlightPostCache?.readFeed(currentUser.id);
+    if (cached?.length) renderPostsList(cached, currentUser);
+  }
+
+  const renderReady = await fetchAndCacheUserPosts(currentUser);
+  if (renderReady === null) return; // error already logged, keep whatever was rendered
+
+  const feedEl = document.querySelector(".posts");
+  if (!feedEl) return; // e.g. called from a page with no feed to render into
+
+  if (!renderReady.length) {
+    feedEl.innerHTML = "";
+    return;
+  }
+
+  renderPostsList(renderReady, currentUser);
 }
 
 const AI_POST_COOLDOWN_MS = 60 * 1000;
@@ -496,6 +520,11 @@ async function initFeed() {
     hidePageLoader();
   }
 
+  // if loadingpage.html ran (and cached the profile + feed) moments ago,
+  // don't immediately throw that away and refetch everything over the
+  // network again -- just render what it already fetched.
+  const FRESH_FROM_LOADER_MS = 15000;
+
   try {
     let currentUser = null;
     try {
@@ -509,7 +538,25 @@ async function initFeed() {
       currentUser = user;
     }
 
-    await loadUserPosts(currentUser, { useCache: !cachedFeed?.length });
+    const feedMeta = currentUser
+      ? window.SpotlightPostCache?.readFeedMeta(currentUser.id)
+      : null;
+    const cameFromWarmLoader =
+      feedMeta && Date.now() - feedMeta.cachedAt < FRESH_FROM_LOADER_MS;
+
+    if (cameFromWarmLoader) {
+      console.log(
+        "[feed] cache was warmed by loadingpage.html",
+        Date.now() - feedMeta.cachedAt,
+        "ms ago, skipping refetch",
+      );
+      renderPostsList(feedMeta.posts, currentUser);
+    } else {
+      await loadUserPosts(currentUser, { useCache: !cachedFeed?.length });
+    }
+
+    // cheap no-op if loadingpage.html already ran this (it's guarded by
+    // the ai_posts_seeded db flag), so always safe to call again here.
     await FirstLoadAiPosts(currentUser);
   } catch (error) {
     console.error("Could not finish loading the feed:", error);
@@ -518,4 +565,14 @@ async function initFeed() {
   }
 }
 
-initFeed();
+// exposed so loadingpage.html can warm the cache (feed + ai posts) before
+// the user ever lands on Feed.html, without needing a ".posts" element
+// or running the feed-page-only initFeed() flow.
+window.SpotlightFeed = { fetchAndCacheUserPosts, FirstLoadAiPosts };
+
+// feed.js is shared with loadingpage.html now (so it can reuse the fetch
+// logic above), but initFeed() is Feed.html-only -- only auto-run it when
+// there's actually a feed to render into.
+if (document.querySelector(".posts")) {
+  initFeed();
+}

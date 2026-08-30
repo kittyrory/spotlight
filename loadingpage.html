@@ -18,13 +18,13 @@
       :root, [data-theme="dark"] {
       --gold-dark: #7a6418;
       --peak-op: 1;
-      --dust: var(--gold-bright);
+      --dust: var(--gold);
       --paper: var(--bg);
       --loading-ticker: rgba(242, 241, 238, 0.55);
-      --loading-ticker-tag: var(--gold-bright);
-      --loading-percent: var(--gold-bright);
-      --loading-keyword: var(--gold-bright);
-      --loading-button: var(--gold-bright);
+      --loading-ticker-tag: var(--gold);
+      --loading-percent: var(--gold);
+      --loading-keyword: var(--gold);
+      --loading-button: var(--gold);
       }
 
       [data-theme="light"] {
@@ -196,7 +196,7 @@
             }
 
             .logo .light {
-              color: var(--gold-bright);
+              color: var(--gold);
               animation: lightPulse 3.2s ease-in-out infinite;
             }
 
@@ -219,7 +219,7 @@
 
             .logo .dot {
               display: inline-block;
-              color: var(--gold-bright);
+              color: var(--gold);
               animation: dotBeat 3.4s ease-in-out infinite;
               transform-origin: center;
             }
@@ -244,7 +244,7 @@
                 90deg,
                 transparent,
                 var(--gold),
-                var(--gold-bright),
+                var(--gold),
                 var(--gold),
                 transparent
               );
@@ -284,7 +284,7 @@
                 90deg,
                 var(--gold-dark),
                 var(--gold) 60%,
-                var(--gold-bright)
+                var(--gold)
               );
               box-shadow: 0 0 12px rgba(184, 134, 11, 0.35);
               transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -298,7 +298,7 @@
               width: 8px;
               height: 8px;
               border-radius: 50%;
-              background: var(--gold-bright);
+              background: var(--gold);
               box-shadow: 0 0 10px 3px rgba(184, 134, 11, 0.7);
               animation: tipFlicker 2.2s ease-in-out infinite;
             }
@@ -528,6 +528,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
     <script src="scripts/profile-cache.js"></script>
+    <script src="scripts/post-cache.js"></script>
+    <script src="scripts/feed.js"></script>
     <script src="scripts/theme.js"></script>
     <script>
       // ---------- DUST PARTICLES ----------
@@ -564,6 +566,26 @@
         "@SORROWFULROAD",
         "@TRINI.TEA26",
         "@I_LOVE_JESTERS0",
+        "@SHIBUYAGFS",
+        "@HEESEUNGNOLOGY__",
+        "@ENIS7_1009",
+        "@HADES.S_BESTIE",
+        "@GEREMIAHFROST",
+        "@1.WONHEE.STAN",
+        "@STARSFORSTELLA",
+        "@SECRET_UNICORN14",
+        "@KITTYNYAN",
+        "@ANZU1892",
+        "@ENYUISME",
+        "@EIN4J_",
+        "@IRVINE_ONNIE",
+        "@FROM.THE.EARTH_02",
+        "@G0OFBALL",
+        "@MMRRRWAS568372",
+        "@ROSESRGNE124",
+        "@ROTTINGGGFLESHHH",
+        "@OENSY",
+        "@MSCANTSAVABITCHH",
       ];
       const tickerEl = document.getElementById("ticker");
       const doubled = [...tickerItems, ...tickerItems];
@@ -629,10 +651,18 @@
 
       async function preloadSpotlightData() {
         try {
-          await SpotlightProfileCache.load(supabaseClient);
+          const { user } = await SpotlightProfileCache.load(supabaseClient);
+
+          if (user) {
+            // seed AI posts first (first-load only, no-op after) so any
+            // posts it creates are included in the feed fetch/cache below
+            await window.SpotlightFeed.FirstLoadAiPosts(user);
+            await window.SpotlightFeed.fetchAndCacheUserPosts(user);
+          }
+
           barStatus.textContent = "Your spotlight is ready.";
         } catch (error) {
-          console.error("Could not preload Spotlight profile:", error);
+          console.error("Could not preload Spotlight data:", error);
           barStatus.textContent = "Spotlight is ready.";
         } finally {
           dataReady = true;

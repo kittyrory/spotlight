@@ -1,14 +1,7 @@
-// Edge function that generates bot replies to a post's reply thread.
-// Triggered two ways from the client:
-//   1. reason: "reply_opened" -- user pressed the Reply button for the
-//      first time on a post with no replies yet. 3 random bots reply to
-//      the post itself.
-//   2. reason: "user_replied" -- user submitted their own reply. Bots
-//      (chosen by @ mention if present, otherwise random) reply again to
-//      the thread, aware of the latest message. Each bot can only
-//      generate up to MAX_REPLIES_PER_BOT_PER_THREAD replies total in a
-//      given post's thread -- once a bot hits that cap it just stops
-//      being eligible, other bots keep going.
+// Edge function that generates 3 AI posts using Gemini Flash and inserts
+// them into the `posts` table, PRIVATELY scoped to one user. Keys live
+// only in this function's environment (set via `supabase secrets set`),
+// never in the client HTML.
 //
 // MODEL PROVIDER:
 // Primary calls go straight to Gemini's native API (generativelanguage.
@@ -16,14 +9,17 @@
 // tier first. If that call fails for any reason (quota exhausted, network
 // error, malformed response), it falls back once to OpenRouter
 //
+// PRIVACY MODEL:
+// Each inserted post gets `ai_owner_id` set to the requesting user's id.
+// Only that user's feed query (`ai_owner_id.eq.<their id>`) will ever
+// return these rows. Other users never see them, even though the posts
+// are attributed to shared "bot" profiles for display purposes.
+//
 // NOTIFICATIONS:
-// After inserting the bot replies, one `notifications` row gets written
-// per reply so it shows up on the post owner's notifications page --
-// type is `mention_reply` if the reply @ mentions the recipient's handle,
-// otherwise `bot_reply`. The recipient is whoever privately owns this
-// post's feed slot: `ai_owner_id` if it's an AI-generated post, otherwise
-// `user_id` (this mirrors the RLS logic already used elsewhere: posts.
-// user_id = auth.uid() OR posts.ai_owner_id = auth.uid()).
+// Since the prompt explicitly allows the model to @ mention the user's
+// handle, any generated post that does gets a `mention_post` row written
+// to `notifications` right after insert, so it shows up on the user's
+// notifications page.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -42,73 +38,101 @@ const BOT_PROFILE_IDS = [
   "35a7eb25-8f70-43c3-82ab-e32028b87bce",
   "a4970b5c-cd07-4182-a04d-f0614e0ca200",
   "f661dc7b-6967-4c0c-9ab3-210e56404124",
+  "f1e7d612-b942-4506-bb1a-e90fb2f37577",
+  "ff109962-d374-4dde-ab35-6a34b52cf65a",
+  "6c7eb54f-2e11-43ee-9cfb-2ed4ea1d14bc",
+  "3ff9835f-fd18-4982-ad28-033745961ca4",
+  "3027e5da-0e1e-4d53-9c58-56f5c93ee1d9",
+  "301912ff-30db-451b-892d-1d381e61e5df",
+  "ee77e9b0-7f24-4799-bdbc-738de76d563b",
+  "c86dca46-4aec-46cc-97ea-50c0b0179343",
+  "6eaffc8f-9750-43fd-ba8d-b071a8b2e68f",
+  "54b8f1f8-b290-4abc-b651-6dc2440cd460",
+  "e7c1435f-d420-4826-8584-8310c8520c6c",
+  "a53f3af9-46f0-42a3-bfb7-00319ef858e3",
+  "24ad785a-49b5-4595-9466-f39a8827fb25",
+  "78034bd1-0df6-46c3-abb2-3aa8828323b3",
+  "d1122a9c-3e92-4d3e-8d43-ddedf76ab5c4",
+  "25a2f5aa-629f-450e-a4e7-8bc0f7f60e69",
+  "6c013f68-4c11-4e7c-a057-5091cb910a78",
+  "41deb6eb-d98d-43f8-ba94-7171f7c612a7",
+  "5f81972b-ceea-4f9c-99e1-bec848959cd9",
+  "9ab599f5-1a7e-4397-ac6e-5ff9fa529cee",
 ];
+const POST_COUNT = 3;
+const COOLDOWN_MS = 60 * 1000; // 1 minute, enforced server-side too
 
-const REPLIES_PER_BATCH = 3;
-const MAX_REPLIES_PER_BOT_PER_THREAD = 3;
+const BASE_SYSTEM_PROMPT = `You are generating short, realistic social media posts for a 
+fictional social app called Spotlight. Write posts the way real users write: casual, 
+lowercase-leaning, sometimes using slang, occasionally with a hashtag. Keep each post 
+under 220 characters. Do not use quotation marks around the post text. Avoid contractions 
+with apostrophes (write "dont" instead of "don't", "its" instead of "it's") since 
+apostrophes can break JSON formatting. Return ONLY valid 
+JSON, no markdown fences, no preamble, in this exact shape:
+{"posts": [{"content": "..."}, {"content": "..."}, {"content": "..."}]}`;
 
-const BASE_SYSTEM_PROMPT = `You are generating short, realistic social media replies for a
-fictional social app called Spotlight. Write replies the way real users write: casual,
-lowercase-leaning, sometimes using slang. Keep each reply under 200 characters. Do not use
-quotation marks around the reply text. Avoid contractions with apostrophes (write "dont"
-instead of "don't") since apostrophes can break JSON formatting. Return ONLY valid JSON, no
-markdown fences, no preamble, in this exact shape:
-{"replies": [{"content": "..."}]}`;
+type ProfileContext = {
+  origin?: string;
+  fame_path?: string;
+  identity?: string;
+  display_name?: string;
+  handle?: string;
+  bio?: string;
+} | null;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+type WorldContext = {
+  title?: string;
+  description?: string;
+  category?: string;
+  tags?: string[];
+  characters?: string[];
+  drama?: string;
+  cross_universe?: boolean;
 };
 
-type BotProfile = { id: string; display_name: string; handle: string };
+// builds a user-message describing this specific user's onboarding choices
+// and chosen worlds, so posts reference their actual context instead of
+// being generic. kept separate from the system prompt so the formatting
+// rules stay stable and only the user context section changes per call.
+function buildUserContextMessage(
+  profile: ProfileContext,
+  worlds: WorldContext[],
+): string {
+  const lines: string[] = [];
 
-function jsonResponse(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-// parses @handle mentions out of text and matches them against known bot
-// handles (case-insensitive, ignoring a leading @ either side).
-function extractMentionedBotIds(text: string, bots: BotProfile[]): string[] {
-  const mentionPattern = /@([a-zA-Z0-9_]+)/g;
-  const mentioned = new Set<string>();
-  let match;
-  while ((match = mentionPattern.exec(text)) !== null) {
-    const handle = match[1].toLowerCase();
-    const bot = bots.find(
-      (b) => b.handle.replace(/^@/, "").toLowerCase() === handle,
-    );
-    if (bot) mentioned.add(bot.id);
+  if (profile) {
+    if (profile.display_name)
+      lines.push(`Display name: ${profile.display_name}`);
+    if (profile.handle)
+      lines.push(
+        `Handle: @${profile.handle} (you can @ mention this user by handle in a post occasionally)`,
+      );
+    if (profile.origin) lines.push(`Origin: ${profile.origin}`);
+    if (profile.fame_path) lines.push(`Fame path: ${profile.fame_path}`);
+    if (profile.identity) lines.push(`Identity: ${profile.identity}`);
+    if (profile.bio) lines.push(`Bio: ${profile.bio}`);
   }
-  return [...mentioned];
-}
 
-function pickReplyBots(
-  eligibleBots: BotProfile[],
-  mentionedIds: string[],
-  count: number,
-): BotProfile[] {
-  // mentioned + eligible (under cap) bots always get included first
-  const mentionedEligible = eligibleBots.filter((b) =>
-    mentionedIds.includes(b.id),
+  if (worlds?.length) {
+    lines.push(
+      "You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are a bystander to the plot:",
+    );
+    worlds.forEach((w) => {
+      const parts = [w.title, w.category, w.description].filter(Boolean);
+      if (w.tags?.length) parts.push(`tags: ${w.tags.join(", ")}`);
+      lines.push(`- ${parts.join(" — ")}`);
+    });
+  }
+
+  if (!lines.length) {
+    return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
+  }
+  return (
+    `Here is context about the user these posts are  for. You are encourage to make ` +
+    `posts feel personal and relevant to their interests and identity, without being repetitive. Tag the users handle when replying \n\n` +
+    lines.join("\n") +
+    `\n\nGenerate ${POST_COUNT} posts now.`
   );
-  const rest = eligibleBots.filter((b) => !mentionedIds.includes(b.id));
-  const shuffledRest = [...rest].sort(() => Math.random() - 0.5);
-
-  // if more than the batch size are mentioned, only random-select among
-  // them rather than including all (per spec: >4 mentions falls back to
-  // random selection logic)
-  const mentionedPool =
-    mentionedEligible.length > count
-      ? [...mentionedEligible].sort(() => Math.random() - 0.5).slice(0, count)
-      : mentionedEligible;
-
-  const combined = [...mentionedPool, ...shuffledRest].slice(0, count);
-  return combined;
 }
 
 // primary path: calls Gemini's own native API directly (not OpenRouter).
@@ -130,7 +154,7 @@ async function callGeminiNative(
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
         generationConfig: {
           temperature: 1,
-          maxOutputTokens: 300,
+          maxOutputTokens: 500,
           responseMimeType: "application/json",
         },
       }),
@@ -150,16 +174,19 @@ async function callGeminiNative(
   try {
     parsed = JSON.parse(text);
   } catch (err) {
+    // log the raw text so we can see exactly what broke the parse (usually
+    // an unescaped quote/apostrophe inside a post's content string)
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
-  if (!Array.isArray(parsed.replies))
-    throw new Error("Model response missing replies array");
-  return parsed.replies;
+  if (!Array.isArray(parsed.posts))
+    throw new Error("Model response missing posts array");
+  return parsed.posts.slice(0, POST_COUNT);
 }
 
 // fallback path: OpenRouter's OpenAI-compatible chat completions endpoint.
-// Bearer token auth, response text lives at choices[0].message.content.
+// Bearer token auth (not ?key=), response text lives at
+// choices[0].message.content instead of Gemini's native shape.
 async function callOpenRouter(
   apiKey: string,
   userMessage: string,
@@ -179,7 +206,7 @@ async function callOpenRouter(
           { role: "user", content: userMessage },
         ],
         temperature: 1,
-        max_tokens: 300,
+        max_tokens: 500,
         response_format: { type: "json_object" },
       }),
     },
@@ -201,313 +228,211 @@ async function callOpenRouter(
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
-  if (!Array.isArray(parsed.replies))
-    throw new Error("Model response missing replies array");
-  return parsed.replies;
+  if (!Array.isArray(parsed.posts))
+    throw new Error("Model response missing posts array");
+  return parsed.posts.slice(0, POST_COUNT);
 }
 
-// tries native Gemini first (runs off Gemini's own free-tier credits),
-// falls back to OpenRouter once those credits/quota are exhausted or the
-// Gemini call fails for any other reason.
-async function callGemini(userMessage: string): Promise<{ content: string }[]> {
+// tries native Gemini first (runs off Gemini's own free-tier credits); if
+// that call fails for any reason (rate limit, account restriction, network
+// error, malformed response), falls back once to OpenRouter using
+// GEMINI_API_KEY_FALLBACK, which holds an OpenRouter key.
+async function callGemini(
+  profile: ProfileContext,
+  worlds: WorldContext[],
+): Promise<{ content: string }[]> {
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
+
+  const userMessage = buildUserContextMessage(profile, worlds);
+
+  console.log("Profile context received:", JSON.stringify(profile));
+  console.log("Worlds context received:", JSON.stringify(worlds));
+  console.log("Full prompt sent to model:", userMessage);
+
   try {
     return await callGeminiNative(GEMINI_API_KEY, userMessage);
   } catch (primaryError) {
     console.error("Primary Gemini call failed:", primaryError);
-    if (!GEMINI_API_KEY_FALLBACK) throw primaryError;
+
+    if (!GEMINI_API_KEY_FALLBACK) {
+      throw primaryError;
+    }
+
     console.log("Retrying with OpenRouter fallback...");
     return await callOpenRouter(GEMINI_API_KEY_FALLBACK, userMessage);
   }
 }
 
-// builds the prompt for one bot's reply. this now tells the
-// bot (a) who actually wrote the original post, so a bot that ISN'T
-// the poster doesn't answer questions as if it had firsthand knowledge
-// of something it never posted, and (b) whether the latest message was
-// actually directed at it (@mentioned) vs. just part of the general
-// thread it's reacting to.
-function buildReplyPrompt(
-  postContent: string,
-  postAuthorName: string | null,
-  isPostAuthor: boolean,
-  threadReplies: { content: string; author: string }[],
-  bot: BotProfile,
-  latestUserMessage: string | null,
-  isDirectlyAddressed: boolean,
-): string {
-  const lines: string[] = [];
-  lines.push(
-    `You are ${bot.display_name} (@${bot.handle.replace(/^@/, "")}), replying on Spotlight.`,
-  );
-  lines.push(
-    `Original post (by ${postAuthorName ?? "another user"}): "${postContent}"`,
-  );
+// CORS: browsers send a preflight OPTIONS request before the real POST from
+// the browser (invoked via supabaseClient.functions.invoke). Without
+// responding to OPTIONS and attaching these headers to every response, the
+// browser blocks the whole request before our code even runs.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 
-  if (threadReplies.length) {
-    lines.push("Thread so far:");
-    threadReplies.forEach((r) => lines.push(`- ${r.author}: ${r.content}`));
-  }
-
-  if (isPostAuthor) {
-    lines.push(
-      "You are the original poster. You have firsthand knowledge of what you posted " +
-        "and can answer questions about it directly and specifically.",
-    );
-  } else {
-    lines.push(
-      "You did NOT write the original post and have no firsthand knowledge of it beyond " +
-        "what's written above. Do not invent specific details (colors, exact events, feelings " +
-        "the poster didn't mention) as if you experienced them yourself. React the way a " +
-        "bystander in the thread would -- agree, joke, ask your own question, or add a general " +
-        "reaction -- without claiming personal experience of the post's contents.",
-    );
-  }
-
-  if (latestUserMessage) {
-    if (isDirectlyAddressed) {
-      lines.push(
-        `This message is directed at you specifically -- respond to it directly: "${latestUserMessage}"`,
-      );
-    } else {
-      lines.push(
-        `The latest message in the thread is: "${latestUserMessage}". You were not ` +
-          `specifically addressed, so only react to it if it makes sense for you to jump in.`,
-      );
-    }
-  }
-
-  lines.push("Generate 1 reply now.");
-  return lines.join("\n");
+// checks each newly-inserted post's content for an @ mention of the
+// recipient's own handle, and builds one `notifications` row per hit.
+// kept as its own function since it's a pure transform -- easy to test,
+// and easy to see at a glance what it does and doesn't touch.
+function buildMentionNotifications(
+  insertedPosts: { id: string; content: string; bot_user_id: string }[],
+  recipientId: string,
+  recipientHandle: string | undefined,
+) {
+  if (!recipientHandle) return [];
+  const mentionRegex = new RegExp(`@${recipientHandle}\\b`, "i");
+  return insertedPosts
+    .filter((post) => mentionRegex.test(post.content))
+    .map((post) => ({
+      user_id: recipientId,
+      type: "mention_post",
+      post_id: post.id,
+      actor_bot_id: post.bot_user_id,
+      preview: post.content,
+    }));
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS")
+  if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
-  if (req.method !== "POST")
-    return jsonResponse({ error: "Method not allowed" }, 405);
+  }
+
+  if (req.method !== "POST") {
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
 
   if (!GEMINI_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    return jsonResponse(
-      { error: "Missing required environment variables/secrets" },
-      500,
+    return new Response(
+      JSON.stringify({
+        error: "Missing required environment variables/secrets",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
     );
   }
 
   let body: {
-    post_id?: string;
     reason?: string;
     user_id?: string;
-    parent_reply_id?: string | null;
+    profile?: ProfileContext;
+    worlds?: WorldContext[];
   };
   try {
     body = await req.json();
   } catch {
-    return jsonResponse({ error: "Invalid JSON body" }, 400);
+    return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
-  const postId = body.post_id;
-  if (!postId) return jsonResponse({ error: "post_id is required" }, 400);
+  console.log("Received body:", JSON.stringify(body));
+
+  const userId = body.user_id;
+  if (!userId) {
+    return new Response(JSON.stringify({ error: "user_id is required" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  if (BOT_PROFILE_IDS.some((id) => id.startsWith("REPLACE_WITH_"))) {
+    return new Response(
+      JSON.stringify({
+        error: "BOT_PROFILE_IDS placeholders were never filled in",
+      }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
 
   try {
+    // service role client: bypasses RLS so the function can check/insert
+    // regardless of who triggered it.
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // fetching bot_user_id -- this is where bot authorship actually
-    // lives per the posts schema (mutually exclusive with user_id: a
-    // post is authored by either a real user OR a bot, never both).
-    // ai_owner_id is needed separately to know who to notify.
-    const { data: post, error: postError } = await supabase
+    // server-side cooldown: the client also checks this, but that check is
+    // trivially bypassable, so this is the real enforcement.
+    const { data: recentPosts, error: recentError } = await supabase
       .from("posts")
-      .select("id, content, user_id, bot_user_id, ai_owner_id")
-      .eq("id", postId)
-      .single();
-    if (postError) throw postError;
-    if (!post) return jsonResponse({ error: "Post not found" }, 404);
+      .select("created_at")
+      .eq("ai_owner_id", userId)
+      .eq("is_ai_generated", true)
+      .order("created_at", { ascending: false })
+      .limit(1);
+    if (recentError) throw recentError;
 
-    const { data: existingReplies, error: repliesError } = await supabase
-      .from("post_replies")
-      .select("id, content, user_id, bot_user_id, is_ai_generated, created_at")
-      .eq("post_id", postId)
-      .order("created_at", { ascending: true });
-    if (repliesError) throw repliesError;
-
-    const { data: bots, error: botsError } = await supabase
-      .from("bot_profiles")
-      .select("id, display_name, handle")
-      .in("id", BOT_PROFILE_IDS);
-    if (botsError) throw botsError;
-    const botsList = (bots || []) as BotProfile[];
-    const botById = new Map(botsList.map((b) => [b.id, b]));
-
-    // FIX: made an error; before it was "post.user_id", not
-    // "post.bot_user_id", meaning it would silently error out
-    // and not tell the bot its role
-    const postAuthor = post.bot_user_id
-      ? botById.get(post.bot_user_id)
-      : undefined;
-    const postAuthorName = postAuthor?.display_name ?? null;
-
-    // who this thread privately belongs to -- same either/or the RLS
-    // policies use (posts.user_id = auth.uid() OR posts.ai_owner_id = auth.uid())
-    const recipientId: string | null = post.ai_owner_id ?? post.user_id ?? null;
-
-    // how many times has each bot already replied in this thread
-    const replyCountByBot = new Map<string, number>();
-    (existingReplies || []).forEach((r) => {
-      if (r.bot_user_id) {
-        replyCountByBot.set(
-          r.bot_user_id,
-          (replyCountByBot.get(r.bot_user_id) || 0) + 1,
+    if (recentPosts?.length) {
+      const lastGeneratedAt = new Date(recentPosts[0].created_at).getTime();
+      if (Date.now() - lastGeneratedAt < COOLDOWN_MS) {
+        return new Response(
+          JSON.stringify({ error: "Cooldown active, try again shortly" }),
+          {
+            status: 429,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
       }
-    });
-
-    const eligibleBots = botsList.filter(
-      (b) => (replyCountByBot.get(b.id) || 0) < MAX_REPLIES_PER_BOT_PER_THREAD,
-    );
-
-    if (!eligibleBots.length) {
-      return jsonResponse({
-        inserted: [],
-        note: "All bots have hit their reply cap in this thread",
-      });
     }
 
-    // figure out latest user message + mentions (only relevant for the
-    // user_replied path; reply_opened has no user message yet).
-    // uses body.parent_reply_id -- the specific reply the client says the
-    // user is replying under -- rather than just grabbing the last row in
-    // the whole thread, since with nested replies the last-inserted row
-    // isn't necessarily the one the user is actually continuing.
-    let latestUserMessage: string | null = null;
-    let mentionedBotIds: string[] = [];
-    if (body.reason === "user_replied" && body.parent_reply_id) {
-      const targetReply = (existingReplies || []).find(
-        (r) => r.id === body.parent_reply_id,
-      );
-      if (targetReply && !targetReply.bot_user_id) {
-        latestUserMessage = targetReply.content;
-        mentionedBotIds = extractMentionedBotIds(targetReply.content, botsList);
-      }
-    } else if (body.reason === "user_replied" && existingReplies?.length) {
-      // fallback for callers that don't send parent_reply_id
-      const lastReply = existingReplies[existingReplies.length - 1];
-      if (!lastReply.bot_user_id) {
-        latestUserMessage = lastReply.content;
-        mentionedBotIds = extractMentionedBotIds(lastReply.content, botsList);
-      }
-    }
+    const posts = await callGemini(body.profile ?? null, body.worlds ?? []);
 
-    const batchSize = Math.min(REPLIES_PER_BATCH, eligibleBots.length);
-    const replyBots = pickReplyBots(eligibleBots, mentionedBotIds, batchSize);
+    // shuffle a copy of BOT_PROFILE_IDS and take the first POST_COUNT so we
+    // get 3 different random bots each time instead of always the same
+    // fixed order
+    const shuffledBots = [...BOT_PROFILE_IDS].sort(() => Math.random() - 0.5);
 
-    const threadForPrompt = (existingReplies || []).map((r) => ({
-      content: r.content,
-      author: r.bot_user_id
-        ? botById.get(r.bot_user_id)?.display_name || "bot"
-        : "user",
+    const rows = posts.map((p, i) => ({
+      bot_user_id: shuffledBots[i % shuffledBots.length],
+      ai_owner_id: userId,
+      content: p.content,
+      is_ai_generated: true,
     }));
 
-    const insertedRows = [];
-    for (const bot of replyBots) {
-      const isPostAuthor = post.bot_user_id === bot.id;
-      const isDirectlyAddressed = mentionedBotIds.includes(bot.id);
-      const prompt = buildReplyPrompt(
-        post.content,
-        postAuthorName,
-        isPostAuthor,
-        threadForPrompt,
-        bot,
-        latestUserMessage,
-        isDirectlyAddressed,
-      );
+    console.log("Rows to insert:", JSON.stringify(rows));
 
-      try {
-        const replies = await callGemini(prompt);
-        const content = replies[0]?.content;
-        if (!content) {
-          console.error(
-            `Bot ${bot.handle} (${bot.id}) returned no usable content, skipping`,
-          );
-          continue;
-        }
+    const { data, error } = await supabase.from("posts").insert(rows).select();
+    if (error) throw error;
 
-        insertedRows.push({
-          post_id: postId,
-          parent_reply_id: body.parent_reply_id ?? null,
-          bot_user_id: bot.id,
-          content,
-          is_ai_generated: true,
-        });
-      } catch (err) {
-        // previously a failed call here just silently vanished with no
-        // trace -- if this happened to be the @mentioned bot, it would
-        // look like "the tagged bot never replied" with zero clue why.
-        // added it for future bug catching & less headache :)
-        console.error(
-          `Reply generation failed for bot ${bot.handle} (${bot.id}):`,
-          err,
-        );
-        continue;
-      }
-    }
+    console.log("Inserted result:", JSON.stringify(data));
 
-    if (!insertedRows.length) {
-      return jsonResponse({ inserted: [] });
-    }
-
-    const { data: inserted, error: insertError } = await supabase
-      .from("post_replies")
-      .insert(insertedRows)
-      .select();
-    if (insertError) throw insertError;
-
-    // notify the post owner for every bot reply, unless there's no
-    // recipient to notify (shouldn't happen in practice, but to be safe).
-    // type is mention_reply if the reply @ mentions the recipient's own
-    // handle, otherwise bot_reply. non-fatal on failure -- the replies
-    // themselves already succeeded and shouldn't be rolled back over a
-    // notification insert issue.
-    if (recipientId) {
-      const { data: recipientProfile, error: recipientError } = await supabase
-        .from("profiles")
-        .select("handle")
-        .eq("id", recipientId)
-        .single();
-      if (recipientError) {
-        console.error(
-          "Could not load recipient profile for notifications:",
-          recipientError,
-        );
-      }
-      const recipientHandle = recipientProfile?.handle;
-      const mentionRegex = recipientHandle
-        ? new RegExp(`@${recipientHandle}\\b`, "i")
-        : null;
-
-      const notificationRows = (inserted ?? []).map((reply) => ({
-        user_id: recipientId,
-        type:
-          mentionRegex && mentionRegex.test(reply.content)
-            ? "mention_reply"
-            : "bot_reply",
-        post_id: reply.post_id,
-        reply_id: reply.id,
-        actor_bot_id: reply.bot_user_id,
-        preview: reply.content,
-      }));
-
+    // NEW: notify the user for any inserted post that @ mentions them.
+    // non-fatal if this fails -- the posts themselves already succeeded,
+    // so we log and move on rather than throwing and losing that result.
+    const notificationRows = buildMentionNotifications(
+      data ?? [],
+      userId,
+      body.profile?.handle,
+    );
+    if (notificationRows.length) {
       const { error: notifError } = await supabase
         .from("notifications")
         .insert(notificationRows);
       if (notifError) {
-        console.error("Could not insert reply notifications:", notifError);
+        console.error("Could not insert mention notifications:", notifError);
       }
     }
 
-    return jsonResponse({ inserted });
+    return new Response(JSON.stringify({ inserted: data }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
   } catch (err) {
     console.error(err);
-    return jsonResponse({ error: String(err) }, 500);
+    return new Response(JSON.stringify({ error: String(err) }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
