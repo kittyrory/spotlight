@@ -42,6 +42,26 @@ const BOT_PROFILE_IDS = [
   "35a7eb25-8f70-43c3-82ab-e32028b87bce",
   "a4970b5c-cd07-4182-a04d-f0614e0ca200",
   "f661dc7b-6967-4c0c-9ab3-210e56404124",
+  "f1e7d612-b942-4506-bb1a-e90fb2f37577",
+  "ff109962-d374-4dde-ab35-6a34b52cf65a",
+  "6c7eb54f-2e11-43ee-9cfb-2ed4ea1d14bc",
+  "3ff9835f-fd18-4982-ad28-033745961ca4",
+  "3027e5da-0e1e-4d53-9c58-56f5c93ee1d9",
+  "301912ff-30db-451b-892d-1d381e61e5df",
+  "ee77e9b0-7f24-4799-bdbc-738de76d563b",
+  "c86dca46-4aec-46cc-97ea-50c0b0179343",
+  "6eaffc8f-9750-43fd-ba8d-b071a8b2e68f",
+  "54b8f1f8-b290-4abc-b651-6dc2440cd460",
+  "e7c1435f-d420-4826-8584-8310c8520c6c",
+  "a53f3af9-46f0-42a3-bfb7-00319ef858e3",
+  "24ad785a-49b5-4595-9466-f39a8827fb25",
+  "78034bd1-0df6-46c3-abb2-3aa8828323b3",
+  "d1122a9c-3e92-4d3e-8d43-ddedf76ab5c4",
+  "25a2f5aa-629f-450e-a4e7-8bc0f7f60e69",
+  "6c013f68-4c11-4e7c-a057-5091cb910a78",
+  "41deb6eb-d98d-43f8-ba94-7171f7c612a7",
+  "5f81972b-ceea-4f9c-99e1-bec848959cd9",
+  "9ab599f5-1a7e-4397-ac6e-5ff9fa529cee",
 ];
 
 const REPLIES_PER_BATCH = 3;
@@ -294,7 +314,12 @@ Deno.serve(async (req) => {
     );
   }
 
-  let body: { post_id?: string; reason?: string; user_id?: string };
+  let body: {
+    post_id?: string;
+    reason?: string;
+    user_id?: string;
+    parent_reply_id?: string;
+  };
   try {
     body = await req.json();
   } catch {
@@ -303,6 +328,7 @@ Deno.serve(async (req) => {
 
   const postId = body.post_id;
   if (!postId) return jsonResponse({ error: "post_id is required" }, 400);
+  const parentReplyId = body.parent_reply_id ?? null;
 
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -334,9 +360,6 @@ Deno.serve(async (req) => {
     const botsList = (bots || []) as BotProfile[];
     const botById = new Map(botsList.map((b) => [b.id, b]));
 
-    // FIX: made an error; before it was "post.user_id", not
-    // "post.bot_user_id", meaning it would silently error out
-    // and not tell the bot its role
     const postAuthor = post.bot_user_id
       ? botById.get(post.bot_user_id)
       : undefined;
@@ -416,6 +439,7 @@ Deno.serve(async (req) => {
 
         insertedRows.push({
           post_id: postId,
+          parent_reply_id: parentReplyId,
           bot_user_id: bot.id,
           content,
           is_ai_generated: true,

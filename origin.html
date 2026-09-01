@@ -4,12 +4,7 @@
   <meta charset="UTF-8">
   <title>Spotlight | Origin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-
-  <script>
+<script>
     // apply saved theme immediately to avoid a flash of the wrong theme.
     (function () {
       var saved = localStorage.getItem('spotlight-theme');
@@ -17,49 +12,12 @@
     })();
   </script>
 
-  <style>
-    :root,
-    [data-theme="dark"] {
-      --bg: #000000;
-      --text: #ffffff;
-      --muted: #666666;
-      --card-bg: #1a1a1a;
-      --card-border: #444444;
-      --card-hover-bg: #242424;
-      --card-hover-border: #A38800;
-      --card-selected-bg: #0D0D0D;
-      --card-title: #ffffff;
-      --progress-done: #755C00;
-      --progress-upcoming: #555555;
-      --back-border: #555555;
-      --back-color: #555555;
-      --back-hover-color: #808080;
-      --toggle-border: rgba(255, 255, 255, 0.25);
-      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-    }
-
-    [data-theme="light"] {
-      --bg: #f4f3f1;
-      --text: #1e1e1e;
-      --muted: #767676;
-      --card-bg: #ffffff;
-      --card-border: #dcdcdc;
-      --card-hover-bg: #f2f0ea;
-      --card-hover-border: #c9ab4a;
-      --card-selected-bg: #fbf6e4;
-      --card-title: #1e1e1e;
-      --progress-done: #c9ab4a;
-      --progress-upcoming: #dddddd;
-      --back-border: #cccccc;
-      --back-color: #999999;
-      --back-hover-color: #666666;
-      --toggle-border: rgba(0, 0, 0, 0.25);
-      --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-    }
+    <link rel="stylesheet" href="style.css" />
+    <style>
 
     body {
       background-color: var(--bg);
-      color: var(--text);
+      color: var(--ink);
       transition: background-color 0.25s ease, color 0.25s ease;
     }
 
@@ -76,14 +34,14 @@
       border-radius: 50%;
       border: 1.5px solid var(--toggle-border);
       background-color: transparent;
-      color: var(--text);
+      color: var(--ink);
       font-size: 1.1rem;
       cursor: pointer;
       transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease;
     }
 
     #theme-toggle:hover {
-      border-color: #e2bb00;
+      border-color: var(--gold);
       box-shadow: 0 0 12px var(--toggle-hover-shadow);
     }
 
@@ -107,12 +65,10 @@
     }
 
     .p1 {
-      color: #e2bb00;
-      font-family: 'Open Sans', sans-serif;
-    }
+      color: var(--gold);
+}
 
     .p2 {
-      font-family: 'Open Sans', sans-serif;
       color: var(--muted);
       font-size: 14px;
       margin-top: -10px;
@@ -133,7 +89,6 @@
     }
 
     h1 {
-      font-family: 'Open Sans', Arial;
       font-size: 32px;
     }
 
@@ -150,13 +105,12 @@
     }
 
     .cont {
-      background-color: #e2bb00;
+      background-color: var(--gold);
       border: none;
       width: 100%;
       height: 50px;
       border-radius: 10px;
       margin-top: 10px;
-      font-family: 'Urbanist', 'Open Sans', Arial;
       font-size: 18px;
       cursor: pointer;
       color: black;
@@ -198,14 +152,13 @@
     }
 
     .option {
-      font-family: 'Open Sans', sans-serif;
       display: flex;
       align-items: center;
       gap: 12px;
       padding: 16px;
       border: 1px solid var(--card-border);
       border-radius: 10px;
-      background: var(--card-bg);
+      background: var(--card);
       cursor: pointer;
       margin-bottom: 10px;
       flex-direction: column;
@@ -216,18 +169,18 @@
     .title {
       font-size: 16px;
       font-weight: bold;
-      color: var(--card-title);
+      color: var(--ink);
       text-align: center;
     }
 
     .option:hover {
-      border-color: var(--card-hover-border);
+      border-color: var(--gold-light);
       background: var(--card-hover-bg);
     }
 
     .option.selected {
       background: var(--card-selected-bg);
-      border-color: #e2bb00;
+      border-color: var(--gold);
     }
 
     .container {
@@ -279,10 +232,10 @@
     .container:nth-child(1) { animation-delay: 0.1s; }
     .container:nth-child(2) { animation-delay: 0.25s; }
     .container:nth-child(3) { animation-delay: 0.4s; }
-  </style>
+    </style>
 </head>
 
-  <body>
+<body class="page-maximal">
     <button id="theme-toggle" aria-label="Toggle light/dark mode">
       <svg class="icon-sun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="4.5"></circle>
@@ -303,9 +256,9 @@
     <div class="div1">
       <div class="div2">
         <div class="progress-bar">
-          <div class="progress-step" style="background: var(--progress-done);"></div>
-          <div class="progress-step" style="background: var(--progress-done);"></div>
-          <div class="progress-step" style="background: #e2bb00;"></div>
+          <div class="progress-step" style="background: var(--gold-deep);"></div>
+          <div class="progress-step" style="background: var(--gold-deep);"></div>
+          <div class="progress-step" style="background: var(--gold);"></div>
         </div>
 
         <p class="p1">Step 3 of 3 · Origin</p>

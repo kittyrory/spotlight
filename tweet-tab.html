@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <title>Spotlight | Tweet Tab</title>
+<title>Spotlight | Tweet Tab</title>
+    <link rel="stylesheet" href="style.css" />
+<script src="scripts/profile-cache.js"></script>
+<script>
+  // read the cached profile synchronously in <head>, before the body
+  // renders, same idea as IconPage.html - so the composer can paint
+  // immediately instead of waiting on the scripts at the bottom of the page.
+  window.__cachedProfile = window.SpotlightProfileCache.read();
+</script>
 </head>
 
     <script>
@@ -21,50 +25,33 @@
     </script>
 
     <style>
-        :root,
-        [data-theme="dark"]{
-            --bg:#0e0e0e;
-            --card-bg:#1a1a1a;
-            --border:#2a2a2a;
-            --text-primary:#f0f0f0;
-            --text-secondary:#8a8a8a;
-            --text-tertiary:#5c5c5c;
-            --accent:#f0f0f0;
-            --accent-contrast:#111111;
-            --pill-bg:#242424;
-            --danger:#e25555;
-            --menu-bg:#1a1a1a;
-            --menu-shadow: rgba(0,0,0,0.6);
-            --hover-bg:#242424;
-            --active-bg:#2c2c2c;
-            --highlight-hover-bg:#202020;
-            --highlight-hover-border:#3a3a3a;
-        }
+      :root, [data-theme="dark"] {
+        --menu-shadow: rgba(0, 0, 0, 0.6);
+        --pill-bg: #242424;
+        --highlight-hover-bg: #202020;
+        --active-bg: #2c2c2c;
+        --highlight-hover-border: #3a3a3a;
+        --menu-bg: var(--surface-1);
+        --hover-bg: #242424;
+        --gold-contrast: #17130b;
+      }
 
-        [data-theme="light"]{
-            --bg:#ffffff;
-            --card-bg:#f4f4f4;
-            --border:#e2e2e2;
-            --text-primary:#1a1a1a;
-            --text-secondary:#7a7a7a;
-            --text-tertiary:#9c9c9c;
-            --accent:#1a1a1a;
-            --accent-contrast:#ffffff;
-            --pill-bg:#efefef;
-            --danger:#c0392b;
-            --menu-bg:#ffffff;
-            --menu-shadow: rgba(0,0,0,0.08);
-            --hover-bg:#eaeaea;
-            --active-bg:#dedede;
-            --highlight-hover-bg:#ececec;
-            --highlight-hover-border:#bdbdbd;
-        }
+      [data-theme="light"] {
+        --menu-shadow: rgba(0, 0, 0, 0.08);
+        --pill-bg: #ece9e2;
+        --highlight-hover-bg: #ece8df;
+        --active-bg: #dedbd4;
+        --highlight-hover-border: #c8c1b3;
+        --menu-bg: var(--card);
+        --hover-bg: #eae8e2;
+        --gold-contrast: #ffffff;
+      }
+
 
         body {
             margin: 0;
             background: var(--bg);
-            font-family: -apple-system, "SF Pro Display", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
-            color: var(--text-primary);
+            color: var(--ink);
             display: flex;
             justify-content: center;
             transition: background-color 0.25s ease, color 0.25s ease;
@@ -87,7 +74,7 @@
 
         .cancel{
             font-size: 1.05rem;
-            color: var(--text-secondary);
+            color: var(--ink-dim);
             font-weight: 500;
             background: none;
             border: none;
@@ -95,432 +82,430 @@
         }
 
          .topbar-right{
-    display: flex;
-    align-items: center;
-    gap: 18px;
-  }
- 
-  .drafts{
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--text-secondary);
-  }
- 
-  .post-btn{
-    background: var(--accent);
-    color: var(--accent-contrast);
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 9px 22px;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-  }
- 
-  .post-btn:disabled{
-    background: var(--text-tertiary);
-    cursor: not-allowed;
-  }
- 
-  /* Composer */
-  .composer{
-    display: flex;
-    gap: 14px;
-    padding: 6px 20px 18px;
-  }
- 
-  .avatar{
-    flex: 0 0 auto;
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--text-primary);
-    overflow: hidden;
-  }
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
 
-  .avatar img{ width: 100%; height: 100%; object-fit: cover; }
- 
-  .composer-main{
-    flex: 1;
-    min-width: 0;
-  }
- 
-  .identity-row{
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 2px;
-  }
- 
-  .name{
-    font-weight: 700;
-    font-size: 1.02rem;
-  }
- 
-  .handle{
-    color: var(--text-secondary);
-    font-size: 0.92rem;
-    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
-  }
- 
-  /* Audience dropdown */
-  .audience-wrap{
-    position: relative;
-    display: inline-block;
-    margin: 8px 0 14px;
-  }
- 
-  .audience-pill{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 1px solid var(--border);
-    background: var(--pill-bg);
-    color: var(--text-primary);
-    font-weight: 600;
-    font-size: 0.88rem;
-    padding: 5px 12px;
-    border-radius: 999px;
-    cursor: pointer;
-    user-select: none;
-  }
- 
-  .audience-pill svg{
-    width: 12px;
-    height: 12px;
-    fill: var(--text-secondary);
-    transition: transform 0.15s ease;
-  }
- 
-  .audience-pill.open svg{
-    transform: rotate(180deg);
-  }
- 
-  .audience-menu{
-    position: absolute;
-    top: calc(100% + 6px);
-    left: 0;
-    background: var(--menu-bg);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    box-shadow: 0 8px 24px var(--menu-shadow);
-    width: 220px;
-    overflow: hidden;
-    z-index: 10;
-    display: none;
-  }
- 
-  .audience-menu.open{
-    display: block;
-  }
- 
-  .audience-option{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 14px;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    cursor: pointer;
-  }
- 
-  .audience-option:hover{
-    background: var(--card-bg);
-  }
- 
-  .audience-option.disabled{
-    cursor: not-allowed;
-    color: var(--text-tertiary);
-  }
- 
-  .audience-option.disabled:hover{
-    background: transparent;
-  }
- 
-  .soon-tag{
-    font-size: 0.66rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--text-tertiary);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 2px 8px;
-  }
- 
-  .audience-divider{
-    height: 1px;
-    background: var(--border);
-  }
- 
-  .compose-input{
-    width: 100%;
-    border: none;
-    outline: none;
-    resize: none;
-    font-family: inherit;
-    color: var(--text-primary);
-    font-size: 1.3rem;
-    font-weight: 400;
-    line-height: 1.4;
-    background: transparent;
-  }
- 
-  .compose-input::placeholder{
-    color: var(--text-tertiary);
-  }
- 
-  .word-count-row{
-    display: flex;
-    justify-content: flex-end;
-    padding: 4px 20px 0;
-  }
- 
-  .word-count{
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--text-tertiary);
-  }
- 
-  .word-count.warn{
-    color: #b8860b;
-  }
- 
-  .word-count.over{
-    color: var(--danger);
-  }
- 
-  /* Image preview grid */
-  .image-preview{
-    margin: 4px 20px 16px;
-    display: none;
-    position: relative;
-  }
- 
-  .image-preview.active{
-    display: block;
-  }
- 
-  .image-grid{
-    display: grid;
-    gap: 4px;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
- 
-  .image-grid.count-1{ grid-template-columns: 1fr; }
-  .image-grid.count-2{ grid-template-columns: 1fr 1fr; }
-  .image-grid.count-3{ grid-template-columns: 1fr 1fr; }
-  .image-grid.count-3 .tile:first-child{ grid-row: span 2; }
-  .image-grid.count-4plus{ grid-template-columns: 1fr 1fr; }
- 
-  .tile{
-    position: relative;
-    background: var(--card-bg);
-  }
- 
-  .tile img{
-    width: 100%;
-    height: 100%;
-    min-height: 140px;
-    max-height: 260px;
-    object-fit: cover;
-    display: block;
-  }
- 
-  .tile-overlay{
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    font-size: 1.4rem;
-    font-weight: 700;
-  }
- 
-  .image-remove{
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.55);
-    border: none;
-    color: #fff;
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 2;
-  }
- 
-  /* Media row */
-  .media-row{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 10px 20px 20px;
-  }
- 
-  .media-buttons{
-    display: flex;
-    gap: 12px;
-  }
- 
-  .media-btn{
-    width: 46px;
-    height: 46px;
-    border-radius: 12px;
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
- 
-  .media-btn:hover{
-    background: var(--hover-bg);
-  }
- 
-  .media-btn:active{
-    background: var(--active-bg);
-  }
- 
-  .media-btn svg{
-    width: 20px;
-    height: 20px;
-    fill: var(--text-primary);
-  }
- 
-  .divider-line{
-    height: 1px;
-    background: var(--border);
-    margin: 0 20px;
-  }
- 
-  /* Highlights */
-  .highlights-header{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 20px 14px;
-    cursor: pointer;
-    user-select: none;
-  }
- 
-  .highlights-title{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-primary);
-  }
- 
-  .highlights-title svg{
-    width: 19px;
-    height: 19px;
-    fill: var(--text-secondary);
-  }
- 
-  .chevron{
-    width: 18px;
-    height: 18px;
-    fill: var(--text-secondary);
-    transition: transform 0.2s ease;
-  }
- 
-  .chevron.collapsed{
-    transform: rotate(180deg);
-  }
- 
-  .highlights-scroll{
-    display: flex;
-    gap: 14px;
-    padding: 0 20px 20px;
-    overflow-x: auto;
-    transition: max-height 0.2s ease;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none;  /* IE 10+ */
-  }
+        .drafts{
+          font-size: 1rem;
+          font-weight: 700;
+          color: var(--ink-dim);
+        }
 
-  .highlights-scroll::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
-  }
- 
-  .highlights-scroll.hidden{
-    display: none;
-  }
- 
-  .highlight-card{
-    flex: 0 0 auto;
-    width: 240px;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 16px;
-    font-size: 1rem;
-    line-height: 1.45;
-    color: var(--text-primary);
-    background: var(--card-bg);
-    cursor: pointer;
-    transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
-  }
- 
-  .highlight-card:hover{
-    border-color: var(--highlight-hover-border);
-    background: var(--highlight-hover-bg);
-    transform: translateY(-2px);
-  }
- 
-  .highlight-tag-row{
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
- 
-  .highlight-icon{
-    width: 15px;
-    height: 15px;
-    fill: var(--text-secondary);
-    flex: 0 0 auto;
-  }
- 
-  .highlight-tag{
-    display: inline-block;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--text-secondary);
-  }
- 
-  @media (max-width: 380px){
-    .topbar, .composer, .media-row, .highlights-header{ padding-left: 16px; padding-right: 16px; }
-    .word-count-row{ padding-left: 16px; padding-right: 16px; }
-    .image-preview{ margin-left: 16px; margin-right: 16px; }
-    .highlight-card{ width: 210px; }
-  }
-</style>
+        .post-btn{
+          background: var(--gold);
+          color: var(--gold-contrast);
+          font-weight: 700;
+          font-size: 1rem;
+          padding: 9px 22px;
+          border-radius: 999px;
+          border: none;
+          cursor: pointer;
+        }
+
+        .post-btn:disabled{
+          background: var(--ink-faint);
+          cursor: not-allowed;
+        }
+
+        /* Composer */
+        .composer{
+          display: flex;
+          gap: 14px;
+          padding: 6px 20px 18px;
+        }
+
+        .avatar{
+          flex: 0 0 auto;
+          width: 52px;
+          height: 52px;
+          border-radius: 50%;
+          background: var(--card);
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 1.1rem;
+          color: var(--ink);
+          overflow: hidden;
+        }
+
+        .avatar img{ width: 100%; height: 100%; object-fit: cover; }
+
+        .composer-main{
+          flex: 1;
+          min-width: 0;
+        }
+
+        .identity-row{
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 2px;
+        }
+
+        .name{
+          font-weight: 700;
+          font-size: 1.02rem;
+        }
+
+        .handle{
+          color: var(--ink-dim);
+          font-size: 0.92rem;
+        }
+
+        /* Audience dropdown */
+        .audience-wrap{
+          position: relative;
+          display: inline-block;
+          margin: 8px 0 14px;
+        }
+
+        .audience-pill{
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          border: 1px solid var(--border);
+          background: var(--pill-bg);
+          color: var(--ink);
+          font-weight: 600;
+          font-size: 0.88rem;
+          padding: 5px 12px;
+          border-radius: 999px;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .audience-pill svg{
+          width: 12px;
+          height: 12px;
+          fill: var(--ink-dim);
+          transition: transform 0.15s ease;
+        }
+
+        .audience-pill.open svg{
+          transform: rotate(180deg);
+        }
+
+        .audience-menu{
+          position: absolute;
+          top: calc(100% + 6px);
+          left: 0;
+          background: var(--menu-bg);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          box-shadow: 0 8px 24px var(--menu-shadow);
+          width: 220px;
+          overflow: hidden;
+          z-index: 10;
+          display: none;
+        }
+
+        .audience-menu.open{
+          display: block;
+        }
+
+        .audience-option{
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 14px;
+          font-size: 0.92rem;
+          font-weight: 600;
+          color: var(--ink);
+          cursor: pointer;
+        }
+
+        .audience-option:hover{
+          background: var(--card);
+        }
+
+        .audience-option.disabled{
+          cursor: not-allowed;
+          color: var(--ink-faint);
+        }
+
+        .audience-option.disabled:hover{
+          background: transparent;
+        }
+
+        .soon-tag{
+          font-size: 0.66rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
+          color: var(--ink-faint);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 2px 8px;
+        }
+
+        .audience-divider{
+          height: 1px;
+          background: var(--border);
+        }
+
+        .compose-input{
+          width: 100%;
+          border: none;
+          outline: none;
+          resize: none;
+          color: var(--ink);
+          font-size: 1.3rem;
+          font-weight: 400;
+          line-height: 1.4;
+          background: transparent;
+        }
+
+        .compose-input::placeholder{
+          color: var(--ink-faint);
+        }
+
+        .word-count-row{
+          display: flex;
+          justify-content: flex-end;
+          padding: 4px 20px 0;
+        }
+
+        .word-count{
+          font-size: 0.82rem;
+          font-weight: 600;
+          color: var(--ink-faint);
+        }
+
+        .word-count.warn{
+          color: #b8860b;
+        }
+
+        .word-count.over{
+          color: var(--red);
+        }
+
+        /* Image preview grid */
+        .image-preview{
+          margin: 4px 20px 16px;
+          display: none;
+          position: relative;
+        }
+
+        .image-preview.active{
+          display: block;
+        }
+
+        .image-grid{
+          display: grid;
+          gap: 4px;
+          border-radius: 16px;
+          overflow: hidden;
+          border: 1px solid var(--border);
+        }
+
+        .image-grid.count-1{ grid-template-columns: 1fr; }
+        .image-grid.count-2{ grid-template-columns: 1fr 1fr; }
+        .image-grid.count-3{ grid-template-columns: 1fr 1fr; }
+        .image-grid.count-3 .tile:first-child{ grid-row: span 2; }
+        .image-grid.count-4plus{ grid-template-columns: 1fr 1fr; }
+
+        .tile{
+          position: relative;
+          background: var(--card);
+        }
+
+        .tile img{
+          width: 100%;
+          height: 100%;
+          min-height: 140px;
+          max-height: 260px;
+          object-fit: cover;
+          display: block;
+        }
+
+        .tile-overlay{
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.55);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #ffffff;
+          font-size: 1.4rem;
+          font-weight: 700;
+        }
+
+        .image-remove{
+          position: absolute;
+          top: 10px;
+          right: 10px;
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.55);
+          border: none;
+          color: #fff;
+          font-size: 1rem;
+          line-height: 1;
+          cursor: pointer;
+          z-index: 2;
+        }
+
+        /* Media row */
+        .media-row{
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 10px 20px 20px;
+        }
+
+        .media-buttons{
+          display: flex;
+          gap: 12px;
+        }
+
+        .media-btn{
+          width: 46px;
+          height: 46px;
+          border-radius: 12px;
+          background: var(--card);
+          border: 1px solid var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+
+        .media-btn:hover{
+          background: var(--hover-bg);
+        }
+
+        .media-btn:active{
+          background: var(--active-bg);
+        }
+
+        .media-btn svg{
+          width: 20px;
+          height: 20px;
+          fill: var(--ink);
+        }
+
+        .divider-line{
+          height: 1px;
+          background: var(--border);
+          margin: 0 20px;
+        }
+
+        /* Highlights */
+        .highlights-header{
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 20px 20px 14px;
+          cursor: pointer;
+          user-select: none;
+        }
+
+        .highlights-title{
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: var(--ink);
+        }
+
+        .highlights-title svg{
+          width: 19px;
+          height: 19px;
+          fill: var(--ink-dim);
+        }
+
+        .chevron{
+          width: 18px;
+          height: 18px;
+          fill: var(--ink-dim);
+          transition: transform 0.2s ease;
+        }
+
+        .chevron.collapsed{
+          transform: rotate(180deg);
+        }
+
+        .highlights-scroll{
+          display: flex;
+          gap: 14px;
+          padding: 0 20px 20px;
+          overflow-x: auto;
+          transition: max-height 0.2s ease;
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none;  /* IE 10+ */
+        }
+
+        .highlights-scroll::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+
+        .highlights-scroll.hidden{
+          display: none;
+        }
+
+        .highlight-card{
+          flex: 0 0 auto;
+          width: 240px;
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 16px;
+          font-size: 1rem;
+          line-height: 1.45;
+          color: var(--ink);
+          background: var(--card);
+          cursor: pointer;
+          transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+        }
+
+        .highlight-card:hover{
+          border-color: var(--highlight-hover-border);
+          background: var(--highlight-hover-bg);
+          transform: translateY(-2px);
+        }
+
+        .highlight-tag-row{
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+
+        .highlight-icon{
+          width: 15px;
+          height: 15px;
+          fill: var(--ink-dim);
+          flex: 0 0 auto;
+        }
+
+        .highlight-tag{
+          display: inline-block;
+          font-size: 0.68rem;
+          font-weight: 700;
+          letter-spacing: 0.06em;
+          text-transform: uppercase;
+          color: var(--ink-dim);
+        }
+
+        @media (max-width: 380px){
+          .topbar, .composer, .media-row, .highlights-header{ padding-left: 16px; padding-right: 16px; }
+          .word-count-row{ padding-left: 16px; padding-right: 16px; }
+          .image-preview{ margin-left: 16px; margin-right: 16px; }
+          .highlight-card{ width: 210px; }
+        }
+    </style>
 </head>
-<body>
- 
+<body class="page-minimal">
+
 <div class="phone">
- 
+
   <div class="topbar">
     <button class="cancel" id="cancelBtn">Cancel</button>
     <div class="topbar-right">
@@ -528,7 +513,7 @@
       <button class="post-btn" id="postBtn">Post</button>
     </div>
   </div>
- 
+
   <div class="composer">
     <div class="avatar" id="composerAvatar">NA</div>
     <div class="composer-main">
@@ -536,7 +521,7 @@
         <span class="name" id="composerName">Your name</span>
         <span class="handle" id="composerHandle">@yourhandle</span>
       </div>
- 
+
       <div class="audience-wrap" id="audienceWrap">
         <div class="audience-pill" id="audiencePill">
           <span id="audienceLabel">Everyone</span>
@@ -551,20 +536,20 @@
           </div>
         </div>
       </div>
- 
+
       <textarea class="compose-input" id="composeInput" placeholder="What's the tea today?" rows="3" maxlength="250"></textarea>
     </div>
   </div>
- 
+
   <div class="word-count-row">
     <span class="word-count" id="wordCount">0 / 250</span>
   </div>
- 
+
   <div class="image-preview" id="imagePreview">
     <button class="image-remove" id="removeImage">✕</button>
     <div class="image-grid" id="imageGrid"></div>
   </div>
- 
+
   <div class="media-row">
     <div class="media-buttons">
       <div class="media-btn" id="galleryBtn" title="Choose from gallery">
@@ -577,9 +562,9 @@
       <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
     </div>
   </div>
- 
+
   <div class="divider-line"></div>
- 
+
   <div class="highlights-header" id="highlightsHeader">
     <div class="highlights-title">
       <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.4 2.3 7.4-6.3-4.6-6.3 4.6 2.3-7.4-6-4.4h7.6z"/></svg>
@@ -587,7 +572,7 @@
     </div>
     <svg class="chevron" id="chevronIcon" viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
   </div>
- 
+
   <div class="highlights-scroll" id="highlightsScroll">
     <div class="highlight-card" data-text="my mom said i peaked at birth. she's not wrong but she's also not the one with a nine figure exit so">
       <div class="highlight-tag-row">
@@ -632,11 +617,12 @@
       not the group chat leaking again. i said what i said and honestly i'd say it again on the record
     </div>
   </div>
- 
+
 </div>
- 
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="scripts/supabase.js"></script>
+<script src="scripts/post-cache.js"></script>
 <script src="scripts/theme.js"></script>
 <script src="scripts/worlds.js"></script>
 <script>
@@ -652,7 +638,14 @@
   const CHAR_LIMIT = 250;
   const DRAFT_KEY = 'spotlight-post-draft';
   let currentProfile = null;
- 
+
+  // paint the composer immediately from the cache read in <head>,
+  // instead of waiting for loadComposerProfile() further down.
+  if (window.__cachedProfile) {
+    currentProfile = window.__cachedProfile;
+    renderComposerProfile(currentProfile);
+  }
+
   function updateCount(){
     const len = composeInput.value.length;
     wordCount.textContent = len + ' / ' + CHAR_LIMIT;
@@ -690,19 +683,19 @@
 
   composeInput.addEventListener('input', () => { updateCount(); saveDraft(); });
   updateCount();
- 
+
   // Audience dropdown
   const audiencePill = document.getElementById('audiencePill');
   const audienceMenu = document.getElementById('audienceMenu');
   const audienceLabel = document.getElementById('audienceLabel');
   const audienceWrap = document.getElementById('audienceWrap');
- 
+
   audiencePill.addEventListener('click', (e) => {
     e.stopPropagation();
     audienceMenu.classList.toggle('open');
     audiencePill.classList.toggle('open');
   });
- 
+
   document.querySelectorAll('.audience-option').forEach(opt => {
     opt.addEventListener('click', () => {
       if(opt.dataset.disabled) return;
@@ -712,14 +705,14 @@
       saveDraft();
     });
   });
- 
+
   document.addEventListener('click', (e) => {
     if(!audienceWrap.contains(e.target)){
       audienceMenu.classList.remove('open');
       audiencePill.classList.remove('open');
     }
   });
- 
+
   // Media: gallery (multi) + camera (single), rendered as a grid/collage
   const galleryBtn = document.getElementById('galleryBtn');
   const cameraBtn = document.getElementById('cameraBtn');
@@ -728,9 +721,9 @@
   const imagePreview = document.getElementById('imagePreview');
   const imageGrid = document.getElementById('imageGrid');
   const removeImage = document.getElementById('removeImage');
- 
+
   let images = [];
- 
+
   function readFiles(fileList){
     const files = Array.from(fileList).slice(0, 4 - images.length);
     const readers = files.map(file => new Promise((resolve) => {
@@ -746,7 +739,7 @@
       saveDraft();
     });
   }
- 
+
   function renderGrid(){
     if(images.length === 0){
       imagePreview.classList.remove('active');
@@ -754,16 +747,16 @@
       return;
     }
     imagePreview.classList.add('active');
- 
+
     const count = images.length;
     let gridClass = 'count-1';
     if(count === 2) gridClass = 'count-2';
     else if(count === 3) gridClass = 'count-3';
     else if(count >= 4) gridClass = 'count-4plus';
- 
+
     imageGrid.className = 'image-grid ' + gridClass;
     imageGrid.innerHTML = '';
- 
+
     const shown = images.slice(0, 4);
     shown.forEach((src, i) => {
       const tile = document.createElement('div');
@@ -771,7 +764,7 @@
       const img = document.createElement('img');
       img.src = src;
       tile.appendChild(img);
- 
+
       if(i === 3 && count > 4){
         const overlay = document.createElement('div');
         overlay.className = 'tile-overlay';
@@ -781,12 +774,12 @@
       imageGrid.appendChild(tile);
     });
   }
- 
+
   galleryBtn.addEventListener('click', () => galleryInput.click());
   cameraBtn.addEventListener('click', () => cameraInput.click());
   galleryInput.addEventListener('change', (e) => { readFiles(e.target.files); galleryInput.value = ''; });
   cameraInput.addEventListener('change', (e) => { readFiles(e.target.files); cameraInput.value = ''; });
- 
+
   removeImage.addEventListener('click', () => {
     images = [];
     renderGrid();
@@ -794,17 +787,17 @@
     galleryBtn.style.pointerEvents = 'auto';
     saveDraft();
   });
- 
+
   // Highlights collapse/expand
   const highlightsHeader = document.getElementById('highlightsHeader');
   const highlightsScroll = document.getElementById('highlightsScroll');
   const chevronIcon = document.getElementById('chevronIcon');
- 
+
   highlightsHeader.addEventListener('click', () => {
     highlightsScroll.classList.toggle('hidden');
     chevronIcon.classList.toggle('collapsed');
   });
- 
+
   // Clicking a highlight card inserts its text into the composer
   document.querySelectorAll('.highlight-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -815,7 +808,29 @@
     });
   });
 
+  function renderComposerProfile(profile) {
+    const name = profile.display_name || 'Your name';
+    const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
+    document.getElementById('composerName').textContent = name;
+    document.getElementById('composerHandle').textContent = handle;
+    const avatar = document.getElementById('composerAvatar');
+    if (profile.avatar_url) {
+      const image = document.createElement('img');
+      image.src = profile.avatar_url;
+      image.alt = '';
+      avatar.replaceChildren(image);
+    }
+    else avatar.textContent = name.slice(0, 2).toUpperCase();
+  }
+
   async function loadComposerProfile() {
+    // paint instantly from cache while the network request is in flight
+    const cachedProfile = window.SpotlightProfileCache?.read();
+    if (cachedProfile) {
+      currentProfile = cachedProfile;
+      renderComposerProfile(currentProfile);
+    }
+
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       window.location.href = 'login.html';
@@ -830,18 +845,8 @@
     if (error) console.error('Could not load composer profile:', error);
 
     currentProfile = profile || {};
-    const name = currentProfile.display_name || 'Your name';
-    const handle = currentProfile.handle ? `@${currentProfile.handle.replace(/^@/, '')}` : '@yourhandle';
-    document.getElementById('composerName').textContent = name;
-    document.getElementById('composerHandle').textContent = handle;
-    const avatar = document.getElementById('composerAvatar');
-    if (currentProfile.avatar_url) {
-      const image = document.createElement('img');
-      image.src = currentProfile.avatar_url;
-      image.alt = '';
-      avatar.replaceChildren(image);
-    }
-    else avatar.textContent = name.slice(0, 2).toUpperCase();
+    window.SpotlightProfileCache?.write({ id: user.id, ...currentProfile });
+    renderComposerProfile(currentProfile);
   }
 
   function dataUrlToBlob(dataUrl) {
@@ -867,7 +872,7 @@
 
   // resolves a user's selected_worlds (array of {id}) into full world
   // objects, mixing pregen worlds (from window.WORLDS) with custom worlds
-  // (from the custom_worlds table). 
+  // (from the custom_worlds table).
   // ported from Feed.html so this page's AI post generation call gets the same world context.
   async function resolveSelectedWorlds(selectedWorlds) {
     if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
@@ -965,10 +970,27 @@
       }
 
       localStorage.removeItem(DRAFT_KEY);
-      // shows analytics toast
-      // sessionStorage fires it only for this specific visit
-      sessionStorage.setItem('analytics-toast', '1');
-      window.location.href = 'Feed.html';
+
+      // pre-warm caches with what we already know, so post.html (and a
+      // later trip back to Feed.html) can render instantly instead of
+      // waiting on supabase
+      const authorProfile = { id: user.id, ...currentProfile };
+      window.SpotlightPostCache?.writePost(newPost.id, {
+        post: newPost,
+        replies: [],
+        myReactions: [],
+        profiles: [authorProfile],
+        botProfiles: [],
+      });
+
+      const existingFeed = window.SpotlightPostCache?.readFeed(user.id) || [];
+      window.SpotlightPostCache?.writeFeed(user.id, [
+        { post: newPost, author: authorProfile, reactions: [] },
+        ...existingFeed,
+      ]);
+
+      localStorage.setItem('analytics-toast', '1');
+      window.location.href = `post.html?id=${newPost.id}`;
     } catch (error) {
       console.log('Could not publish post:', error);
       postBtn.disabled = false;
@@ -984,6 +1006,6 @@
   restoreDraft();
   loadComposerProfile();
 </script>
- 
+
 </body>
 </html>

@@ -5,17 +5,6 @@
     <title>Spotlight | Log In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- font links -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@100..800&family=DM+Mono:wght@300;400&family=DM+Sans:wght@400;600&family=Source+Code+Pro:wght@700&display=swap"
-      rel="stylesheet"
-    />
-
     <script>
       // apply saved theme immediately to avoid a flash of the wrong theme.
       (function () {
@@ -24,38 +13,10 @@
       })();
     </script>
 
+    <link rel="stylesheet" href="style.css" />
     <style>
       * {
         box-sizing: border-box;
-      }
-
-      :root,
-      [data-theme="dark"] {
-        --bg: #000000;
-        --text: #ffffff;
-        --muted: #666666;
-        --border: #2a2a2a;
-        --gold: #e2bb00;
-        --error: #e25555;
-        --gold-shadow: rgba(226, 187, 0, 0.2);
-        --gold-glow: rgba(226, 187, 0, 0.3);
-        --error-shadow: rgba(226, 85, 85, 0.2);
-        --toggle-border: rgba(255, 255, 255, 0.25);
-        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-      }
-
-      [data-theme="light"] {
-        --bg: #f4f3f1;
-        --text: #1e1e1e;
-        --muted: #666666;
-        --border: #2a2a2a;
-        --gold: #e2bb00;
-        --error: #e25555;
-        --gold-shadow: rgba(226, 187, 0, 0.2);
-        --gold-glow: rgba(226, 187, 0, 0.3);
-        --error-shadow: rgba(226, 85, 85, 0.2);
-        --toggle-border: rgba(0, 0, 0, 0.25);
-        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
       }
 
       body {
@@ -64,9 +25,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-family: "Open Sans", sans-serif;
         background-color: var(--bg);
-        color: var(--text);
+        color: var(--ink);
         transition:
           background-color 0.25s ease,
           color 0.25s ease;
@@ -85,7 +45,7 @@
         border-radius: 50%;
         border: 1.5px solid var(--toggle-border);
         background-color: transparent;
-        color: var(--text);
+        color: var(--ink);
         font-size: 1.1rem;
         cursor: pointer;
         transition:
@@ -140,18 +100,16 @@
       }
 
       .logo-text {
-        font-family: "Anek Latin", Arial;
         font-size: 16px;
         letter-spacing: 2px;
         color: var(--muted);
       }
 
       .headline {
-        font-family: "Anek Latin", Arial;
         font-size: 40px;
         line-height: 1.1;
         margin: 0 0 6px 0;
-        color: var(--text);
+        color: var(--ink);
       }
 
       .sub {
@@ -170,8 +128,7 @@
         border-radius: 12px;
         border: 1px solid var(--border);
         background-color: var(--bg);
-        color: var(--text);
-        font-family: "Source Code Pro", monospace;
+        color: var(--ink);
         font-size: 0.875rem;
         outline: none;
         transition:
@@ -189,14 +146,14 @@
       }
 
       .field input.error {
-        border-color: var(--error);
-        box-shadow: 0 0 0 3px var(--error-shadow);
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px var(--red-shadow);
         animation: shake 0.3s ease;
       }
 
       .error-msg {
         font-size: 0.75rem;
-        color: var(--error);
+        color: var(--red);
         margin-top: 5px;
         padding-left: 4px;
         display: none;
@@ -230,7 +187,6 @@
         padding: 13px 0;
         border-radius: 999px;
         border: none;
-        font-family: Arial;
         font-weight: 700;
         font-size: 0.875rem;
         cursor: pointer;
@@ -311,7 +267,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="page-minimal">
     <button id="theme-toggle" aria-label="Toggle light/dark mode">
       <svg
         class="icon-sun"

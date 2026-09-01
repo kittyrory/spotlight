@@ -1,0 +1,325 @@
+/*
+  SPOTLIGHT STYLE GUIDE
+  ======================
+
+  The site has two related visual languages. Choose one for every new page.
+
+  MINIMALIST RULEBOOK
+  - Use when the page has one clear task or a short stream of content.
+  - Keep the layout calm, centered, and generous.
+  - Use one primary surface, one accent, and restrained borders.
+  - Keep controls obvious and copy short.
+  - Use Anek Latin for interface text and Open Sans for compact reading copy.
+  - Motion is limited to short fades, color changes, and a small hover lift.
+
+  MAXIMALIST RULEBOOK
+  - Use when the page explains a universe, profile, event, stage, or several stats.
+  - Use layered surfaces, compact data groups, labels, badges, and visual hierarchy.
+  - Dense does not mean cramped: preserve 16px minimum gaps between information groups.
+  - Use accent color for meaning and status, not decoration on every element.
+  - Keep numbers and labels visually distinct from descriptive copy.
+  - Motion should reveal relationships or feedback, never distract from information.
+
+  SHARED RULES
+  - Respect the existing data-theme="dark" and data-theme="light" variables on every page.
+  - Do not introduce a second theme system or hard-code a background over the page theme.
+  - Use Anek Latin for headings, navigation, controls, and compact labels.
+  - Use Open Sans for paragraphs, helper text, and other reading-heavy content.
+    Fonts may be negotiated later; this is just for now
+  - Use the page's existing accent variable; do not add a new gold/yellow shade for decoration.
+  - Buttons belong in a horizontal action row. Keep primary and secondary actions side-by-side.
+    They may wrap on a very narrow screen, but they must never be intentionally stacked.
+  - Favor full, readable declarations in code for sake of readability.
+    Certain exceptions may apply
+  - Keep focus visible, transitions short, and reduced-motion preferences respected.
+  - Prefer the existing page accent variable before creating a new color.
+
+  TEXT GROUPS
+  - Related text elements may share one compact selector group when they share a declaration.
+  - Reading text uses Open Sans so dense copy, lists, and quotations share one rhythm.
+
+  BUTTON RULEBOOK
+  - Every action group uses display:flex, flex-direction:row, and a consistent gap.
+  - Primary and secondary buttons are side-by-side, with equal flexible width when possible.
+  - Never create a vertical stack of sibling buttons on desktop.
+  - Buttons use Anek Latin, a visible focus ring, and the shared short transition.
+  - Use the page accent for the primary action and the existing surface for the secondary action.
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=Anek+Latin:wght@400;500;600;700;800&family=Open+Sans:wght@400;500&family=Urbanist:wght@400;500;600;700;800&display=swap");
+
+:root,
+[data-theme="dark"] {
+  --bg: #0a0a0d;
+  --bg-glow: #131318;
+  --card: #17181c;
+  --card-border: rgba(245, 196, 81, 0.22);
+  --surface-1: #1c1d21;
+  --surface-hover: #2a2418;
+  --surface-grad-1: #17181c;
+  --surface-grad-2: #131317;
+  --ink: #f2f1ee;
+  --ink-dim: #a6a5ab;
+  --ink-faint: #78757c;
+  --red: #e25555;
+  --muted: rgba(255, 255, 255, 0.45);
+  --gold: #f5c451;
+  --gold-light: #e0b84e;
+  --gold-deep: #c99a2e;
+  --gold-bright: #ffd500;
+  --border: rgba(255, 255, 255, 0.12);
+  --divider: rgba(255, 255, 255, 0.1);
+  --white: #ffffff;
+  --black: #000000;
+  --body-text: rgba(255, 255, 255, 0.45);
+  --body-readable: rgba(255, 255, 255, 0.78);
+  --button-border: rgba(245, 196, 81, 0.6);
+  --toggle-border: rgba(255, 255, 255, 0.25);
+  --toggle-hover-shadow: rgba(245, 196, 81, 0.3);
+  --gold-glow: rgba(245, 196, 81, 0.18);
+  --gold-shadow: rgba(245, 196, 81, 0.2);
+  --glow-1: rgba(245, 196, 81, 0.7);
+  --glow-2: rgba(245, 196, 81, 0.4);
+  --glow-3: rgba(245, 196, 81, 0.15);
+  --pulse-base: rgba(255, 255, 255, 0.2);
+  --pulse-1: rgba(245, 196, 81, 0.45);
+  --pulse-2: rgba(255, 255, 255, 0.15);
+  --hover-shadow-1: rgba(245, 196, 81, 0.55);
+  --hover-shadow-2: rgba(245, 196, 81, 0.3);
+  --surface2: #111111;
+  --muted2: #999797;
+  --card-selected-bg: #0d0d0d;
+  --card-hover-bg: #242424;
+  --progress-upcoming: #555555;
+  --back-border: #555555;
+  --back-color: #555555;
+  --back-hover-color: #808080;
+  --fame-grad-1: #1c1a13;
+  --fame-grad-2: #19170f;
+  --fame-grad-3: #16140d;
+  --fame-edge: #17140d;
+  --track-bg: rgba(255, 255, 255, 0.08);
+  --red-shadow: rgba(242, 104, 95, 0.2);
+  --spotlight-transition: 180ms ease;
+  --spotlight-radius: 14px;
+  --spotlight-radius-large: 20px;
+  --spotlight-gap: 16px;
+}
+
+[data-theme="light"] {
+  --bg: #f4f3f1;
+  --bg-glow: #ffffff;
+  --card: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.12);
+  --surface-1: #f2f0ec;
+  --surface-hover: #f6ecc4;
+  --surface-grad-1: #ffffff;
+  --surface-grad-2: #f6f4f0;
+  --ink: #1e1e1e;
+  --ink-dim: rgba(0, 0, 0, 0.58);
+  --ink-faint: rgba(0, 0, 0, 0.42);
+  --red: #e25555;
+  --muted: rgba(0, 0, 0, 0.52);
+  --gold: #f5c451;
+  --gold-light: #e0b84e;
+  --gold-deep: #c99a2e;
+  --gold-bright: #ffd86c;
+  --border: rgba(0, 0, 0, 0.12);
+  --divider: rgba(0, 0, 0, 0.1);
+  --white: #ffffff;
+  --black: #1e1e1e;
+  --body-text: rgba(0, 0, 0, 0.5);
+  --body-readable: rgba(0, 0, 0, 0.72);
+  --button-border: rgba(245, 196, 81, 0.6);
+  --toggle-border: rgba(0, 0, 0, 0.25);
+  --toggle-hover-shadow: rgba(245, 196, 81, 0.3);
+  --gold-glow: rgba(245, 196, 81, 0.18);
+  --gold-shadow: rgba(245, 196, 81, 0.2);
+  --glow-1: rgba(245, 196, 81, 0.7);
+  --glow-2: rgba(245, 196, 81, 0.4);
+  --glow-3: rgba(245, 196, 81, 0.15);
+  --pulse-base: rgba(0, 0, 0, 0.1);
+  --pulse-1: rgba(245, 196, 81, 0.45);
+  --pulse-2: rgba(0, 0, 0, 0.08);
+  --hover-shadow-1: rgba(245, 196, 81, 0.55);
+  --hover-shadow-2: rgba(245, 196, 81, 0.3);
+  --surface2: #f0efe9;
+  --muted2: #767676;
+  --card-selected-bg: #fbf6e4;
+  --card-hover-bg: #f2f0ea;
+  --progress-upcoming: #dddddd;
+  --back-border: #cccccc;
+  --back-color: #999999;
+  --back-hover-color: #666666;
+  --fame-grad-1: #fffaf0;
+  --fame-grad-2: #fbf2dc;
+  --fame-grad-3: #f5e9c8;
+  --fame-edge: #fbf2dc;
+  --track-bg: rgba(0, 0, 0, 0.07);
+  --red-shadow: rgba(217, 83, 79, 0.2);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: "Anek Latin", sans-serif;
+  transition:
+    background-color 180ms ease,
+    color 180ms ease;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html body.page-minimal, html body.page-maximal,
+html body.page-minimal :is(h1, button, input, select, textarea),
+html body.page-maximal :is(h1, button, input, select, textarea),
+html body.page-maximal :is(h1, button, input, select, textarea) {
+  font-family: "Anek Latin", sans-serif !important;
+}
+
+html body.page-minimal :is(h2, h3, h4, h5, h6),
+html body.page-maximal :is(h2, h3, h4, h5, h6) {
+  font-family: "Urbanist", sans-serif !important;
+}
+
+p, li, blockquote, label, small, .description, .helper-text, .sub, .subtitle,
+html body.page-minimal :is(p, li, blockquote, label, small),
+html body.page-maximal :is(p, li, blockquote, label, small) {
+  font-family: "Open Sans", Arial !important;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"],
+#theme-toggle {
+  transition:
+    color var(--spotlight-transition),
+    background-color var(--spotlight-transition),
+    border-color var(--spotlight-transition),
+    box-shadow var(--spotlight-transition),
+    opacity var(--spotlight-transition),
+    transform var(--spotlight-transition);
+}
+
+button,
+[role="button"],
+.button-row > a,
+.actions > a,
+.form-actions > a,
+.profile-actions > a {
+  cursor: pointer;
+}
+
+.button-row,
+.actions,
+.form-actions,
+.profile-actions {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button-row > :is(button, a),
+.actions > :is(button, a),
+.form-actions > :is(button, a),
+.profile-actions > :is(button, a) {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+button:hover,
+[role="button"]:hover,
+.button-row > a:hover,
+.actions > a:hover,
+.form-actions > a:hover,
+.profile-actions > a:hover {
+  transform: translateY(-1px);
+}
+
+button:active,
+[role="button"]:active,
+.button-row > a:active,
+.actions > a:active,
+.form-actions > a:active,
+.profile-actions > a:active {
+  transform: translateY(0);
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid
+    color-mix(in srgb, var(--gold, currentColor) 45%, transparent);
+  outline-offset: 3px;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* Minimalist family: simple task pages and short social views. */
+.page-minimal .card,
+.page-minimal .panel,
+.page-minimal .empty-state {
+  border-radius: var(--spotlight-radius-large);
+  transition:
+    background-color var(--spotlight-transition),
+    border-color var(--spotlight-transition),
+    box-shadow var(--spotlight-transition),
+    transform var(--spotlight-transition);
+}
+
+.page-minimal .card:hover,
+.page-minimal .panel:hover {
+  transform: translateY(-2px);
+}
+
+/* Maximalist family: pages with stats, maps, events, stages, and profiles. */
+.page-maximal .card,
+.page-maximal .panel,
+.page-maximal .stat-card,
+.page-maximal .stat,
+.page-maximal .section-card {
+  border-radius: var(--spotlight-radius);
+  transition:
+    background-color var(--spotlight-transition),
+    border-color var(--spotlight-transition),
+    box-shadow var(--spotlight-transition),
+    transform var(--spotlight-transition);
+}
+
+.page-maximal .stat-card:hover,
+.page-maximal .stat:hover,
+.page-maximal .section-card:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body {
+    overflow-x: hidden;
+  }
+}

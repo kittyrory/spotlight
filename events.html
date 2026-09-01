@@ -4,13 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spotlight | Events</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-
     <script>
       // apply saved theme immediately to avoid a flash of the wrong theme.
       // (this page has no toggle button of its own - it just follows
@@ -21,67 +14,46 @@
       })();
     </script>
 
+    <link rel="stylesheet" href="style.css" />
     <style>
-      :root,
-      [data-theme="dark"] {
-        --bg: #0a0a0d;
-        --surface: #17181c;
-        --surface-soft: #1e1c17;
-        --surface-hover: #2a2418;
-        --card-border: rgba(201, 154, 46, 0.28);
-        --card-shadow: rgba(0, 0, 0, 0.45);
-        --ink: #f2ede0;
-        --ink-dim: #a6a5ab;
-        --gold: #e0b84e;
-        --easy: #6fcf97;
-        --medium: #f2c265;
-        --hard: #f2685f;
-        --loss: #f2685f;
-        --gain: #6fcf97;
-        --tag: #5aa8e0;
-        --choice: #1c1a16;
-        --choice-border: rgba(201, 154, 46, 0.3);
-        --choice-hover: #262119;
-        --choice-selected: #2e2618;
-        --risk-safe: #6fcf97;
-        --risk-bold: #f2c265;
-        --risk-wild: #f2685f;
-        --muted: #9a9488;
-        --accent-warm: #e0b84e;
-        --submit-idle-bg: #26221c;
-        --submit-idle-ink: #6b6458;
-        --star-active-border: #7a6418;
+      :root, [data-theme="dark"] {
+      --red: #e25555;
+      --dy: 0px;
+      --medium: #f2c265;
+      --card-shadow: rgba(0, 0, 0, 0.45);
+      --event-glow-1: #f5c451;
+      --event-glow-2: #b98b2c;
+      --event-glow-3: #6b5320;
+      --event-glow-4: #8a6d1d;
+      --event-glow-opacity: 0.55;
+      --submit-border: rgba(255, 255, 255, 0.25);
+      --star-active-border: var(--gold-dark);
+      --surface-soft: #1e1c17;
+      --dx: 0px;
+      --choice: var(--surface-1);
+      --submit-idle-bg: var(--surface-1);
+      --easy: #6fcf97;
       }
 
       [data-theme="light"] {
-        --bg: #f4f3f1;
-        --surface: #ffffff;
-        --surface-soft: #faf6ea;
-        --surface-hover: #f6ecc4;
-        --card-border: #ece4c8;
-        --card-shadow: rgba(0, 0, 0, 0.15);
-        --ink: #1c1810;
-        --ink-dim: #767676;
-        --gold: #caa036;
-        --easy: #2f9e64;
-        --medium: #c9891f;
-        --hard: #d9534f;
-        --loss: #d9534f;
-        --gain: #2f9e64;
-        --tag: #1f6fb2;
-        --choice: #ffffff;
-        --choice-border: #ecd9a0;
-        --choice-hover: #fbf6e6;
-        --choice-selected: #fdf0c9;
-        --risk-safe: #2f9e64;
-        --risk-bold: #c9891f;
-        --risk-wild: #d9534f;
-        --muted: #8a8064;
-        --accent-warm: #a8790a;
-        --submit-idle-bg: #e9e2c8;
-        --submit-idle-ink: #a89a70;
-        --star-active-border: #e4c46e;
+      --red: #e25555;
+      --dy: 0px;
+      --medium: #c9891f;
+      --card-shadow: rgba(0, 0, 0, 0.15);
+      --event-glow-1: rgba(245, 196, 81, 0.42);
+      --event-glow-2: rgba(224, 184, 78, 0.3);
+      --event-glow-3: rgba(201, 154, 46, 0.2);
+      --event-glow-4: rgba(232, 194, 91, 0.24);
+      --event-glow-opacity: 0.48;
+      --submit-border: var(--button-border);
+      --star-active-border: var(--gold-light);
+      --surface-soft: #faf6ea;
+      --dx: 0px;
+      --choice: var(--card);
+      --submit-idle-bg: var(--surface-1);
+      --easy: #2f9e64;
       }
+
       * {
         box-sizing: border-box;
       }
@@ -102,13 +74,17 @@
         position: absolute;
         border-radius: 50%;
         filter: blur(70px);
-        opacity: 0.55;
+        opacity: var(--event-glow-opacity);
         animation: drift 22s ease-in-out infinite alternate;
       }
       .bg-glow span:nth-child(1) {
         width: 420px;
         height: 420px;
-        background: radial-gradient(circle, #f5c451, transparent 70%);
+        background: radial-gradient(
+          circle,
+          var(--event-glow-1),
+          transparent 70%
+        );
         top: -120px;
         left: -100px;
         animation-duration: 26s;
@@ -116,7 +92,11 @@
       .bg-glow span:nth-child(2) {
         width: 360px;
         height: 360px;
-        background: radial-gradient(circle, #b98b2c, transparent 70%);
+        background: radial-gradient(
+          circle,
+          var(--event-glow-2),
+          transparent 70%
+        );
         bottom: -100px;
         right: -80px;
         animation-duration: 30s;
@@ -125,7 +105,11 @@
       .bg-glow span:nth-child(3) {
         width: 300px;
         height: 300px;
-        background: radial-gradient(circle, #6b5320, transparent 70%);
+        background: radial-gradient(
+          circle,
+          var(--event-glow-3),
+          transparent 70%
+        );
         top: 35%;
         right: 10%;
         animation-duration: 20s;
@@ -134,7 +118,11 @@
       .bg-glow span:nth-child(4) {
         width: 260px;
         height: 260px;
-        background: radial-gradient(circle, #8a6d1d, transparent 72%);
+        background: radial-gradient(
+          circle,
+          var(--event-glow-4),
+          transparent 72%
+        );
         bottom: 15%;
         left: 5%;
         animation-duration: 24s;
@@ -156,7 +144,6 @@
         position: relative;
         overflow-x: hidden;
         color: var(--ink);
-        font-family: "Inter", system-ui, sans-serif;
         min-height: 100vh;
         display: flex;
         justify-content: center;
@@ -183,7 +170,7 @@
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        background: var(--surface);
+        background: var(--card);
         border: 1px solid var(--card-border);
         display: flex;
         align-items: center;
@@ -203,7 +190,7 @@
       .mode-switch {
         display: flex;
         gap: 6px;
-        background: var(--surface);
+        background: var(--card);
         border: 1px solid var(--card-border);
         border-radius: 999px;
         padding: 4px;
@@ -212,7 +199,6 @@
         border: none;
         background: transparent;
         color: var(--ink-dim);
-        font-family: "Sora", sans-serif;
         font-weight: 600;
         font-size: 12.5px;
         letter-spacing: 0.02em;
@@ -233,7 +219,7 @@
         box-shadow: 0 0 16px rgba(242, 194, 101, 0.5);
       }
       .mode-btn[data-mode="hard"].active {
-        background: var(--hard);
+        background: var(--red);
         box-shadow: 0 0 16px rgba(242, 104, 95, 0.55);
       }
 
@@ -247,7 +233,7 @@
       .card {
         background: linear-gradient(
           180deg,
-          var(--surface) 0%,
+          var(--card) 0%,
           var(--surface-soft) 100%
         );
         border: 1.5px solid rgba(201, 154, 46, 0.32);
@@ -368,7 +354,6 @@
         align-items: center;
         gap: 7px;
         color: var(--ink-dim);
-        font-family: "Sora", sans-serif;
         font-weight: 700;
         font-size: 12.5px;
         letter-spacing: 0.03em;
@@ -382,7 +367,6 @@
         font-size: 15px;
       }
       .xp {
-        font-family: "Sora", sans-serif;
         font-weight: 800;
         font-size: 15px;
         text-align: right;
@@ -406,7 +390,7 @@
         color: var(--medium);
       }
       .xp.hard {
-        color: var(--hard);
+        color: var(--red);
       }
 
       .event-text {
@@ -416,7 +400,7 @@
         color: var(--ink);
       }
       .event-text .mention {
-        color: var(--tag);
+        color: var(--gold);
         font-weight: 600;
       }
       .event-edit-area {
@@ -425,7 +409,6 @@
         border: 1px solid var(--card-border);
         border-radius: 12px;
         color: var(--ink);
-        font-family: "Inter", sans-serif;
         font-size: 16px;
         line-height: 1.5;
         padding: 12px;
@@ -443,10 +426,9 @@
         display: flex;
         align-items: center;
         gap: 7px;
-        background: var(--surface);
+        background: var(--card);
         border: 1px solid var(--card-border);
         color: var(--ink-dim);
-        font-family: "Sora", sans-serif;
         font-weight: 600;
         font-size: 13.5px;
         padding: 9px 14px;
@@ -468,7 +450,7 @@
         width: 38px;
         height: 38px;
         border-radius: 50%;
-        background: var(--surface);
+        background: var(--card);
         border: 1px solid var(--card-border);
         display: flex;
         align-items: center;
@@ -491,9 +473,8 @@
         width: 100%;
         text-align: left;
         background: var(--choice);
-        border: 1.5px solid var(--choice-border);
+        border: 1.5px solid var(--border);
         color: var(--ink);
-        font-family: "Inter", sans-serif;
         font-size: 15.5px;
         line-height: 1.45;
         padding: 15px 18px 13px;
@@ -506,11 +487,11 @@
           transform 0.1s ease;
       }
       .choice:hover {
-        background: var(--choice-hover);
+        background: var(--surface-hover);
         transform: translateY(-1px);
       }
       .choice.selected {
-        background: var(--choice-selected);
+        background: var(--gold-dim);
         border-color: var(--gold);
         box-shadow:
           0 0 0 1px rgba(201, 154, 46, 0.3),
@@ -523,7 +504,6 @@
         margin-top: 9px;
       }
       .risk-badge {
-        font-family: "Sora", sans-serif;
         font-weight: 700;
         font-size: 10.5px;
         letter-spacing: 0.04em;
@@ -533,29 +513,27 @@
       }
       .risk-badge.safe {
         color: #0f2418;
-        background: var(--risk-safe);
+        background: var(--easy);
         box-shadow: 0 0 10px rgba(111, 207, 151, 0.35);
       }
       .risk-badge.bold {
         color: #2b2005;
-        background: var(--risk-bold);
+        background: var(--medium);
         box-shadow: 0 0 10px rgba(242, 194, 101, 0.35);
       }
       .risk-badge.wild {
         color: #2b0d0a;
-        background: var(--risk-wild);
+        background: var(--red);
         box-shadow: 0 0 10px rgba(242, 104, 95, 0.4);
       }
       .risk-range {
         font-size: 11.5px;
         color: var(--muted);
-        font-family: "Sora", sans-serif;
       }
 
       .write-own {
         text-align: center;
-        color: var(--accent-warm);
-        font-family: "Sora", sans-serif;
+        color: var(--gold);
         font-weight: 600;
         font-size: 15px;
         padding: 8px 0 4px;
@@ -565,10 +543,9 @@
         width: 100%;
         margin-top: 10px;
         background: var(--surface-soft);
-        border: 1px solid var(--choice-border);
+        border: 1px solid var(--border);
         border-radius: 14px;
         color: var(--ink);
-        font-family: "Inter", sans-serif;
         font-size: 15.5px;
         padding: 14px;
         min-height: 90px;
@@ -582,13 +559,12 @@
       }
       .submit-btn {
         background: var(--submit-idle-bg);
-        color: var(--submit-idle-ink);
-        font-family: "Sora", sans-serif;
+        color: var(--ink-faint);
         font-weight: 700;
         font-size: 15px;
         padding: 13px 30px;
         border-radius: 999px;
-        border: none;
+        border: 1px solid var(--submit-border);
         cursor: not-allowed;
         transition:
           background 0.2s ease,
@@ -598,6 +574,7 @@
       .submit-btn.ready {
         background: var(--gold);
         color: #1a1408;
+        border-color: var(--submit-border);
         cursor: pointer;
         animation: readyPulse 2.2s ease-in-out infinite;
       }
@@ -616,7 +593,6 @@
 
       .toast {
         text-align: center;
-        font-family: "Sora", sans-serif;
         font-weight: 700;
         font-size: 15px;
         margin-top: 14px;
@@ -627,10 +603,10 @@
         opacity: 1;
       }
       .toast.gain {
-        color: var(--gain);
+        color: var(--easy);
       }
       .toast.loss {
-        color: var(--loss);
+        color: var(--red);
       }
 
       .choice.disabled {
@@ -639,7 +615,7 @@
       }
       .submit-btn.locked {
         background: var(--submit-idle-bg);
-        color: var(--submit-idle-ink);
+        color: var(--ink-faint);
         cursor: not-allowed;
       }
       .write-own.disabled {
@@ -670,7 +646,7 @@
         position: relative;
         background: linear-gradient(
           165deg,
-          var(--surface) 0%,
+          var(--card) 0%,
           var(--surface-soft) 60%,
           var(--surface-soft) 100%
         );
@@ -796,7 +772,7 @@
           rgba(111, 207, 151, 0.22),
           transparent 70%
         );
-        color: var(--gain);
+        color: var(--easy);
       }
       .modal-icon.loss {
         background: radial-gradient(
@@ -804,20 +780,18 @@
           rgba(242, 104, 95, 0.22),
           transparent 70%
         );
-        color: var(--loss);
+        color: var(--red);
       }
       .modal-label {
         text-transform: uppercase;
         letter-spacing: 0.08em;
         font-size: 11.5px;
         color: var(--ink-dim);
-        font-family: "Sora", sans-serif;
         font-weight: 700;
         position: relative;
         z-index: 1;
       }
       .modal-xp {
-        font-family: "Sora", sans-serif;
         font-weight: 800;
         font-size: 44px;
         margin: 2px 0 4px;
@@ -825,10 +799,10 @@
         z-index: 1;
       }
       .modal-xp.gain {
-        color: var(--gain);
+        color: var(--easy);
       }
       .modal-xp.loss {
-        color: var(--loss);
+        color: var(--red);
       }
       .modal-outcome {
         font-size: 15.5px;
@@ -844,7 +818,6 @@
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--ink-dim);
-        font-family: "Sora", sans-serif;
         font-weight: 700;
         margin-bottom: 7px;
         position: relative;
@@ -869,7 +842,6 @@
         background: linear-gradient(135deg, #e0b84e, var(--gold));
         color: #1a1408;
         border: none;
-        font-family: "Sora", sans-serif;
         font-weight: 800;
         font-size: 15px;
         padding: 14px;
@@ -892,7 +864,7 @@
       }
     </style>
   </head>
-  <body>
+  <body class="page-maximal">
     <div class="bg-glow">
       <span></span><span></span><span></span><span></span>
     </div>

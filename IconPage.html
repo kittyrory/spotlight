@@ -4,10 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Spotlight | Profile</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
 <script>
   // apply saved theme immediately to avoid a flash of the wrong theme.
   (function () {
@@ -22,68 +18,37 @@
   // script (including the css-transition-triggering ones) gets a chance to run.
   // the real network fetch still happens later to keep this fresh.
   window.__cachedProfile = null;
-  (function () {
-    try {
-      var cached = localStorage.getItem('spotlight-profile');
-      if (cached) window.__cachedProfile = JSON.parse(cached);
-    } catch (e) {}
-  })();
 </script>
 
-<style>
-  :root,
-  [data-theme="dark"]{
-    --bg: #0a0a0d;
-    --bg-glow: #131318;
-    --card: #17181c;
-    --card-border: #2a2620;
-    --surface-1: #1c1d21;
-    --surface-2: #151316;
-    --surface-grad-1: #17181c;
-    --surface-grad-2: #131317;
-    --stat-bg: rgba(255,255,255,.03);
-    --ink: #f2f1ee;
-    --ink-dim: #a6a5ab;
-    --ink-faint: #78757c;
-    --gold: #f5c451;
-    --gold-light: #e0b84e;
-    --gold-deep: #c99a2e;
-    --gold-glow: rgba(245,196,81,.18);
-    --easy: #6fcf97;
-    --hard: #f2685f;
-    --verified: #4fa8dd;
-    --track: #2a2a2f;
-    --fame-grad-1: #1c1a13;
-    --fame-grad-2: #19170f;
-    --fame-grad-3: #16140d;
-    --fame-edge: #17140d;
-  }
-  [data-theme="light"]{
-    --bg: #eceaea;
-    --bg-glow: #ffffff;
-    --card: #ffffff;
-    --card-border: rgba(0,0,0,0.1);
-    --surface-1: #f2f0ec;
-    --surface-2: #efece6;
-    --surface-grad-1: #ffffff;
-    --surface-grad-2: #f6f4f0;
-    --stat-bg: rgba(0,0,0,.03);
-    --ink: #1e1e1e;
-    --ink-dim: rgba(0,0,0,.55);
-    --ink-faint: rgba(0,0,0,.4);
-    --gold: #9d8420;
-    --gold-light: #b89a30;
-    --gold-deep: #7a6418;
-    --gold-glow: rgba(157,132,32,.14);
-    --easy: #6fcf97;
-    --hard: #f2685f;
-    --verified: #4fa8dd;
-    --track: #e0ddd3;
-    --fame-grad-1: #fffaf0;
-    --fame-grad-2: #fbf2dc;
-    --fame-grad-3: #f5e9c8;
-    --fame-edge: #fbf2dc;
-  }
+<script src="scripts/profile-cache.js"></script>
+<script>
+  window.__cachedProfile = window.SpotlightProfileCache.read();
+</script>
+
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root, [data-theme="dark"] {
+      --track: #2a2a2f;
+      --stat-bg: rgba(255, 255, 255, 0.03);
+      --verified: #4fa8dd;
+      --surface-2: #151316;
+      --profile-glow-1: #f5c451;
+      --profile-glow-2: #b98b2c;
+      --profile-glow-3: #6b5320;
+      --profile-glow-opacity: 0.28;
+      }
+
+      [data-theme="light"] {
+      --track: #e0ddd3;
+      --stat-bg: rgba(0, 0, 0, 0.03);
+      --verified: #4fa8dd;
+      --surface-2: #efece6;
+      --profile-glow-1: rgba(245, 196, 81, 0.38);
+      --profile-glow-2: rgba(224, 184, 78, 0.26);
+      --profile-glow-3: rgba(201, 154, 46, 0.18);
+      --profile-glow-opacity: 0.42;
+      }
+
   *{ box-sizing:border-box; }
   html,body{ margin:0; padding:0; }
 
@@ -93,12 +58,12 @@
   }
   .bg-glow span{
     position:absolute; border-radius:50%;
-    filter: blur(80px); opacity:.28;
+    filter: blur(80px); opacity:var(--profile-glow-opacity);
     animation: drift 26s ease-in-out infinite alternate;
   }
-  .bg-glow span:nth-child(1){ width:420px; height:420px; background: radial-gradient(circle, #f5c451, transparent 70%); top:-140px; left:-100px; animation-duration:29s; }
-  .bg-glow span:nth-child(2){ width:360px; height:360px; background: radial-gradient(circle, #b98b2c, transparent 70%); bottom:-100px; right:-80px; animation-duration:33s; animation-delay:-6s; }
-  .bg-glow span:nth-child(3){ width:300px; height:300px; background: radial-gradient(circle, #6b5320, transparent 70%); top:35%; right:8%; animation-duration:23s; animation-delay:-3s; }
+  .bg-glow span:nth-child(1){ width:420px; height:420px; background: radial-gradient(circle, var(--profile-glow-1), transparent 70%); top:-140px; left:-100px; animation-duration:29s; }
+  .bg-glow span:nth-child(2){ width:360px; height:360px; background: radial-gradient(circle, var(--profile-glow-2), transparent 70%); bottom:-100px; right:-80px; animation-duration:33s; animation-delay:-6s; }
+  .bg-glow span:nth-child(3){ width:300px; height:300px; background: radial-gradient(circle, var(--profile-glow-3), transparent 70%); top:35%; right:8%; animation-duration:23s; animation-delay:-3s; }
   @keyframes drift{
     0%{ transform: translate(0,0) scale(1); }
     50%{ transform: translate(30px,-25px) scale(1.12); }
@@ -109,8 +74,7 @@
     background: radial-gradient(ellipse at top, var(--bg-glow) 0%, var(--bg) 55%);
     position:relative; overflow-x:hidden;
     color: var(--ink);
-    font-family:'Urbanist', system-ui, sans-serif;
-    min-height:100vh;
+min-height:100vh;
     display:flex; justify-content:center;
     padding: 20px 0 90px;
   }
@@ -202,7 +166,7 @@
     text-align:center;
   }
   .tier-chip, .level-chip{
-    font-family:'Urbanist',sans-serif; font-weight:700; font-size:11px;
+font-weight:700; font-size:11px;
     letter-spacing:.05em; text-transform:uppercase;
     padding:6px 11px; border-radius:999px;
   }
@@ -225,20 +189,20 @@
   .ring-pct{
     position:absolute; bottom:-2px; right:-4px;
     background: var(--gold-deep); color:#1a1408;
-    font-family:'Urbanist',sans-serif; font-weight:700; font-size:10px;
+font-weight:700; font-size:10px;
     padding:2px 6px; border-radius:999px; border:2px solid var(--fame-edge);
   }
 
   .fame-id{ margin-top:12px; }
   .fame-name-row{ display:flex; align-items:center; justify-content:center; gap:5px; }
-  .fame-name{ font-family:'Urbanist',sans-serif; font-weight:800; font-size:19px; }
+  .fame-name{ font-weight:800; font-size:19px; }
   .verified{ width:16px; height:16px; color:var(--verified); flex-shrink:0; }
   .fame-handle{ color:var(--ink-faint); font-size:13.5px; margin-top:2px; }
   .fame-edit-btn{
     margin-top:12px;
     display:inline-flex; align-items:center; gap:5px;
     background:transparent; border:1.5px solid rgba(245,196,81,.4);
-    color:var(--gold); font-family:'Urbanist',sans-serif; font-weight:700;
+    color:var(--gold); font-weight:700;
     font-size:11.5px; padding:7px 14px; border-radius:999px; cursor:pointer;
   }
   .fame-edit-btn:hover{ background: var(--gold-glow); }
@@ -258,7 +222,7 @@
     padding:10px 6px; text-align:center;
   }
   .fame-stat b{
-    display:block; font-family:'Urbanist',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
+    display:block; font-weight:800; font-size:15px; color:var(--ink);
   }
   .fame-stat span{ font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
 
@@ -270,7 +234,7 @@
   }
   .tab-btn{
     flex:1; border:none; background:transparent;
-    font-family:'Urbanist',sans-serif; font-weight:700; font-size:13.5px;
+font-weight:700; font-size:13.5px;
     color: var(--ink-faint); padding:10px 0; border-radius:999px; cursor:pointer;
     transition: background .2s ease, color .2s ease;
   }
@@ -293,9 +257,9 @@
   .gauge-wrap{ position:relative; width:78px; height:78px; margin:0 auto; }
   .gauge-value{
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    font-family:'Urbanist',sans-serif; font-weight:800; font-size:15px; color:var(--ink);
+font-weight:800; font-size:15px; color:var(--ink);
   }
-  .gauge-label{ margin-top:10px; font-family:'Urbanist',sans-serif; font-weight:700; font-size:12.5px; color:var(--ink); }
+  .gauge-label{ margin-top:10px; font-weight:700; font-size:12.5px; color:var(--ink); }
   .gauge-delta{ font-size:11px; margin-top:2px; font-weight:600; }
   .gauge-caption{ font-size:11.5px; color:var(--ink-faint); margin-top:6px; line-height:1.4; }
 
@@ -319,15 +283,15 @@
   .circle-avatar{
     width:38px; height:38px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    font-family:'Urbanist',sans-serif; font-weight:800; font-size:12.5px; color:#0e0e11;
+font-weight:800; font-size:12.5px; color:#0e0e11;
     flex-shrink:0;
   }
-  .circle-name{ font-family:'Urbanist',sans-serif; font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); }
+  .circle-name{ font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); }
   .circle-handle{ font-size:11px; color:var(--ink-faint); }
   .circle-meter{ margin-top:12px; display:flex; align-items:center; gap:8px; }
   .circle-track{ flex:1; height:6px; background:var(--track); border-radius:999px; overflow:hidden; position:relative; }
   .circle-fill{ height:100%; border-radius:999px; transition: width 1s cubic-bezier(.3,.8,.3,1), background-color .3s ease; }
-  .circle-pct{ font-family:'Urbanist',sans-serif; font-weight:700; font-size:11.5px; white-space:nowrap; transition: color .3s ease; }
+  .circle-pct{ font-weight:700; font-size:11.5px; white-space:nowrap; transition: color .3s ease; }
   .circle-caption{ margin-top:9px; font-size:11px; line-height:1.45; color:var(--ink-dim); }
   .circle-caption b{ font-weight:700; }
 
@@ -367,10 +331,9 @@
     .bottomTab{ gap:8px; }
     .bottomTab a{ padding:6px 8px; font-size:14px; }
   }
-
-</style>
+    </style>
 </head>
-<body>
+<body class="page-maximal">
 <div class="bg-glow"><span></span><span></span><span></span></div>
 <div class="phone">
 
@@ -498,29 +461,36 @@
   }
 
   async function loadIconProfile() {
-    // 1. Check local cache first
-    const localData = localStorage.getItem('savedProfile');
-    if (localData) {
+    // 1. Paint the shared cache first, but continue to Supabase so it can
+    // refresh stale data for the next page.
+    const cachedProfile = window.SpotlightProfileCache.read();
+    if (cachedProfile) {
+      applyProfileToDOM(cachedProfile);
+    } else {
+      // Keep legacy editor data as a fallback for older sessions.
+      const localData = localStorage.getItem('savedProfile');
       try {
-        const parsedLocal = JSON.parse(localData);
-        const mockProfile = {
-          display_name: parsedLocal.name,
-          handle: parsedLocal.handle,
-          bio: parsedLocal.bio,
-          avatar_url: localStorage.getItem('savedAvatar') || null,
-          header_url: localStorage.getItem('savedBanner') || null,
-        };
-        applyProfileToDOM(mockProfile);
-        return;
-      } catch (e) {
-        console.warn('Could not parse cached profile:', e);
+        if (localData) {
+          const parsedLocal = JSON.parse(localData);
+          applyProfileToDOM({
+            display_name: parsedLocal.name,
+            handle: parsedLocal.handle,
+            bio: parsedLocal.bio,
+            avatar_url: localStorage.getItem('savedAvatar') || null,
+            header_url: localStorage.getItem('savedBanner') || null,
+          });
+        }
+      } catch (error) {
+        console.warn('Could not parse legacy cached profile:', error);
       }
     }
 
     // 2. Fetch from Supabase
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     if (userError || !user) {
-      console.error('No signed-in user:', userError);
+      if (userError?.name !== 'AuthSessionMissingError') {
+        console.error('Could not identify signed-in user:', userError);
+      }
       return;
     }
 
@@ -553,9 +523,7 @@
           delete newProfile.id;
           currentProfile = newProfile;
           applyProfileToDOM(newProfile);
-          try {
-            localStorage.setItem('spotlight-profile', JSON.stringify(newProfile));
-          } catch (e) {}
+          window.SpotlightProfileCache.write(newProfile);
           return;
         }
       }
@@ -567,9 +535,7 @@
     // 4. Profile loaded successfully
     currentProfile = profile;
     applyProfileToDOM(profile);
-    try {
-      localStorage.setItem('spotlight-profile', JSON.stringify(profile));
-    } catch (e) {}
+    window.SpotlightProfileCache.write(profile);
   }
 
   // Load the profile when the page loads
@@ -788,13 +754,13 @@
       return;
     }
     currentProfile = updated;
-    try { localStorage.setItem('spotlight-profile', JSON.stringify(updated)); } catch (e) {}
+    window.SpotlightProfileCache.write(updated);
   });
 
   /* ---------- Link to editIconPage ---------- */
   editProfileBtn.addEventListener('click', () => {
   sessionStorage.setItem('spotlight-last-page', window.location.href);
-  window.location.href = 'EditIconPage.html'; 
+  window.location.href = 'EditIconPage.html';
 });
 
 </script>

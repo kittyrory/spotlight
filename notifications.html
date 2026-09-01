@@ -3,12 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
     <title>Spotlight | Notifications</title>
 
     <script>
@@ -22,30 +16,14 @@
       })();
     </script>
 
+    <link rel="stylesheet" href="style.css" />
     <style>
-      :root,
-      [data-theme="dark"] {
-        --bg: #0e0e0e;
-        --card-bg: #0b0b0b;
-        --divider: #232327;
-        --text-primary: #f5f5f7;
-        --text-secondary: #8899a6;
-        --accent-blue: #1d9bf0;
-        --bell-bg: #1e2732;
-        --gold: #ffd166;
-        --tag-blue: #76c4ff;
+      :root, [data-theme="dark"] {
+      --bell-bg: #1e2732;
       }
 
       [data-theme="light"] {
-        --bg: #f4f3f1;
-        --card-bg: #ffffff;
-        --divider: #e5e3dd;
-        --text-primary: #1e1e1e;
-        --text-secondary: #6b7580;
-        --accent-blue: #1d9bf0;
-        --bell-bg: #eaf1f9;
-        --gold: #ffd166;
-        --tag-blue: #1478c8;
+      --bell-bg: #f0ece2;
       }
 
       * {
@@ -55,9 +33,7 @@
       body {
         margin: 0;
         background: var(--bg);
-        font-family:
-          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        color: var(--text-primary);
+        color: var(--ink);
         display: flex;
         justify-content: center;
         align-items: flex-start;
@@ -78,9 +54,6 @@
         padding: 24px 20px;
         text-align: center;
         border-bottom: 1px solid var(--divider);
-        font-family:
-          "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
-          Arial, sans-serif;
       }
 
       .header h1 {
@@ -124,10 +97,9 @@
       .names,
       .activity-text {
         font-size: 14px;
-        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
         line-height: 1.4;
         margin: 0 0 6px 0;
-        color: var(--text-primary);
+        color: var(--ink);
         font-weight: 400;
       }
 
@@ -138,7 +110,7 @@
 
       .original-post {
         font-size: 14px;
-        color: var(--text-secondary);
+        color: var(--ink-dim);
         font-style: italic;
         margin: 8px 0 0 0;
         line-height: 1.4;
@@ -148,7 +120,7 @@
 
       .reply {
         font-size: 15px;
-        color: var(--text-primary);
+        color: var(--ink);
         margin: 0;
         line-height: 1.5;
         display: block;
@@ -156,24 +128,20 @@
 
       .handle {
         font-weight: 800;
-        color: var(--text-primary);
+        color: var(--ink);
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        font-family:
-          "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande", "Lucida Sans",
-          Arial, sans-serif;
       }
 
       .mention {
-        color: var(--text-primary);
+        color: var(--ink);
         text-decoration: none;
       }
 
       .tag {
-        color: var(--tag-blue);
+        color: var(--gold);
         font-weight: 700;
-        font-family: Cambria, Cochin, Georgia, Times, "Times New Roman", serif;
       }
 
       .verified-badge {
@@ -246,7 +214,7 @@
         padding: 6px 14px;
         border: 1px solid transparent;
         border-radius: 10px;
-        color: var(--text-primary);
+        color: var(--ink);
         font:
           bold 16px "Urbanist",
           Arial,
@@ -274,9 +242,55 @@
           font-size: 14px;
         }
       }
+
+      /* full-screen cover while notifications are loading. skipped
+      entirely when we already have a cached list to show. */
+      .pageLoader {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        background-color: var(--bg);
+        transition: opacity 0.35s ease;
+      }
+
+      .pageLoader.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .pageLoaderSpinner {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 3px solid var(--divider);
+        border-top-color: var(--gold);
+        animation: pageLoaderSpin 0.8s linear infinite;
+      }
+
+      @keyframes pageLoaderSpin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .pageLoaderText {
+        font-size: 13px;
+        color: var(--ink-dim);
+        letter-spacing: 0.04em;
+      }
     </style>
   </head>
-  <body>
+  <body class="page-maximal">
+    <div class="pageLoader" id="pageLoader">
+      <div class="pageLoaderSpinner"></div>
+      <div class="pageLoaderText">Loading...</div>
+    </div>
+
     <div class="phone">
       <header class="header">
         <h1>Notifications</h1>
@@ -291,7 +305,7 @@
         style="
           display: none;
           text-align: center;
-          color: var(--text-secondary);
+          color: var(--ink-dim);
           padding: 40px 20px;
         "
       >
@@ -311,6 +325,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
+    <script src="scripts/profile-cache.js"></script>
+    <script src="scripts/post-cache.js"></script>
     <script>
       const BELL_ICON_SVG = `
         <svg width="24" height="24" viewBox="-0.5 0 56 56" xmlns="http://www.w3.org/2000/svg">
@@ -382,6 +398,20 @@
         return container;
       }
 
+      function renderNotificationsList(notifications, botProfileById) {
+        const listEl = document.querySelector(".notifications-list");
+        const emptyEl = document.querySelector(".empty-state");
+        listEl.innerHTML = "";
+        if (!notifications.length) {
+          emptyEl.style.display = "block";
+          return;
+        }
+        emptyEl.style.display = "none";
+        notifications.forEach((n) =>
+          listEl.appendChild(renderNotification(n, botProfileById)),
+        );
+      }
+
       async function markAllRead(ids) {
         if (!ids.length) return;
         const { error } = await supabaseClient
@@ -391,50 +421,153 @@
         if (error) console.error("Could not mark notifications read:", error);
       }
 
-      async function loadNotifications() {
-        const {
-          data: { user: currentUser },
-        } = await supabaseClient.auth.getUser();
-        if (!currentUser) return;
+      // re-check for new notifications at most this often. if the cache is
+      // younger than this, skip even the cheap query below and trust it.
+      const NOTIFICATIONS_STALE_CHECK_TTL_MS = 10 * 1000;
 
-        const { data: notifications, error } = await supabaseClient
+      // cheap check: is the newest notification on the server the same one
+      // we have cached? a single indexed row, not the full notifications +
+      // bot-profiles fetch.
+      async function notificationsHaveNewActivity(currentUser, cachedNotifications) {
+        const { data: latest, error } = await supabaseClient
           .from("notifications")
-          .select(
-            "id, type, post_id, reply_id, actor_bot_id, preview, read, created_at",
-          )
+          .select("id, created_at")
           .eq("user_id", currentUser.id)
           .order("created_at", { ascending: false })
-          .limit(50);
+          .limit(1)
+          .maybeSingle();
+
         if (error) {
-          console.error("Could not load notifications:", error);
-          return;
+          console.error(
+            "Could not check notifications for new activity, falling back to full fetch:",
+            error,
+          );
+          return true; // don't know, so err on the side of refetching
         }
 
-        const listEl = document.querySelector(".notifications-list");
-        const emptyEl = document.querySelector(".empty-state");
-        if (!notifications?.length) {
-          emptyEl.style.display = "block";
-          return;
-        }
+        const newestCached = cachedNotifications[0];
+        if (!latest && !newestCached) return false;
+        if (!latest || !newestCached) return true;
+        return !(
+          latest.id === newestCached.id &&
+          latest.created_at === newestCached.created_at
+        );
+      }
 
-        const botIds = [
-          ...new Set(notifications.map((n) => n.actor_bot_id).filter(Boolean)),
-        ];
-        let botProfileById = new Map();
-        if (botIds.length) {
-          const { data: botProfiles, error: botError } = await supabaseClient
-            .from("bot_profiles")
-            .select("id, display_name, handle, avatar_url")
-            .in("id", botIds);
-          if (botError) console.error("Could not load bot profiles:", botError);
-          botProfileById = new Map((botProfiles || []).map((b) => [b.id, b]));
-        }
-
-        notifications.forEach((n) =>
-          listEl.appendChild(renderNotification(n, botProfileById)),
+      async function loadNotifications() {
+        const pageLoader = document.getElementById("pageLoader");
+        const cachedProfileId =
+          (window.__cachedProfile || window.SpotlightProfileCache?.read?.())?.id;
+        const cached = cachedProfileId
+          ? window.SpotlightPostCache?.readNotifications(cachedProfileId)
+          : null;
+        console.log(
+          "[notifications] cachedProfileId:",
+          cachedProfileId,
+          "found cache:",
+          !!cached,
         );
 
-        markAllRead(notifications.filter((n) => !n.read).map((n) => n.id));
+        if (cached) {
+          renderNotificationsList(
+            cached.notifications,
+            new Map((cached.botProfiles || []).map((b) => [b.id, b])),
+          );
+          pageLoader?.classList.add("hidden");
+
+          const cacheAgeMs = Date.now() - (cached.cachedAt || 0);
+          console.log(
+            "[notifications] cache age ms:",
+            cacheAgeMs,
+            "cachedAt:",
+            cached.cachedAt,
+          );
+          const isRecent = cacheAgeMs < NOTIFICATIONS_STALE_CHECK_TTL_MS;
+          if (isRecent) {
+            console.log("[notifications] trust-cache path: 0 network calls");
+            return;
+          }
+        }
+
+        try {
+          const { user: currentUser } = await window.SpotlightProfileCache.load(
+            supabaseClient,
+          ).catch(async (error) => {
+            console.error("Could not preload profile:", error);
+            const {
+              data: { user },
+            } = await supabaseClient.auth.getUser();
+            return { user };
+          });
+          if (!currentUser) return;
+
+          if (cached) {
+            const hasNew = await notificationsHaveNewActivity(
+              currentUser,
+              cached.notifications,
+            );
+            if (!hasNew) {
+              console.log("[notifications] freshness check ran, nothing new: skipped full fetch");
+              return;
+            }
+          }
+
+          console.log("[notifications] doing full fetch");
+          console.log("[notifications] if cache is newer than 10s & new content wasnt added, this is a bug!");
+          const { data: notifications, error } = await supabaseClient
+            .from("notifications")
+            .select(
+              "id, type, post_id, reply_id, actor_bot_id, preview, read, created_at",
+            )
+            .eq("user_id", currentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(50);
+          if (error) {
+            console.error("Could not load notifications:", error);
+            return;
+          }
+
+          const botIds = [
+            ...new Set(notifications.map((n) => n.actor_bot_id).filter(Boolean)),
+          ];
+          let botProfiles = [];
+          if (botIds.length) {
+            const { data, error: botError } = await supabaseClient
+              .from("bot_profiles")
+              .select("id, display_name, handle, avatar_url")
+              .in("id", botIds);
+            if (botError) console.error("Could not load bot profiles:", botError);
+            botProfiles = data || [];
+          }
+          const botProfileById = new Map(botProfiles.map((b) => [b.id, b]));
+
+          renderNotificationsList(notifications, botProfileById);
+
+          const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id);
+          markAllRead(unreadIds);
+
+          // reflect the mark-as-read locally too, so a future cache-only
+          // render doesn't think these are still unread
+          const unreadSet = new Set(unreadIds);
+          const notificationsForCache = notifications.map((n) =>
+            unreadSet.has(n.id) ? { ...n, read: true } : n,
+          );
+          window.SpotlightPostCache?.writeNotifications(
+            currentUser.id,
+            notificationsForCache,
+            botProfiles,
+          );
+          console.log(
+            "[notifications] wrote cache at",
+            Date.now(),
+            "for user",
+            currentUser.id,
+          );
+        } catch (error) {
+          console.error("Could not finish loading notifications:", error);
+        } finally {
+          pageLoader?.classList.add("hidden");
+        }
       }
 
       loadNotifications();

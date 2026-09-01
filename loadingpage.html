@@ -5,17 +5,6 @@
     <title>Loading...</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- font links -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,300;1,700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
-
     <script>
       // apply saved theme immediately to avoid a flash of the wrong theme.
       (function () {
@@ -24,485 +13,475 @@
       })();
     </script>
 
+    <link rel="stylesheet" href="style.css" />
     <style>
-      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap");
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
-      :root,
-      [data-theme="dark"] {
-        --paper: #000000;
-        --ink: #f4efe4;
-        --gold-dark: #d1a53a;
-        --gold: #e8b23f;
-        --gold-bright: #ffcf4d;
-        --gold-glow: #e0a83c;
-        --dust: #ffd873;
-        --track-bg: rgba(255, 255, 255, 0.08);
-        --track-inset: rgba(232, 178, 63, 0.35);
-        --status-text: rgba(244, 239, 228, 0.72);
-        --tip-color: rgba(244, 239, 228, 0.68);
+      :root, [data-theme="dark"] {
+      --gold-dark: #7a6418;
+      --peak-op: 1;
+      --dust: var(--gold);
+      --paper: var(--bg);
+      --loading-ticker: rgba(242, 241, 238, 0.55);
+      --loading-ticker-tag: var(--gold);
+      --loading-percent: var(--gold);
+      --loading-keyword: var(--gold);
+      --loading-button: var(--gold);
       }
 
       [data-theme="light"] {
-        --paper: #ffffff;
-        --ink: #17130a;
-        --gold-dark: #a3760f;
-        --gold: #c8901c;
-        --gold-bright: #e8a622;
-        --gold-glow: #b8860b;
-        --dust: #d6a12f;
-        --track-bg: rgba(23, 19, 10, 0.07);
-        --track-inset: rgba(184, 134, 11, 0.3);
-        --status-text: rgba(23, 19, 10, 0.72);
-        --tip-color: rgba(23, 19, 10, 0.68);
+      --gold-dark: #7a6418;
+      --peak-op: 1;
+      --dust: var(--gold-light);
+      --paper: #ffffff;
+      --loading-ticker: rgba(30, 30, 30, 0.55);
+      --loading-ticker-tag: var(--gold-deep);
+      --loading-percent: var(--gold-deep);
+      --loading-keyword: var(--gold-deep);
+      --loading-button: var(--gold-deep);
       }
 
-      html,
-      body {
-        width: 100%;
-        height: 100%;
-        background: var(--paper);
-        overflow: hidden;
-        font-family: "DM Mono", monospace;
-        transition: background-color 0.25s ease;
-      }
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
 
-      .screen {
-        position: relative;
-        width: 100vw;
-        height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        background: var(--paper);
-        transition: background-color 0.25s ease;
-      }
+            html,
+            body {
+              width: 100%;
+              height: 100%;
+              background: var(--paper);
+              overflow: hidden;
+      transition: background-color 0.25s ease;
+            }
 
-      /* ---------- STAGE GLOW (spotlight over the content, not the whole screen) ---------- */
-      .stage-glow {
-        position: absolute;
-        top: 6%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 720px;
-        height: 620px;
-        background: radial-gradient(
-          ellipse 320px 480px at 50% 20%,
-          rgba(200, 144, 20, 0.08) 0%,
-          rgba(200, 144, 20, 0.035) 40%,
-          transparent 72%
-        );
-        filter: blur(10px);
-        pointer-events: none;
-        z-index: 1;
-        animation: glowBreathe 6s ease-in-out infinite;
-      }
+            .screen {
+              position: relative;
+              width: 100vw;
+              height: 100vh;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              flex-direction: column;
+              background: var(--paper);
+              transition: background-color 0.25s ease;
+            }
 
-      @keyframes glowBreathe {
-        0%,
-        100% {
-          opacity: 0.7;
-        }
-        50% {
-          opacity: 1;
-        }
-      }
+            /* ---------- STAGE GLOW (spotlight over the content, not the whole screen) ---------- */
+            .stage-glow {
+              position: absolute;
+              top: 6%;
+              left: 50%;
+              transform: translateX(-50%);
+              width: 720px;
+              height: 620px;
+              background: radial-gradient(
+                ellipse 320px 480px at 50% 20%,
+                rgba(200, 144, 20, 0.08) 0%,
+                rgba(200, 144, 20, 0.035) 40%,
+                transparent 72%
+              );
+              filter: blur(10px);
+              pointer-events: none;
+              z-index: 1;
+              animation: glowBreathe 6s ease-in-out infinite;
+            }
 
-      /* ---------- DUST PARTICLES ---------- */
-      .dust {
-        position: absolute;
-        bottom: -5%;
-        border-radius: 50%;
-        background: var(--dust);
-        box-shadow: 0 0 7px rgba(184, 134, 11, 0.55);
-        opacity: 0;
-        animation-name: floatUp;
-        animation-timing-function: linear;
-        animation-iteration-count: infinite;
-      }
+            @keyframes glowBreathe {
+              0%,
+              100% {
+                opacity: 0.7;
+              }
+              50% {
+                opacity: 1;
+              }
+            }
 
-      @keyframes floatUp {
-        0% {
-          transform: translateY(0) translateX(0);
-          opacity: 0;
-        }
-        8% {
-          opacity: var(--peak-op, 0.7);
-        }
-        50% {
-          transform: translateY(-55vh) translateX(var(--drift, 10px));
-        }
-        92% {
-          opacity: var(--peak-op, 0.7);
-        }
-        100% {
-          transform: translateY(-105vh) translateX(calc(var(--drift, 10px) * 2));
-          opacity: 0;
-        }
-      }
+            /* ---------- DUST PARTICLES ---------- */
+            .dust {
+              position: absolute;
+              bottom: -5%;
+              border-radius: 50%;
+              background: var(--dust);
+              box-shadow: 0 0 7px rgba(184, 134, 11, 0.55);
+              opacity: 0;
+              animation-name: floatUp;
+              animation-timing-function: linear;
+              animation-iteration-count: infinite;
+            }
 
-      /* ---------- TICKER ---------- */
-      .ticker-wrap {
-        position: absolute;
-        top: 6%;
-        left: 0;
-        width: 100%;
-        overflow: hidden;
-        opacity: 0.55;
-        z-index: 0;
-        mask-image: linear-gradient(
-          90deg,
-          transparent,
-          black 15%,
-          black 85%,
-          transparent
-        );
-      }
+            @keyframes floatUp {
+              0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+              }
+              8% {
+                opacity: var(--peak-op, 0.7);
+              }
+              50% {
+                transform: translateY(-55vh) translateX(var(--drift, 10px));
+              }
+              92% {
+                opacity: var(--peak-op, 0.7);
+              }
+              100% {
+                transform: translateY(-105vh) translateX(calc(var(--drift, 10px) * 2));
+                opacity: 0;
+              }
+            }
 
-      .ticker {
-        display: inline-flex;
-        white-space: nowrap;
-        animation: scrollTicker 38s linear infinite;
-        font-size: 13px;
-        letter-spacing: 0.12em;
-        color: var(--gold-dark);
-      }
+            /* ---------- TICKER ---------- */
+            .ticker-wrap {
+              position: absolute;
+              top: 6%;
+              left: 0;
+              width: 100%;
+              overflow: hidden;
+              opacity: 0.55;
+              z-index: 0;
+              mask-image: linear-gradient(
+                90deg,
+                transparent,
+                black 15%,
+                black 85%,
+                transparent
+              );
+            }
 
-      .ticker span {
-        margin-right: 48px;
-        text-transform: uppercase;
-      }
+            .ticker {
+              display: inline-flex;
+              white-space: nowrap;
+              animation: scrollTicker 38s linear infinite;
+              font-size: 13px;
+              letter-spacing: 0.12em;
+              color: var(--loading-ticker);
+            }
 
-      .ticker span.tag {
-        color: var(--gold-bright);
-        font-weight: 500;
-      }
+            .ticker span {
+              margin-right: 48px;
+              text-transform: uppercase;
+            }
 
-      @keyframes scrollTicker {
-        0% {
-          transform: translateX(0);
-        }
-        100% {
-          transform: translateX(-50%);
-        }
-      }
+            .ticker span.tag {
+              color: var(--loading-ticker-tag);
+              font-weight: 500;
+            }
 
-      /* ---------- LOGO ---------- */
-      .logo-block {
-        position: relative;
-        z-index: 2;
-        text-align: center;
-        margin-bottom: 64px;
-        margin-top: 40px;
-      }
+            @keyframes scrollTicker {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-50%);
+              }
+            }
 
-      .logo {
-        font-family: "Bebas Neue", sans-serif;
-        font-size: 96px;
-        letter-spacing: 0.06em;
-        line-height: 1;
-        white-space: nowrap;
-      }
+            /* ---------- LOGO ---------- */
+            .logo-block {
+              position: relative;
+              z-index: 2;
+              text-align: center;
+              margin-bottom: 64px;
+              margin-top: 40px;
+            }
 
-      .logo .spot {
-        color: var(--ink);
-      }
+            .logo {
+      font-size: 96px;
+              letter-spacing: 0.06em;
+              line-height: 1;
+              white-space: nowrap;
+            }
 
-      .logo .light {
-        color: var(--gold-bright);
-        animation: lightPulse 3.2s ease-in-out infinite;
-      }
+            .logo .spot {
+              color: var(--ink);
+            }
 
-      @keyframes lightPulse {
-        0%,
-        100% {
-          text-shadow:
-            0 0 4px rgba(184, 134, 11, 0.3),
-            0 0 9px rgba(184, 134, 11, 0.2),
-            0 0 18px rgba(184, 134, 11, 0.1);
-        }
-        50% {
-          text-shadow:
-            0 0 7px rgba(184, 134, 11, 0.5),
-            0 0 17px rgba(184, 134, 11, 0.32),
-            0 0 34px rgba(184, 134, 11, 0.18),
-            0 0 55px rgba(184, 134, 11, 0.09);
-        }
-      }
+            .logo .light {
+              color: var(--gold);
+              animation: lightPulse 3.2s ease-in-out infinite;
+            }
 
-      .logo .dot {
-        display: inline-block;
-        color: var(--gold-bright);
-        animation: dotBeat 3.4s ease-in-out infinite;
-        transform-origin: center;
-      }
+            @keyframes lightPulse {
+              0%,
+              100% {
+                text-shadow:
+                  0 0 4px rgba(184, 134, 11, 0.3),
+                  0 0 9px rgba(184, 134, 11, 0.2),
+                  0 0 18px rgba(184, 134, 11, 0.1);
+              }
+              50% {
+                text-shadow:
+                  0 0 7px rgba(184, 134, 11, 0.5),
+                  0 0 17px rgba(184, 134, 11, 0.32),
+                  0 0 34px rgba(184, 134, 11, 0.18),
+                  0 0 55px rgba(184, 134, 11, 0.09);
+              }
+            }
 
-      @keyframes dotBeat {
-        0%,
-        100% {
-          transform: scale(1);
-          text-shadow: 0 0 4px rgba(184, 134, 11, 0.28);
-        }
-        50% {
-          transform: scale(1.22);
-          text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);
-        }
-      }
+            .logo .dot {
+              display: inline-block;
+              color: var(--gold);
+              animation: dotBeat 3.4s ease-in-out infinite;
+              transform-origin: center;
+            }
 
-      .rule {
-        margin: 18px auto 0;
-        height: 1px;
-        width: 0;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          var(--gold),
-          var(--gold-bright),
-          var(--gold),
-          transparent
-        );
-        animation: growRule 1.4s ease-out 0.4s forwards;
-      }
+            @keyframes dotBeat {
+              0%,
+              100% {
+                transform: scale(1);
+                text-shadow: 0 0 4px rgba(184, 134, 11, 0.28);
+              }
+              50% {
+                transform: scale(1.22);
+                text-shadow: 0 0 10px rgba(184, 134, 11, 0.5);
+              }
+            }
 
-      @keyframes growRule {
-        to {
-          width: 260px;
-        }
-      }
+            .rule {
+              margin: 18px auto 0;
+              height: 1px;
+              width: 0;
+              background: linear-gradient(
+                90deg,
+                transparent,
+                var(--gold),
+                var(--gold),
+                var(--gold),
+                transparent
+              );
+              animation: growRule 1.4s ease-out 0.4s forwards;
+            }
 
-      /* ---------- LOADING BAR ---------- */
-      .loader-block {
-        position: relative;
-        z-index: 2;
-        width: 420px;
-        max-width: 82vw;
-      }
+            @keyframes growRule {
+              to {
+                width: 260px;
+              }
+            }
 
-      .bar-track {
-        position: relative;
-        width: 100%;
-        height: 8px;
-        background: var(--track-bg);
-        border-radius: 4px;
-        overflow: visible;
-        box-shadow: inset 0 0 0 1px var(--track-inset);
-      }
+            /* ---------- LOADING BAR ---------- */
+            .loader-block {
+              position: relative;
+              z-index: 2;
+              width: 420px;
+              max-width: 82vw;
+            }
 
-      .bar-fill {
-        position: relative;
-        height: 100%;
-        width: 0%;
-        border-radius: 4px;
-        background: linear-gradient(
-          90deg,
-          var(--gold-dark),
-          var(--gold) 60%,
-          var(--gold-bright)
-        );
-        box-shadow: 0 0 12px rgba(184, 134, 11, 0.35);
-        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
+            .bar-track {
+              position: relative;
+              width: 100%;
+              height: 8px;
+              background: var(--track-bg);
+              border-radius: 4px;
+              overflow: visible;
+              box-shadow: inset 0 0 0 1px var(--gold-glow);
+            }
 
-      .bar-tip {
-        position: absolute;
-        right: -3px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--gold-bright);
-        box-shadow: 0 0 10px 3px rgba(184, 134, 11, 0.7);
-        animation: tipFlicker 2.2s ease-in-out infinite;
-      }
+            .bar-fill {
+              position: relative;
+              height: 100%;
+              width: 0%;
+              border-radius: 4px;
+              background: linear-gradient(
+                90deg,
+                var(--gold-dark),
+                var(--gold) 60%,
+                var(--gold)
+              );
+              box-shadow: 0 0 12px rgba(184, 134, 11, 0.35);
+              transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
 
-      @keyframes tipFlicker {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.55;
-        }
-      }
+            .bar-tip {
+              position: absolute;
+              right: -3px;
+              top: 50%;
+              transform: translateY(-50%);
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              background: var(--gold);
+              box-shadow: 0 0 10px 3px rgba(184, 134, 11, 0.7);
+              animation: tipFlicker 2.2s ease-in-out infinite;
+            }
 
-      .bar-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: baseline;
-        margin-top: 12px;
-        font-size: 12px;
-        letter-spacing: 0.08em;
-      }
+            @keyframes tipFlicker {
+              0%,
+              100% {
+                opacity: 1;
+              }
+              50% {
+                opacity: 0.55;
+              }
+            }
 
-      .bar-status {
-        color: var(--status-text);
-        text-transform: uppercase;
-        font-size: 11px;
-        letter-spacing: 0.14em;
-      }
+            .bar-meta {
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+              margin-top: 12px;
+              font-size: 12px;
+              letter-spacing: 0.08em;
+            }
 
-      .bar-pct {
-        color: var(--gold-glow);
-        font-size: 15px;
-        font-weight: 500;
-        min-width: 42px;
-        text-align: right;
-      }
+            .bar-status {
+              color: var(--body-readable);
+              text-transform: uppercase;
+              font-size: 11px;
+              letter-spacing: 0.14em;
+            }
 
-      /* ---------- TIPS ---------- */
-      .tip-block {
-        margin-top: 42px;
-        height: 40px;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-      }
+            .bar-pct {
+              color: var(--loading-percent);
+              font-size: 15px;
+              font-weight: 500;
+              min-width: 42px;
+              text-align: right;
+            }
 
-      .tip-text {
-        color: var(--tip-color);
-        font-family: Georgia, "Times New Roman", serif;
-        font-style: italic;
-        font-size: 15px;
-        letter-spacing: 0.01em;
-        text-align: center;
-        max-width: 460px;
-        opacity: 0;
-        transition: opacity 0.6s ease;
-      }
+            /* ---------- TIPS ---------- */
+            .tip-block {
+              margin-top: 42px;
+              height: 40px;
+              display: flex;
+              align-items: flex-start;
+              justify-content: center;
+            }
 
-      .tip-text.visible {
-        opacity: 1;
-      }
+            .tip-text {
+              color: var(--body-readable);
+              font-style: italic;
+              font-size: 15px;
+              letter-spacing: 0.01em;
+              text-align: center;
+              max-width: 460px;
+              opacity: 0;
+              transition: opacity 0.6s ease;
+            }
 
-      .tip-text .kw {
-        color: var(--gold-glow);
-        font-style: normal;
-        font-weight: 700;
-      }
+            .tip-text.visible {
+              opacity: 1;
+            }
 
-      /* ---------- ENTER BUTTON ---------- */
-      .enter-wrap {
-        margin-top: 46px;
-        height: 54px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+            .tip-text .kw {
+              color: var(--loading-keyword);
+              font-style: normal;
+              font-weight: 700;
+            }
 
-      .enter-btn {
-        position: relative;
-        opacity: 0;
-        transform: translateY(16px);
-        pointer-events: none;
-        padding: 14px 46px;
-        background: transparent;
-        border: 1px solid var(--gold-dark);
-        border-radius: 2px;
-        color: var(--gold-dark);
-        font-family: "DM Mono", monospace;
-        font-size: 13px;
-        letter-spacing: 0.28em;
-        text-transform: uppercase;
-        cursor: pointer;
-        overflow: hidden;
-        transition:
-          opacity 0.8s ease,
-          transform 0.8s ease,
-          background 0.3s ease;
-      }
+            /* ---------- ENTER BUTTON ---------- */
+            .enter-wrap {
+              margin-top: 46px;
+              height: 54px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
 
-      .enter-btn.shown {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-        animation: btnPulse 2.6s ease-in-out infinite;
-      }
+            .enter-btn {
+              position: relative;
+              opacity: 0;
+              transform: translateY(16px);
+              pointer-events: none;
+              padding: 14px 46px;
+              background: transparent;
+              border: 1px solid var(--loading-button);
+              border-radius: 2px;
+              color: var(--loading-button);
+              font-size: 13px;
+              letter-spacing: 0.28em;
+              text-transform: uppercase;
+              cursor: pointer;
+              overflow: hidden;
+              transition:
+                opacity 0.8s ease,
+                transform 0.8s ease,
+                background 0.3s ease;
+            }
 
-      .enter-btn:hover {
-        background: rgba(184, 134, 11, 0.08);
-      }
+            .enter-btn.shown {
+              opacity: 1;
+              transform: translateY(0);
+              pointer-events: auto;
+              animation: btnPulse 2.6s ease-in-out infinite;
+            }
 
-      @keyframes btnPulse {
-        0%,
-        100% {
-          box-shadow:
-            0 0 4px rgba(184, 134, 11, 0.25),
-            0 0 0px rgba(184, 134, 11, 0);
-        }
-        50% {
-          box-shadow:
-            0 0 14px rgba(184, 134, 11, 0.45),
-            0 0 26px rgba(184, 134, 11, 0.2);
-        }
-      }
+            .enter-btn:hover {
+              background: rgba(184, 134, 11, 0.08);
+            }
 
-      .enter-btn .shimmer {
-        position: absolute;
-        top: 0;
-        left: -60%;
-        width: 40%;
-        height: 100%;
-        background: linear-gradient(
-          120deg,
-          transparent,
-          rgba(184, 134, 11, 0.3),
-          transparent
-        );
-        animation: shimmerSweep 3s ease-in-out infinite;
-        animation-delay: 1s;
-      }
+            @keyframes btnPulse {
+              0%,
+              100% {
+                box-shadow:
+                  0 0 4px rgba(184, 134, 11, 0.25),
+                  0 0 0px rgba(184, 134, 11, 0);
+              }
+              50% {
+                box-shadow:
+                  0 0 14px rgba(184, 134, 11, 0.45),
+                  0 0 26px rgba(184, 134, 11, 0.2);
+              }
+            }
 
-      @keyframes shimmerSweep {
-        0% {
-          left: -60%;
-        }
-        35%,
-        100% {
-          left: 130%;
-        }
-      }
+            .enter-btn .shimmer {
+              position: absolute;
+              top: 0;
+              left: -60%;
+              width: 40%;
+              height: 100%;
+              background: linear-gradient(
+                120deg,
+                transparent,
+                rgba(184, 134, 11, 0.3),
+                transparent
+              );
+              animation: shimmerSweep 3s ease-in-out infinite;
+              animation-delay: 1s;
+            }
 
-      /* ---------- FADE OUT ---------- */
-      .fade-out {
-        position: fixed;
-        inset: 0;
-        background: #000;
-        opacity: 0;
-        pointer-events: none;
-        z-index: 999;
-        transition: opacity 1s ease;
-      }
+            @keyframes shimmerSweep {
+              0% {
+                left: -60%;
+              }
+              35%,
+              100% {
+                left: 130%;
+              }
+            }
 
-      .fade-out.active {
-        opacity: 1;
-        pointer-events: auto;
-      }
+            /* ---------- FADE OUT ---------- */
+            .fade-out {
+              position: fixed;
+              inset: 0;
+              background: #000;
+              opacity: 0;
+              pointer-events: none;
+              z-index: 999;
+              transition: opacity 1s ease;
+            }
 
-      @media (max-width: 560px) {
-        .logo {
-          font-size: 64px;
-        }
-        .loader-block {
-          width: 300px;
-        }
-      }
+            .fade-out.active {
+              opacity: 1;
+              pointer-events: auto;
+            }
 
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          animation-duration: 0.001ms !important;
-          animation-iteration-count: 1 !important;
-        }
-      }
+            @media (max-width: 560px) {
+              .logo {
+                font-size: 64px;
+              }
+              .loader-block {
+                width: 300px;
+              }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+              * {
+                animation-duration: 0.001ms !important;
+                animation-iteration-count: 1 !important;
+              }
+            }
     </style>
   </head>
-  <body>
+  <body class="page-minimal">
     <div class="screen">
       <div class="stage-glow"></div>
 
@@ -548,6 +527,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
+    <script src="scripts/profile-cache.js"></script>
+    <script src="scripts/post-cache.js"></script>
+    <script src="scripts/feed.js"></script>
     <script src="scripts/theme.js"></script>
     <script>
       // ---------- DUST PARTICLES ----------
@@ -584,6 +566,26 @@
         "@SORROWFULROAD",
         "@TRINI.TEA26",
         "@I_LOVE_JESTERS0",
+        "@SHIBUYAGFS",
+        "@HEESEUNGNOLOGY__",
+        "@ENIS7_1009",
+        "@HADES.S_BESTIE",
+        "@GEREMIAHFROST",
+        "@1.WONHEE.STAN",
+        "@STARSFORSTELLA",
+        "@SECRET_UNICORN14",
+        "@KITTYNYAN",
+        "@ANZU1892",
+        "@ENYUISME",
+        "@EIN4J_",
+        "@IRVINE_ONNIE",
+        "@FROM.THE.EARTH_02",
+        "@G0OFBALL",
+        "@MMRRRWAS568372",
+        "@ROSESRGNE124",
+        "@ROTTINGGGFLESHHH",
+        "@OENSY",
+        "@MSCANTSAVABITCHH",
       ];
       const tickerEl = document.getElementById("ticker");
       const doubled = [...tickerItems, ...tickerItems];
@@ -640,6 +642,33 @@
 
       let progress = 0;
       let statusPointer = 0;
+      let progressReady = false;
+      let dataReady = false;
+
+      function maybeRevealEnterButton() {
+        if (progressReady && dataReady) enterBtn.classList.add("shown");
+      }
+
+      async function preloadSpotlightData() {
+        try {
+          const { user } = await SpotlightProfileCache.load(supabaseClient);
+
+          if (user) {
+            // seed AI posts first (first-load only, no-op after) so any
+            // posts it creates are included in the feed fetch/cache below
+            await window.SpotlightFeed.FirstLoadAiPosts(user);
+            await window.SpotlightFeed.fetchAndCacheUserPosts(user);
+          }
+
+          barStatus.textContent = "Your spotlight is ready.";
+        } catch (error) {
+          console.error("Could not preload Spotlight data:", error);
+          barStatus.textContent = "Spotlight is ready.";
+        } finally {
+          dataReady = true;
+          maybeRevealEnterButton();
+        }
+      }
 
       function updateStatus(p) {
         while (
@@ -651,13 +680,28 @@
         barStatus.textContent = statusStages[statusPointer].text;
       }
 
+      // the bar isn't allowed to visually finish until the real data
+      // fetch (dataReady) is actually done, so it never lies about being
+      // ready before the enter button can actually be clicked.
+      const SIMULATED_CAP = 92;
+
       function tick() {
-        if (progress >= 100) {
-          progress = 100;
-          barFill.style.width = "100%";
-          barPct.textContent = "100%";
-          updateStatus(100);
-          enterBtn.classList.add("shown");
+        const ceiling = dataReady ? 100 : SIMULATED_CAP;
+
+        if (progress >= ceiling) {
+          progress = ceiling;
+          barFill.style.width = progress.toFixed(1) + "%";
+          barPct.textContent = Math.floor(progress) + "%";
+          updateStatus(progress);
+
+          if (ceiling >= 100) {
+            progressReady = true;
+            maybeRevealEnterButton();
+            return;
+          }
+
+          // stuck under the cap, waiting on the real load — keep polling
+          setTimeout(tick, 200);
           return;
         }
 
@@ -678,7 +722,7 @@
           delay = 180 + Math.random() * 240;
         }
 
-        progress = Math.min(100, progress + step);
+        progress = Math.min(ceiling, progress + step);
         barFill.style.width = progress.toFixed(1) + "%";
         barPct.textContent = Math.floor(progress) + "%";
         updateStatus(progress);
@@ -686,6 +730,7 @@
         setTimeout(tick, delay);
       }
       setTimeout(tick, 400);
+      preloadSpotlightData();
 
       // ---------- ENTER BUTTON ----------
       const fadeOut = document.getElementById("fadeOut");

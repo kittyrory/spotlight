@@ -4,11 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spotlight | Choose Your World</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800;900&family=Open+Sans:wght@400;500;600&family=Source+Code+Pro:wght@400;600&display=swap"
-      rel="stylesheet"
-    />
-
     <script>
       // apply saved theme immediately to avoid a flash of the wrong theme.
       (function () {
@@ -17,46 +12,20 @@
       })();
     </script>
 
+    <link rel="stylesheet" href="style.css" />
     <style>
-      :root,
-      [data-theme="dark"] {
-        --bg: #0e0e0e;
-        --surface: #1a1a1a;
-        --surface2: #222222;
-        --border: rgba(255, 255, 255, 0.08);
-        --border2: rgba(255, 255, 255, 0.13);
-        --accent: #e2bb00;
-        --accent2: rgba(226, 187, 0, 0.5);
-        --accent-dim: rgba(226, 187, 0, 0.12);
-        --accent-glow: rgba(226, 187, 0, 0.25);
-        --text: #f0f0f0;
-        --muted: #888;
-        --muted2: #555;
-        --danger: #e05555;
-        --cw-bg: #111;
-        --toggle-border: rgba(255, 255, 255, 0.25);
-        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-        --card-selected-bg: #0d0d0d;
+      :root, [data-theme="dark"] {
+        --cw-bg: #111111;
+        --gold-dim: rgba(245, 196, 81, 0.12);
+        --accent2: rgba(245, 196, 81, 0.5);
+        --gold-glow: rgba(245, 196, 81, 0.24);
       }
 
       [data-theme="light"] {
-        --bg: #f4f3f1;
-        --surface: #ffffff;
-        --surface2: #f0efe9;
-        --border: rgba(0, 0, 0, 0.08);
-        --border2: rgba(0, 0, 0, 0.13);
-        --accent: #e2bb00;
-        --accent2: rgba(226, 187, 0, 0.5);
-        --accent-dim: rgba(226, 187, 0, 0.12);
-        --accent-glow: rgba(226, 187, 0, 0.25);
-        --text: #1e1e1e;
-        --muted: #6b6b6b;
-        --muted2: #999999;
-        --danger: #e05555;
         --cw-bg: #efeee9;
-        --toggle-border: rgba(0, 0, 0, 0.25);
-        --toggle-hover-shadow: rgba(226, 187, 0, 0.3);
-        --card-selected-bg: var(--accent-dim);
+        --gold-dim: rgba(245, 196, 81, 0.12);
+        --accent2: rgba(245, 196, 81, 0.5);
+        --gold-glow: rgba(245, 196, 81, 0.24);
       }
 
       #theme-toggle {
@@ -69,7 +38,7 @@
         border-radius: 50%;
         border: 1.5px solid var(--toggle-border);
         background-color: transparent;
-        color: var(--text);
+        color: var(--ink);
         font-size: 1.1rem;
         cursor: pointer;
         transition:
@@ -79,7 +48,7 @@
       }
 
       #theme-toggle:hover {
-        border-color: var(--accent);
+        border-color: var(--gold);
         box-shadow: 0 0 12px var(--toggle-hover-shadow);
       }
 
@@ -104,8 +73,7 @@
 
       body {
         background: var(--bg);
-        color: var(--text);
-        font-family: "Open Sans", Arial;
+        color: var(--ink);
         transition:
           background-color 0.25s ease,
           color 0.25s ease;
@@ -119,30 +87,28 @@
 
       .clear {
         background: transparent;
-        border: 1px solid var(--border2);
+        border: 1px solid var(--border);
         color: var(--muted);
         padding: 8px 18px;
         border-radius: 50px;
-        font-family: "Open Sans", sans-serif;
         font-size: 13px;
         cursor: pointer;
         transition: all 0.2s;
       }
 
       .clear:hover {
-        border-color: var(--accent);
-        color: var(--text);
+        border-color: var(--gold);
+        color: var(--ink);
       }
 
       .selection {
-        font-family: "Source Code Pro", monospace;
         font-size: 12px;
         font-weight: bold;
         letter-spacing: 1px;
       }
 
       span {
-        color: var(--accent);
+        color: var(--gold);
         font-weight: bold;
       }
 
@@ -196,12 +162,11 @@
       }
 
       .logo {
-        font-family: "Urbanist", sans-serif;
         font-weight: 900;
         font-size: 18px;
         letter-spacing: 2px;
         text-transform: uppercase;
-        color: var(--text);
+        color: var(--ink);
       }
 
       .confirm-bar {
@@ -209,8 +174,8 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: var(--surface);
-        border-top: 1px solid var(--border2);
+        background: var(--card);
+        border-top: 1px solid var(--border);
         padding: 16px 32px;
         display: flex;
         align-items: center;
@@ -260,13 +225,12 @@
       }
 
       .confirm-count {
-        font-family: "Source Code Pro", monospace;
         font-size: 13px;
         color: var(--muted);
       }
 
       .confirm-count span {
-        color: var(--accent);
+        color: var(--gold);
       }
 
       .selected-previews {
@@ -276,12 +240,11 @@
       }
 
       .btn-confirm {
-        background: var(--accent);
+        background: var(--gold);
         border: none;
         color: var(--bg);
         padding: 10px 22px;
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 14px;
         font-weight: 700;
         cursor: pointer;
@@ -297,9 +260,8 @@
       }
 
       h1 {
-        font-family: "Urbanist", sans-serif;
         font-weight: 800;
-        color: var(--text);
+        color: var(--ink);
         margin-bottom: 12px;
       }
 
@@ -309,11 +271,10 @@
       }
 
       .world-selection {
-        font-family: "Source Code Pro", monospace;
         font-size: 13px;
         letter-spacing: 4px;
         text-transform: uppercase;
-        color: var(--accent);
+        color: var(--gold);
         margin-bottom: 14px;
       }
 
@@ -330,12 +291,11 @@
       }
 
       .cat-btn {
-        background: var(--surface);
-        border: 1.5px solid var(--border2);
+        background: var(--card);
+        border: 1.5px solid var(--border);
         color: var(--muted);
         padding: 9px 20px;
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
@@ -344,14 +304,14 @@
       }
 
       .cat-btn:hover {
-        border-color: var(--accent-glow);
+        border-color: var(--gold-glow);
         background: var(--surface2);
-        color: var(--text);
+        color: var(--ink);
       }
 
       .cat-btn.active {
-        background: var(--accent);
-        border-color: var(--accent);
+        background: var(--gold);
+        border-color: var(--gold);
         color: var(--bg);
       }
 
@@ -364,12 +324,11 @@
       }
 
       .create-btn {
-        background: var(--accent);
+        background: var(--gold);
         border: none;
         color: var(--bg);
         padding: 12px 22px;
         border-radius: 12px;
-        font-family: "Urbanist", Arial;
         font-size: 14px;
         font-weight: 700;
         cursor: pointer;
@@ -401,12 +360,11 @@
 
       .search-input {
         width: 100%;
-        background: var(--surface);
-        border: 1px solid var(--border2);
-        color: var(--text);
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--ink);
         padding: 12px 16px 12px 42px;
         border-radius: 12px;
-        font-family: "Open Sans", sans-serif;
         font-size: 14px;
         outline: none;
         transition: border-color 0.2s;
@@ -429,8 +387,8 @@
 
       .world-btn {
         width: 250px;
-        background: var(--surface);
-        border: 1.5px solid var(--border2);
+        background: var(--card);
+        border: 1.5px solid var(--border);
         border-radius: 16px;
         cursor: pointer;
         transition: all 0.2s;
@@ -449,7 +407,7 @@
       }
 
       .world-btn.selected {
-        border-color: #e2bb00;
+        border-color: var(--gold);
         background: var(--card-selected-bg);
       }
 
@@ -504,15 +462,13 @@
       }
 
       .world-btn-title {
-        font-family: "Urbanist", sans-serif;
         font-size: 16px;
         font-weight: 800;
-        color: var(--text);
+        color: var(--ink);
         letter-spacing: 0.3px;
       }
 
       .world-btn-description {
-        font-family: "Open Sans", sans-serif;
         font-size: 11.5px;
         color: var(--muted);
         line-height: 1.6;
@@ -527,11 +483,10 @@
 
       .tag {
         background: var(--surface2);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--border);
         color: var(--muted);
         padding: 4px 10px;
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 11px;
         font-weight: 600;
         cursor: pointer;
@@ -558,8 +513,8 @@
       }
 
       .cw-modal {
-        background: var(--surface);
-        border: 1px solid var(--border2);
+        background: var(--card);
+        border: 1px solid var(--border);
         border-radius: 20px;
         width: min(540px, 94vw);
         max-height: 88vh;
@@ -581,14 +536,13 @@
       }
 
       .cw-title {
-        font-family: "Urbanist", sans-serif;
         font-weight: 900;
         font-size: 20px;
       }
 
       .cw-close {
         background: transparent;
-        border: 1px solid var(--border2);
+        border: 1px solid var(--border);
         color: var(--muted);
         width: 34px;
         height: 34px;
@@ -602,7 +556,7 @@
       }
 
       .cw-close:hover {
-        color: var(--text);
+        color: var(--ink);
         border-color: var(--muted2);
       }
 
@@ -612,7 +566,6 @@
 
       .cw-label {
         display: block;
-        font-family: "Urbanist", sans-serif;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: 1.2px;
@@ -622,7 +575,7 @@
       }
 
       .cw-label span {
-        color: var(--accent);
+        color: var(--gold);
       }
 
       .cw-label-sub {
@@ -638,11 +591,10 @@
       .cw-modal select {
         width: 100%;
         background: var(--cw-bg);
-        border: 1px solid var(--border2);
-        color: var(--text);
+        border: 1px solid var(--border);
+        color: var(--ink);
         padding: 12px 14px;
         border-radius: 10px;
-        font-family: "Open Sans", sans-serif;
         font-size: 14px;
         outline: none;
         transition: border-color 0.2s;
@@ -670,13 +622,13 @@
       }
 
       .cw-modal select option {
-        background: var(--surface);
+        background: var(--card);
       }
 
       .cw-img-zone {
         width: 100%;
         height: 140px;
-        border: 1.5px dashed var(--border2);
+        border: 1.5px dashed var(--border);
         border-radius: 12px;
         display: flex;
         flex-direction: column;
@@ -754,12 +706,11 @@
       }
 
       .cw-tag-add {
-        background: var(--accent-dim);
+        background: var(--gold-dim);
         border: 1px solid rgba(226, 187, 0, 0.35);
-        color: var(--accent);
+        color: var(--gold);
         padding: 11px 16px;
         border-radius: 10px;
-        font-family: "Urbanist", sans-serif;
         font-size: 13px;
         font-weight: 700;
         cursor: pointer;
@@ -787,9 +738,8 @@
         background: var(--surface2);
         border: 1px solid;
         color: var(--muted);
-        padding: 5px 10px var(--border2);
+        padding: 5px 10px var(--border);
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 12px;
         font-weight: 600;
         display: flex;
@@ -807,12 +757,12 @@
       }
 
       .cw-tag-pill-remove:hover {
-        color: var(--danger);
+        color: var(--red);
       }
 
       .cw-tag-limit {
         font-size: 11px;
-        color: var(--danger);
+        color: var(--red);
         margin-top: 6px;
         display: none;
       }
@@ -823,7 +773,7 @@
 
       .cw-err {
         font-size: 11px;
-        color: var(--danger);
+        color: var(--red);
         margin-top: 5px;
         display: none;
       }
@@ -847,7 +797,6 @@
         color: var(--muted);
         padding: 11px 22px;
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 14px;
         font-weight: 700;
         cursor: pointer;
@@ -856,16 +805,15 @@
 
       .cw-btn-cancel:hover {
         border-color: var(--muted2);
-        color: var(--text);
+        color: var(--ink);
       }
 
       .cw-btn-create {
-        background: var(--accent);
+        background: var(--gold);
         border: none;
         color: var(--bg);
         padding: 11px 26px;
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 14px;
         font-weight: 800;
         cursor: pointer;
@@ -882,11 +830,10 @@
 
       .cw-char-pill {
         background: var(--surface2);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--border);
         color: var(--muted);
         padding: 5px 10px;
         border-radius: 50px;
-        font-family: "Urbanist", sans-serif;
         font-size: 12px;
         font-weight: 600;
         display: inline-flex;
@@ -897,8 +844,7 @@
       }
 
       .cw-char-handle {
-        color: var(--accent);
-        font-family: "Source Code Pro", monospace;
+        color: var(--gold);
         font-size: 11px;
       }
 
@@ -909,7 +855,6 @@
       }
 
       .cw-drama-label-edge {
-        font-family: "Urbanist", sans-serif;
         font-size: 11px;
         font-weight: 600;
         color: var(--muted2);
@@ -922,7 +867,7 @@
         appearance: none;
         height: 4px;
         border-radius: 4px;
-        background: var(--border2);
+        background: var(--border);
         outline: none;
         cursor: pointer;
       }
@@ -932,7 +877,7 @@
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: var(--accent);
+        background: var(--gold);
         border: 2px solid var(--bg);
         cursor: pointer;
         transition: transform 0.15s;
@@ -944,13 +889,12 @@
 
       .cw-drama-value {
         margin-top: 8px;
-        font-family: "Source Code Pro", monospace;
         font-size: 11px;
         color: var(--muted2);
       }
 
       .cw-drama-value span {
-        color: var(--accent);
+        color: var(--gold);
         font-weight: 600;
       }
 
@@ -981,7 +925,7 @@
         position: absolute;
         inset: 0;
         background: var(--surface2);
-        border: 1px solid var(--border2);
+        border: 1px solid var(--border);
         border-radius: 24px;
         cursor: pointer;
         transition:
@@ -1004,18 +948,18 @@
       }
 
       .cw-toggle input:checked + .cw-toggle-track {
-        background: var(--accent-dim);
+        background: var(--gold-dim);
         border-color: var(--accent2);
       }
 
       .cw-toggle input:checked + .cw-toggle-track::after {
         transform: translateX(20px);
-        background: var(--accent);
+        background: var(--gold);
       }
     </style>
   </head>
 
-  <body>
+  <body class="page-maximal">
     <div class="wrapper">
       <header>
         <div class="header">
