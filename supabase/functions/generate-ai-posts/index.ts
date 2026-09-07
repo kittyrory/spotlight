@@ -1,4 +1,4 @@
-// Edge function that generates 3 AI posts using Gemini Flash and inserts
+// Edge function that generates 5 AI posts using Gemini Flash and inserts
 // them into the `posts` table, PRIVATELY scoped to one user. Keys live
 // only in this function's environment (set via `supabase secrets set`),
 // never in the client HTML.
@@ -8,6 +8,9 @@
 // googleapis.com) using GEMINI_API_KEY, so usage draws down Google's free
 // tier first. If that call fails for any reason (quota exhausted, network
 // error, malformed response), it falls back once to OpenRouter
+// NOTE: Gemini 3.5 flash lite is used because the 2.5 version isn't
+// available for free tier users; it's not a typo that the two model providers
+// use different models. Once we start paying, it'll be reverted to 2.5
 //
 // PRIVACY MODEL:
 // Each inserted post gets `ai_owner_id` set to the requesting user's id.
@@ -59,7 +62,7 @@ const BOT_PROFILE_IDS = [
   "5f81972b-ceea-4f9c-99e1-bec848959cd9",
   "9ab599f5-1a7e-4397-ac6e-5ff9fa529cee",
 ];
-const POST_COUNT = 3;
+const POST_COUNT = 5;
 const COOLDOWN_MS = 60 * 1000; // 1 minute, enforced server-side too
 
 const BASE_SYSTEM_PROMPT = `You are generating short, realistic social media posts for a 
@@ -69,7 +72,7 @@ under 220 characters. Do not use quotation marks around the post text. Avoid con
 with apostrophes (write "dont" instead of "don't", "its" instead of "it's") since 
 apostrophes can break JSON formatting. Return ONLY valid 
 JSON, no markdown fences, no preamble, in this exact shape:
-{"posts": [{"content": "..."}, {"content": "..."}, {"content": "..."}]}`;
+{"posts": [{"content": "..."}, {"content": "..."}, {"content": "..."}, {"content": "..."}, {"content": "..."}]}`;
 
 type ProfileContext = {
   origin?: string;
@@ -91,9 +94,9 @@ type WorldContext = {
 };
 
 // builds a user-message describing this specific user's onboarding choices
-// and chosen worlds, so posts reference their actual context instead of
-// being generic. kept separate from the system prompt so the formatting
-// rules stay stable and only the user context section changes per call.
+// and chosen worlds, so posts reference their actual context
+// kept separate from the system prompt so the formatting rules stay
+// stable and only the user context section changes per call.
 function buildUserContextMessage(
   profile: ProfileContext,
   worlds: WorldContext[],
@@ -115,7 +118,7 @@ function buildUserContextMessage(
 
   if (worlds?.length) {
     lines.push(
-      "You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are a bystander to the plot:",
+      "You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are living in the world.",
     );
     worlds.forEach((w) => {
       const parts = [w.title, w.category, w.description].filter(Boolean);
@@ -128,7 +131,7 @@ function buildUserContextMessage(
     return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
   }
   return (
-    `Here is context about the user these posts are  for. You are encourage to make ` +
+    `Here is context about the user these posts are for. You are encourage to make ` +
     `posts feel personal and relevant to their interests and identity, without being repetitive. Tag the users handle when replying \n\n` +
     lines.join("\n") +
     `\n\nGenerate ${POST_COUNT} posts now.`
@@ -174,8 +177,7 @@ async function callGeminiNative(
   try {
     parsed = JSON.parse(text);
   } catch (err) {
-    // log the raw text so we can see exactly what broke the parse (usually
-    // an unescaped quote/apostrophe inside a post's content string)
+    // log the raw text so we can see exactly what broke the parse
     console.error("Failed to parse model output as JSON. Raw text:", text);
     throw new Error(`Model returned malformed JSON: ${err}`);
   }
@@ -233,10 +235,7 @@ async function callOpenRouter(
   return parsed.posts.slice(0, POST_COUNT);
 }
 
-// tries native Gemini first (runs off Gemini's own free-tier credits); if
-// that call fails for any reason (rate limit, account restriction, network
-// error, malformed response), falls back once to OpenRouter using
-// GEMINI_API_KEY_FALLBACK, which holds an OpenRouter key.
+// tries native Gemini first; if that call fails, fall back once to OpenRouter
 async function callGemini(
   profile: ProfileContext,
   worlds: WorldContext[],
@@ -245,6 +244,7 @@ async function callGemini(
 
   const userMessage = buildUserContextMessage(profile, worlds);
 
+  // mainly used for debugging purposes, ex. bot is making generic posts
   console.log("Profile context received:", JSON.stringify(profile));
   console.log("Worlds context received:", JSON.stringify(worlds));
   console.log("Full prompt sent to model:", userMessage);
@@ -264,9 +264,7 @@ async function callGemini(
 }
 
 // CORS: browsers send a preflight OPTIONS request before the real POST from
-// the browser (invoked via supabaseClient.functions.invoke). Without
-// responding to OPTIONS and attaching these headers to every response, the
-// browser blocks the whole request before our code even runs.
+// the browser (invoked via supabaseClient.functions.invoke). 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -276,8 +274,6 @@ const corsHeaders = {
 
 // checks each newly-inserted post's content for an @ mention of the
 // recipient's own handle, and builds one `notifications` row per hit.
-// kept as its own function since it's a pure transform -- easy to test,
-// and easy to see at a glance what it does and doesn't touch.
 function buildMentionNotifications(
   insertedPosts: { id: string; content: string; bot_user_id: string }[],
   recipientId: string,
@@ -388,13 +384,41 @@ Deno.serve(async (req) => {
 
     const posts = await callGemini(body.profile ?? null, body.worlds ?? []);
 
-    // shuffle a copy of BOT_PROFILE_IDS and take the first POST_COUNT so we
-    // get 3 different random bots each time instead of always the same
-    // fixed order
-    const shuffledBots = [...BOT_PROFILE_IDS].sort(() => Math.random() - 0.5);
+    // pull this user's selected worlds so we know which bot_profiles (if any) are available to them
+    // bot_profiles is world-scoped, unlike the universal BOT_PROFILE_IDS npc pool above.
+    const { data: profileRow, error: profileError } = await supabase
+      .from("profiles")
+      .select("selected_worlds")
+      .eq("id", userId)
+      .single();
+    if (profileError) throw profileError;
+
+    const selectedWorldIds: string[] = (profileRow?.selected_worlds ?? [])
+      .map((w: { id?: string }) => w.id)
+      .filter(Boolean);
+
+    let customBotIds: string[] = [];
+    if (selectedWorldIds.length) {
+      const { data: customBots, error: customBotsError } = await supabase
+        .from("bot_profiles")
+        .select("id")
+        .in("world_id", selectedWorldIds);
+      if (customBotsError) throw customBotsError;
+      customBotIds = (customBots ?? []).map((b) => b.id);
+    }
+
+    // custom bots go first so they get picked before any npc filler, then
+    // the universal npc pool fills whatever's left
+    const shuffledCustomBots = [...customBotIds].sort(
+      () => Math.random() - 0.5,
+    );
+    const shuffledNpcBots = [...BOT_PROFILE_IDS].sort(
+      () => Math.random() - 0.5,
+    );
+    const botPool = [...shuffledCustomBots, ...shuffledNpcBots];
 
     const rows = posts.map((p, i) => ({
-      bot_user_id: shuffledBots[i % shuffledBots.length],
+      bot_user_id: botPool[i % botPool.length],
       ai_owner_id: userId,
       content: p.content,
       is_ai_generated: true,
@@ -407,9 +431,7 @@ Deno.serve(async (req) => {
 
     console.log("Inserted result:", JSON.stringify(data));
 
-    // NEW: notify the user for any inserted post that @ mentions them.
-    // non-fatal if this fails -- the posts themselves already succeeded,
-    // so we log and move on rather than throwing and losing that result.
+    // notify the user for any inserted post that @ mentions them.
     const notificationRows = buildMentionNotifications(
       data ?? [],
       userId,
