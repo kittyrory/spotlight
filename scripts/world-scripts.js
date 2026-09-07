@@ -79,13 +79,6 @@ function renderWorlds(list) {
   });
 }
 
-worlds.forEach((world, i) => {
-  world.id = i;
-});
-window.WORLDS = worlds;
-renderWorlds(worlds);
-attachClickListeners();
-
 //------------------
 // CATEGORY FILTERS
 //------------------
@@ -243,19 +236,56 @@ attachClickListeners();
   let tags = [];
   let characters = [];
   let imageDataUrl = "";
+  let currentWorldId = crypto.randomUUID();
 
   // wire the existing create button
-  document.querySelector(".create-btn").addEventListener("click", function () {
-    overlay.classList.add("open");
-    document.getElementById("cwTitleInput").focus();
-  });
+  document
+    .querySelector(".create-btn")
+    .addEventListener("click", async function () {
+      currentWorldId = crypto.randomUUID();
+
+      const {
+        data: { user },
+      } = await supabaseClient.auth.getUser();
+
+      const { error } = await supabaseClient.from("worlds").insert({
+        id: currentWorldId,
+        created_by: user ? user.id : null,
+        title: "",
+        description: "",
+        category: "",
+        image: "",
+        tags: [],
+        characters: [],
+        drama: 3,
+        cross_universe: false,
+      });
+
+      if (error) {
+        console.error("Error starting world draft:", error);
+        return;
+      }
+
+      overlay.classList.add("open");
+      document.getElementById("cwTitleInput").focus();
+    });
 
   function close() {
     overlay.classList.remove("open");
     reset();
   }
 
+  async function cancelCreate() {
+    const { error } = await supabaseClient
+      .from("worlds")
+      .delete()
+      .eq("id", currentWorldId);
+    if (error) console.error("Error cleaning up draft world:", error);
+    close();
+  }
+
   function reset() {
+    currentWorldId = crypto.randomUUID();
     document.getElementById("cwTitleInput").value = "";
     document.getElementById("cwdescription").value = "";
     document.getElementById("cwCategory").value = "";
@@ -272,16 +302,15 @@ attachClickListeners();
     tagLimit.classList.remove("show");
     tagAddBtn.disabled = false;
     document.getElementById("cwCharList").innerHTML = "";
-    document.getElementById("cwCharInput").value = "";
     ["cwTitleErr", "cwdescriptionErr", "cwCatErr"].forEach(function (id) {
       document.getElementById(id).classList.remove("show");
     });
   }
 
-  closeBtn.addEventListener("click", close);
-  cancelBtn.addEventListener("click", close);
+  closeBtn.addEventListener("click", cancelCreate);
+  cancelBtn.addEventListener("click", cancelCreate);
   overlay.addEventListener("click", function (e) {
-    if (e.target === overlay) close();
+    if (e.target === overlay) cancelCreate();
   });
 
   // image handling
@@ -384,34 +413,330 @@ attachClickListeners();
     });
   }
 
-  function addCharacter() {
-    let val = document
-      .getElementById("cwCharInput")
-      .value.trim()
-      .replace(/^@/, "");
-    if (!val || characters.includes(val)) {
-      document.getElementById("cwCharInput").value = "";
-      return;
-    }
-    characters.push(val);
-    document.getElementById("cwCharInput").value = "";
-    renderCharacters();
+  // character creator modal
+  const ccOverlay = document.getElementById("ccOverlay");
+  const ccClose = document.getElementById("ccClose");
+  const ccCancel = document.getElementById("ccCancel");
+  const ccSubmit = document.getElementById("ccSubmit");
+  const ccHeaderZone = document.getElementById("ccHeaderZone");
+  const ccAvatarZone = document.getElementById("ccAvatarZone");
+  const ccHeaderInput = document.getElementById("ccHeaderInput");
+  const ccAvatarInput = document.getElementById("ccAvatarInput");
+  const ccHeaderImg = document.getElementById("ccHeaderImg");
+  const ccAvatarImg = document.getElementById("ccAvatarImg");
+  const ccBioInput = document.getElementById("ccBioInput");
+  const ccBioBox = document.getElementById("ccBioBox");
+  const ccCharCounter = document.getElementById("ccCharCounter");
+  const ccTraitsContainer = document.getElementById("ccTraitsContainer");
+  const ccTraitTagsEl = document.getElementById("ccTraitTags");
+  const ccOverallTypeEl = document.getElementById("ccOverallType");
+
+  let ccHeaderDataUrl = "";
+  let ccAvatarDataUrl = "";
+
+  const ccTraits = [
+    {
+      id: "kindness",
+      name: "Kindness",
+      axis: "warmth",
+      value: 6,
+      labels: {
+        1: "Compassionate", 2: "Kind", 3: "Patient", 4: "Honest", 5: "Pragmatic",
+        6: "Balanced", 7: "Stubborn", 8: "Competitive", 9: "Arrogant",
+        10: "Cynical", 11: "Vindictive",
+      },
+    },
+    {
+      id: "courage",
+      name: "Courage",
+      axis: "energy",
+      value: 6,
+      labels: {
+        1: "Timid", 2: "Fearful", 3: "Cautious", 4: "Careful", 5: "Guarded",
+        6: "Balanced", 7: "Confident", 8: "Assertive", 9: "Daring",
+        10: "Reckless", 11: "Bold",
+      },
+    },
+    {
+      id: "charisma",
+      name: "Charisma",
+      axis: "energy",
+      value: 6,
+      labels: {
+        1: "Reserved", 2: "Guarded", 3: "Shy", 4: "Modest", 5: "Composed",
+        6: "Balanced", 7: "Playful", 8: "Charming", 9: "Flirty",
+        10: "Seductive", 11: "Irresistible",
+      },
+    },
+  ];
+
+  const ccOverallGrid = {
+    "high-high": "Icon", "high-neutral": "Sweetheart", "high-low": "Guardian",
+    "neutral-high": "Maverick", "neutral-neutral": "Independent", "neutral-low": "Wallflower",
+    "low-high": "Villain", "low-neutral": "Rebel", "low-low": "Enigma",
+  };
+
+  const ccOverallDescriptions = {
+    Icon: 'Warm and high-energy. People are drawn to you, and you know how to work a room without losing your heart.',
+    Sweetheart: 'High warmth, low-key energy. Genuinely kind, easy to trust, and not out to prove anything.',
+    Guardian: 'Warm but guarded. You care deeply and protect the people close to you, even if you don\u2019t show it loudly.',
+    Maverick: 'Neutral warmth, big energy. Bold, unpredictable, and doing your own thing regardless of who\u2019s watching.',
+    Independent: 'Balanced across the board. Not driven by warmth or energy extremes; you make your own calls.',
+    Wallflower: 'Neutral warmth, low-key energy. Quiet and steady, more comfortable observing than performing.',
+    Villain: 'Low warmth, high energy. Sharp, intense, and not afraid to make enemies to get where you\u2019re going.',
+    Rebel: 'Low warmth, neutral energy. Cold on the surface and allergic to rules, but not chasing chaos for its own sake.',
+    Enigma: 'Low warmth, low-key energy. Hard to read, keeps people guessing, and gives away very little.',
+  };
+
+  function ccBandFromScore(score) {
+    if (score >= 2) return "high";
+    if (score <= -2) return "low";
+    return "neutral";
   }
 
-  document
-    .getElementById("cwCharAddBtn")
-    .addEventListener("click", addCharacter);
-  document
-    .getElementById("cwCharInput")
-    .addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        addCharacter();
-      }
+  ccTraits.forEach(function (trait) {
+    const row = document.createElement("div");
+    row.className = "cc-trait-row";
+    row.innerHTML =
+      '<div class="cc-trait-name">' + trait.name + "</div>" +
+      '<div class="cc-slider-row">' +
+      '<span class="cw-drama-label-edge">' + trait.labels[1] + "</span>" +
+      '<input type="range" min="1" max="11" value="' + trait.value +
+      '" class="cc-slider" data-trait="' + trait.id + '">' +
+      '<span class="cw-drama-label-edge">' + trait.labels[11] + "</span>" +
+      "</div>";
+    ccTraitsContainer.appendChild(row);
+  });
+
+  function ccUpdatePersonality() {
+    ccTraitTagsEl.innerHTML = "";
+    let warmthScore = 0;
+    let energyScore = 0;
+
+    ccTraits.forEach(function (trait) {
+      const input = ccTraitsContainer.querySelector(
+        '[data-trait="' + trait.id + '"]',
+      );
+      const val = parseInt(input.value, 10);
+      trait.value = val;
+      input.style.setProperty("--val", val);
+
+      const deviation = 6 - val;
+      if (trait.axis === "warmth") warmthScore += deviation;
+      if (trait.axis === "energy") energyScore += -deviation;
+
+      const chip = document.createElement("span");
+      chip.className = "cc-trait-chip";
+      chip.textContent = trait.name + ": " + trait.labels[val];
+      ccTraitTagsEl.appendChild(chip);
     });
 
+    const warmthBand = ccBandFromScore(warmthScore);
+    const energyBand = ccBandFromScore(energyScore);
+    ccOverallTypeEl.textContent = ccOverallGrid[warmthBand + "-" + energyBand];
+  }
+
+  ccTraitsContainer.addEventListener("input", ccUpdatePersonality);
+  ccUpdatePersonality();
+
+  function buildCcPersonalityPayload() {
+    return {
+      traits: ccTraits.reduce(function (acc, trait) {
+        acc[trait.id] = { value: trait.value, label: trait.labels[trait.value] };
+        return acc;
+      }, {}),
+      overallType: ccOverallTypeEl.textContent,
+      overallDescription: ccOverallDescriptions[ccOverallTypeEl.textContent] || "",
+    };
+  }
+
+  function ccReset() {
+    document.getElementById("ccNameInput").value = "";
+    document.getElementById("ccHandleInput").value = "";
+    ccBioInput.value = "";
+    ccCharCounter.textContent = "0/150";
+    ccBioBox.classList.remove(
+      "border-disrupter", "border-professional", "border-fan-favorite", "border-enigma",
+    );
+    ccHeaderImg.src = "";
+    ccHeaderImg.style.display = "none";
+    ccAvatarImg.src = "";
+    ccAvatarImg.style.display = "none";
+    document.getElementById("ccBannerText").style.display = "block";
+    document.getElementById("ccAvatarPrompt").style.display = "block";
+    ccHeaderDataUrl = "";
+    ccAvatarDataUrl = "";
+
+    ccTraits.forEach(function (trait) {
+      trait.value = 6;
+      const input = ccTraitsContainer.querySelector(
+        '[data-trait="' + trait.id + '"]',
+      );
+      input.value = 6;
+      input.style.setProperty("--val", 6);
+    });
+    ccUpdatePersonality();
+
+    ["ccNameErr", "ccHandleErr", "ccBioErr"].forEach(function (id) {
+      document.getElementById(id).classList.remove("show");
+    });
+  }
+
+  document.getElementById("cwCharAddBtn").addEventListener("click", function () {
+    ccOverlay.classList.add("open");
+    document.getElementById("ccNameInput").focus();
+  });
+
+  function closeCc() {
+    ccOverlay.classList.remove("open");
+    ccReset();
+  }
+
+  ccClose.addEventListener("click", closeCc);
+  ccCancel.addEventListener("click", closeCc);
+  ccOverlay.addEventListener("click", function (e) {
+    if (e.target === ccOverlay) closeCc();
+  });
+
+  ccHeaderZone.addEventListener("click", function () {
+    ccHeaderInput.click();
+  });
+  ccAvatarZone.addEventListener("click", function (e) {
+    e.stopPropagation();
+    ccAvatarInput.click();
+  });
+
+  ccHeaderInput.addEventListener("change", function () {
+    const file = ccHeaderInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      ccHeaderDataUrl = e.target.result;
+      ccHeaderImg.src = ccHeaderDataUrl;
+      ccHeaderImg.style.display = "block";
+      document.getElementById("ccBannerText").style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  ccAvatarInput.addEventListener("change", function () {
+    const file = ccAvatarInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      ccAvatarDataUrl = e.target.result;
+      ccAvatarImg.src = ccAvatarDataUrl;
+      ccAvatarImg.style.display = "block";
+      document.getElementById("ccAvatarPrompt").style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  ccBioInput.addEventListener("input", function () {
+    ccCharCounter.textContent = ccBioInput.value.length + "/150";
+
+    ccBioBox.classList.remove(
+      "border-disrupter", "border-professional", "border-fan-favorite", "border-enigma",
+    );
+    const val = ccBioInput.value;
+    if (/drama|chaotic|wild/i.test(val)) {
+      ccBioBox.classList.add("border-disrupter");
+    } else if (/boss|hustle|grind/i.test(val)) {
+      ccBioBox.classList.add("border-professional");
+    } else if (/love|authentic|real/i.test(val)) {
+      ccBioBox.classList.add("border-fan-favorite");
+    } else if (/dark|iconic|mysterious/i.test(val)) {
+      ccBioBox.classList.add("border-enigma");
+    }
+
+    document.getElementById("ccBioErr").classList.remove("show");
+  });
+
+  async function saveCharacterToDb(character) {
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+
+    if (!user) return null;
+
+    const { data, error } = await supabaseClient
+      .from("bot_profiles")
+      .insert({
+        created_by: user.id,
+        world_id: currentWorldId,
+        display_name: character.display_name,
+        handle: character.handle,
+        bio: character.bio,
+        avatar_url: character.avatar_url,
+        header_url: character.header_url,
+        personality: character.personality,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error saving character:", error);
+      return null;
+    }
+    return data;
+  }
+
+  ccSubmit.addEventListener("click", async function () {
+    let valid = true;
+    const name = document.getElementById("ccNameInput").value.trim();
+    const handle = document
+      .getElementById("ccHandleInput")
+      .value.trim()
+      .replace(/^@/, "");
+    const bio = ccBioInput.value.trim();
+
+    if (!name) {
+      document.getElementById("ccNameErr").classList.add("show");
+      valid = false;
+    } else {
+      document.getElementById("ccNameErr").classList.remove("show");
+    }
+
+    if (!handle) {
+      document.getElementById("ccHandleErr").classList.add("show");
+      valid = false;
+    } else {
+      document.getElementById("ccHandleErr").classList.remove("show");
+    }
+
+    if (!bio) {
+      document.getElementById("ccBioErr").classList.add("show");
+      valid = false;
+    } else {
+      document.getElementById("ccBioErr").classList.remove("show");
+    }
+
+    if (!valid) return;
+
+    ccSubmit.disabled = true;
+    ccSubmit.textContent = "Saving...";
+
+    const saved = await saveCharacterToDb({
+      display_name: name,
+      handle: handle,
+      bio: bio,
+      avatar_url: ccAvatarDataUrl || "",
+      header_url: ccHeaderDataUrl || "",
+      personality: buildCcPersonalityPayload(),
+    });
+
+    ccSubmit.disabled = false;
+    ccSubmit.textContent = "Create Character";
+
+    if (!saved) return;
+
+    characters.push(handle);
+    renderCharacters();
+    closeCc();
+  });
+
   // submit handling
-  submitBtn.addEventListener("click", function () {
+  submitBtn.addEventListener("click", async function () {
     let valid = true;
     const title = document.getElementById("cwTitleInput").value.trim();
     const description = document.getElementById("cwdescription").value.trim();
@@ -442,8 +767,33 @@ attachClickListeners();
 
     if (!valid) return;
 
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Saving...";
+
+    const { error } = await supabaseClient
+      .from("worlds")
+      .update({
+        title,
+        description,
+        category: cat,
+        image: imageDataUrl || "",
+        tags: [...tags],
+        characters: [...characters],
+        drama,
+        cross_universe: crossUniverse,
+      })
+      .eq("id", currentWorldId);
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Create World";
+
+    if (error) {
+      console.error("Error saving custom world:", error);
+      return;
+    }
+
     window.WORLDS.push({
-      id: Date.now(),
+      id: currentWorldId,
       title,
       description,
       category: cat,
@@ -511,46 +861,10 @@ window.saveWorldsAndContinue = async function () {
 };
 
 //------------------
-// SAVE CUSTOM WORLDS TO A SHARED TABLE
+// LOAD WORLDS ON PAGE LOAD
 //------------------
 
-document
-  .getElementById("cwSubmit")
-  .addEventListener("click", async function () {
-    const worlds = window.WORLDS || [];
-    if (!worlds.length) return;
-
-    const latest = worlds[worlds.length - 1];
-
-    // only save world objects created just now (they get a Date.now() id
-    if (typeof latest.id !== "number" || latest.id < 1000000) return;
-
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    const { error } = await supabaseClient.from("custom_worlds").insert({
-      created_by: user ? user.id : null,
-      title: latest.title,
-      description: latest.description,
-      category: latest.category,
-      image: latest.image || "",
-      tags: latest.tags || [],
-      characters: latest.characters || [],
-      drama: latest.drama,
-      cross_universe: latest.crossUniverse,
-    });
-
-    if (error) {
-      console.error("Error saving custom world:", error);
-    }
-  });
-
-//------------------
-// LOAD CUSTOM WORLDS ON PAGE LOAD
-//------------------
-
-(async function loadCustomWorlds() {
+(async function loadWorlds() {
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
@@ -558,18 +872,17 @@ document
   if (!user) return;
 
   const { data, error } = await supabaseClient
-    .from("custom_worlds")
+    .from("worlds")
     .select("*")
-    .eq("created_by", user.id)
+    .or(`created_by.is.null,created_by.eq.${user.id}`)
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error loading custom worlds:", error);
+    console.error("Error loading worlds:", error);
     return;
   }
-  if (!data || !data.length) return;
 
-  const mapped = data.map(function (row) {
+  const mapped = (data || []).map(function (row) {
     return {
       id: row.id,
       title: row.title,
@@ -583,6 +896,6 @@ document
     };
   });
 
-  window.WORLDS = (window.WORLDS || []).concat(mapped);
+  window.WORLDS = mapped;
   window.applyFilters();
 })();

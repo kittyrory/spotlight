@@ -15,6 +15,9 @@
 // googleapis.com) using GEMINI_API_KEY, so usage draws down Google's free
 // tier first. If that call fails for any reason (quota exhausted, network
 // error, malformed response), it falls back once to OpenRouter
+// NOTE: Gemini 3.5 flash lite is used because the 2.5 version isn't
+// available for free tier users; it's not a typo that the two model providers
+// use different models. Once we start paying it'll be reverted to 2.5
 //
 // NOTIFICATIONS:
 // After inserting the bot replies, one `notifications` row gets written
@@ -64,16 +67,17 @@ const BOT_PROFILE_IDS = [
   "9ab599f5-1a7e-4397-ac6e-5ff9fa529cee",
 ];
 
-const REPLIES_PER_BATCH = 3;
+const REPLIES_PER_BATCH = 5;
 const MAX_REPLIES_PER_BOT_PER_THREAD = 3;
 
 const BASE_SYSTEM_PROMPT = `You are generating short, realistic social media replies for a
 fictional social app called Spotlight. Write replies the way real users write: casual,
-lowercase-leaning, sometimes using slang. Keep each reply under 200 characters. Do not use
-quotation marks around the reply text. Avoid contractions with apostrophes (write "dont"
-instead of "don't") since apostrophes can break JSON formatting. Return ONLY valid JSON, no
-markdown fences, no preamble, in this exact shape:
-{"replies": [{"content": "..."}]}`;
+lowercase-leaning, sometimes using slang. Keep each reply under 200 characters. Vary sentence
+length and structure - mix short one-line reactions with longer rambling ones, and vary whether
+you open with agreement, a question, a joke, or a flat observation. Do not use quotation marks 
+around the reply text. Avoid contractions with apostrophes (write "dont" instead of "don't") since 
+apostrophes can break JSON formatting. Return ONLY valid JSON, no markdown fences, no preamble, in 
+this exact shape: {"replies": [{"content": "..."}]}`;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,7 +86,47 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-type BotProfile = { id: string; display_name: string; handle: string };
+type ArchetypePersonality = {
+  archetype: string;
+  traits?: string[];
+  voice?: string;
+};
+
+type TraitPersonality = {
+  traits: Record<string, { label: string; value: number }>;
+  overallType: string;
+  overallDescription?: string;
+};
+
+type BotPersonality = ArchetypePersonality | TraitPersonality;
+
+type BotProfile = {
+  id: string;
+  display_name: string;
+  handle: string;
+  personality?: BotPersonality | null;
+};
+
+// npc bots use {archetype, traits: string[], voice}; custom bot_profiles
+// bots use {traits: {trait: {label, value}}, overallType} (the same shape
+// as the user-facing personality system). builds a prompt-ready line for
+// whichever shape is present rather than assuming one.
+function formatPersonalityLine(personality: BotPersonality): string {
+  if ("archetype" in personality) {
+    let line = `Your personality: ${personality.archetype}.`;
+    if (personality.traits?.length)
+      line += ` Traits: ${personality.traits.join(", ")}.`;
+    if (personality.voice) line += ` ${personality.voice}`;
+    return line;
+  }
+
+  const traitDescriptions = Object.values(personality.traits)
+    .map((t) => t.label)
+    .join(", ");
+  let line = `Your personality type: ${personality.overallType}. Traits: ${traitDescriptions}.`;
+  if (personality.overallDescription) line += ` ${personality.overallDescription}`;
+  return line;
+}
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -107,28 +151,39 @@ function extractMentionedBotIds(text: string, bots: BotProfile[]): string[] {
   return [...mentioned];
 }
 
+// same @handle parse, but returns the raw handles instead of matching
+// against a bot list -- used to look up a mentioned custom bot that
+// might live outside the thread owner's selected_worlds (see below).
+function extractMentionedHandles(text: string): string[] {
+  const mentionPattern = /@([a-zA-Z0-9_]+)/g;
+  const handles = new Set<string>();
+  let match;
+  while ((match = mentionPattern.exec(text)) !== null) {
+    handles.add(match[1].toLowerCase());
+  }
+  return [...handles];
+}
+
 function pickReplyBots(
   eligibleBots: BotProfile[],
-  mentionedIds: string[],
+  priorityIds: string[],
   count: number,
 ): BotProfile[] {
-  // mentioned + eligible (under cap) bots always get included first
-  const mentionedEligible = eligibleBots.filter((b) =>
-    mentionedIds.includes(b.id),
+  // priority bots compete for a slot within the batch just like
+  // anyone else -- they just go first. if there are more of them than
+  // the batch has room for, only a random subset makes it in.
+  const priorityEligible = eligibleBots.filter((b) =>
+    priorityIds.includes(b.id),
   );
-  const rest = eligibleBots.filter((b) => !mentionedIds.includes(b.id));
+  const rest = eligibleBots.filter((b) => !priorityIds.includes(b.id));
   const shuffledRest = [...rest].sort(() => Math.random() - 0.5);
 
-  // if more than the batch size are mentioned, only random-select among
-  // them rather than including all (per spec: >4 mentions falls back to
-  // random selection logic)
-  const mentionedPool =
-    mentionedEligible.length > count
-      ? [...mentionedEligible].sort(() => Math.random() - 0.5).slice(0, count)
-      : mentionedEligible;
+  const priorityPool =
+    priorityEligible.length > count
+      ? [...priorityEligible].sort(() => Math.random() - 0.5).slice(0, count)
+      : priorityEligible;
 
-  const combined = [...mentionedPool, ...shuffledRest].slice(0, count);
-  return combined;
+  return [...priorityPool, ...shuffledRest].slice(0, count);
 }
 
 // primary path: calls Gemini's own native API directly (not OpenRouter).
@@ -149,7 +204,7 @@ async function callGeminiNative(
         },
         contents: [{ role: "user", parts: [{ text: userMessage }] }],
         generationConfig: {
-          temperature: 1,
+          temperature: 1.3,
           maxOutputTokens: 300,
           responseMimeType: "application/json",
         },
@@ -198,7 +253,7 @@ async function callOpenRouter(
           { role: "system", content: BASE_SYSTEM_PROMPT },
           { role: "user", content: userMessage },
         ],
-        temperature: 1,
+        temperature: 1.3,
         max_tokens: 300,
         response_format: { type: "json_object" },
       }),
@@ -241,12 +296,9 @@ async function callGemini(userMessage: string): Promise<{ content: string }[]> {
   }
 }
 
-// builds the prompt for one bot's reply. this now tells the
-// bot (a) who actually wrote the original post, so a bot that ISN'T
-// the poster doesn't answer questions as if it had firsthand knowledge
-// of something it never posted, and (b) whether the latest message was
-// actually directed at it (@mentioned) vs. just part of the general
-// thread it's reacting to.
+// this now tells the bot:
+// (a) who actually wrote the original post and 
+// (b) whether latest message was actually directed at it (@mentioned)
 function buildReplyPrompt(
   postContent: string,
   postAuthorName: string | null,
@@ -260,6 +312,14 @@ function buildReplyPrompt(
   lines.push(
     `You are ${bot.display_name} (@${bot.handle.replace(/^@/, "")}), replying on Spotlight.`,
   );
+
+  if (bot.personality) {
+    lines.push(formatPersonalityLine(bot.personality));
+    lines.push(
+      "Stay in character. Your tone and reactions should consistently reflect this personality across replies.",
+    );
+  }
+
   lines.push(
     `Original post (by ${postAuthorName ?? "another user"}): "${postContent}"`,
   );
@@ -279,15 +339,15 @@ function buildReplyPrompt(
       "You did NOT write the original post and have no firsthand knowledge of it beyond " +
         "what's written above. Do not invent specific details (colors, exact events, feelings " +
         "the poster didn't mention) as if you experienced them yourself. React the way a " +
-        "bystander in the thread would -- agree, joke, ask your own question, or add a general " +
-        "reaction -- without claiming personal experience of the post's contents.",
+        "bystander in the thread would: agree, joke, ask your own question, or add a general " +
+        "reaction without claiming personal experience of the post's contents.",
     );
   }
 
   if (latestUserMessage) {
     if (isDirectlyAddressed) {
       lines.push(
-        `This message is directed at you specifically -- respond to it directly: "${latestUserMessage}"`,
+        `This message is directed at you specifically, respond to it directly: "${latestUserMessage}"`,
       );
     } else {
       lines.push(
@@ -334,9 +394,8 @@ Deno.serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // fetching bot_user_id -- this is where bot authorship actually
-    // lives per the posts schema (mutually exclusive with user_id: a
-    // post is authored by either a real user OR a bot, never both).
-    // ai_owner_id is needed separately to know who to notify.
+    // lives per the posts schema
+    // ai_owner_id is needed separately to know who to notify
     const { data: post, error: postError } = await supabase
       .from("posts")
       .select("id, content, user_id, bot_user_id, ai_owner_id")
@@ -352,12 +411,111 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: true });
     if (repliesError) throw repliesError;
 
-    const { data: bots, error: botsError } = await supabase
-      .from("bot_profiles")
-      .select("id, display_name, handle")
+    const { data: npcBots, error: npcBotsError } = await supabase
+      .from("npc_profiles")
+      .select("id, display_name, handle, personality")
       .in("id", BOT_PROFILE_IDS);
-    if (botsError) throw botsError;
-    const botsList = (bots || []) as BotProfile[];
+    if (npcBotsError) throw npcBotsError;
+
+    let customBots: BotProfile[] = [];
+    const threadOwnerId = post.ai_owner_id ?? post.user_id ?? null;
+    if (threadOwnerId) {
+      const { data: ownerProfile, error: ownerProfileError } = await supabase
+        .from("profiles")
+        .select("selected_worlds")
+        .eq("id", threadOwnerId)
+        .single();
+      if (ownerProfileError) {
+        console.error(
+          "Could not load selected_worlds for custom bot lookup:",
+          ownerProfileError,
+        );
+      }
+      const selectedWorldIds: string[] = (
+        ownerProfile?.selected_worlds ?? []
+      )
+        .map((w: { id?: string }) => w.id)
+        .filter(Boolean);
+
+      if (selectedWorldIds.length) {
+        const { data: customBotRows, error: customBotsError } = await supabase
+          .from("bot_profiles")
+          .select("id, display_name, handle, personality")
+          .in("world_id", selectedWorldIds);
+        if (customBotsError) {
+          console.error("Could not load custom bots:", customBotsError);
+        } else {
+          customBots = (customBotRows || []) as BotProfile[];
+        }
+      }
+    }
+
+    const parentReply = parentReplyId
+      ? (existingReplies || []).find((r) => r.id === parentReplyId)
+      : null;
+    const parentReplyBotId = parentReply?.bot_user_id ?? null;
+
+    const botsList = [...(npcBots || []), ...customBots] as BotProfile[];
+
+    const idsNeedingBackfill = [
+      ...new Set(
+        [post.bot_user_id, parentReplyBotId].filter(
+          (id): id is string => !!id && !botsList.some((b) => b.id === id),
+        ),
+      ),
+    ];
+    if (idsNeedingBackfill.length) {
+      const { data: backfilledBotRows, error: backfillError } = await supabase
+        .from("bot_profiles")
+        .select("id, display_name, handle, personality")
+        .in("id", idsNeedingBackfill);
+      if (backfillError) {
+        console.error(
+          "Could not look up out-of-scope post/reply author bots:",
+          backfillError,
+        );
+      } else if (backfilledBotRows?.length) {
+        customBots = [...customBots, ...(backfilledBotRows as BotProfile[])];
+        botsList.push(...(backfilledBotRows as BotProfile[]));
+      }
+    }
+
+    const mentionSourceText =
+      body.reason === "reply_opened"
+        ? post.content
+        : body.reason === "user_replied" && existingReplies?.length
+          ? (() => {
+              const lastReply = existingReplies[existingReplies.length - 1];
+              return lastReply.bot_user_id ? "" : lastReply.content;
+            })()
+          : "";
+    const rawMentionedHandles = extractMentionedHandles(mentionSourceText || "");
+    const knownHandles = new Set(
+      botsList.map((b) => b.handle.replace(/^@/, "").toLowerCase()),
+    );
+    const unresolvedHandles = rawMentionedHandles.filter(
+      (h) => !knownHandles.has(h),
+    );
+
+    if (unresolvedHandles.length) {
+      const orFilter = unresolvedHandles
+        .map((h) => `handle.ilike.${h}`)
+        .join(",");
+      const { data: extraBotRows, error: extraBotError } = await supabase
+        .from("bot_profiles")
+        .select("id, display_name, handle, personality")
+        .or(orFilter);
+      if (extraBotError) {
+        console.error(
+          "Could not look up out-of-scope mentioned bots:",
+          extraBotError,
+        );
+      } else if (extraBotRows?.length) {
+        customBots = [...customBots, ...(extraBotRows as BotProfile[])];
+        botsList.push(...(extraBotRows as BotProfile[]));
+      }
+    }
+
     const botById = new Map(botsList.map((b) => [b.id, b]));
 
     const postAuthor = post.bot_user_id
@@ -365,9 +523,7 @@ Deno.serve(async (req) => {
       : undefined;
     const postAuthorName = postAuthor?.display_name ?? null;
 
-    // who this thread privately belongs to -- same either/or the RLS
-    // policies use (posts.user_id = auth.uid() OR posts.ai_owner_id = auth.uid())
-    const recipientId: string | null = post.ai_owner_id ?? post.user_id ?? null;
+    const recipientId: string | null = threadOwnerId;
 
     // how many times has each bot already replied in this thread
     const replyCountByBot = new Map<string, number>();
@@ -391,8 +547,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // figure out latest user message + mentions (only relevant for the
-    // user_replied path; reply_opened has no user message yet)
+    // figure out latest user message + mentions
     let latestUserMessage: string | null = null;
     let mentionedBotIds: string[] = [];
     if (body.reason === "user_replied" && existingReplies?.length) {
@@ -401,10 +556,58 @@ Deno.serve(async (req) => {
         latestUserMessage = lastReply.content;
         mentionedBotIds = extractMentionedBotIds(lastReply.content, botsList);
       }
+    } else if (body.reason === "reply_opened") {
+      // no replies exist yet, so the only thing to check for mentions is
+      // the original post itself
+      mentionedBotIds = extractMentionedBotIds(post.content, botsList);
     }
 
+    const priorityBotIds = new Set<string>(mentionedBotIds);
+
+    if (
+      body.reason === "user_replied" &&
+      post.bot_user_id &&
+      eligibleBots.some((b) => b.id === post.bot_user_id)
+    ) {
+      priorityBotIds.add(post.bot_user_id);
+    }
+
+    if (
+      parentReplyBotId &&
+      eligibleBots.some((b) => b.id === parentReplyBotId)
+    ) {
+      priorityBotIds.add(parentReplyBotId);
+    }
+
+    const customBotIds = new Set(customBots.map((b) => b.id));
+    const hasCustomBotReplied = (existingReplies || []).some(
+      (r) => r.bot_user_id && customBotIds.has(r.bot_user_id),
+    );
+    if (!hasCustomBotReplied) {
+      const eligibleCustomBots = eligibleBots.filter((b) =>
+        customBotIds.has(b.id),
+      );
+      if (eligibleCustomBots.length) {
+        const pick =
+          eligibleCustomBots[
+            Math.floor(Math.random() * eligibleCustomBots.length)
+          ];
+        priorityBotIds.add(pick.id);
+      }
+    }
+
+    // a bot with a slot should know if it's the one actually being
+    // talked to (mentioned, or the direct parent of this reply) vs. just
+    // generally in the thread
+    const directlyAddressedIds = new Set<string>(mentionedBotIds);
+    if (parentReplyBotId) directlyAddressedIds.add(parentReplyBotId);
+
     const batchSize = Math.min(REPLIES_PER_BATCH, eligibleBots.length);
-    const replyBots = pickReplyBots(eligibleBots, mentionedBotIds, batchSize);
+    const replyBots = pickReplyBots(
+      eligibleBots,
+      [...priorityBotIds],
+      batchSize,
+    );
 
     const threadForPrompt = (existingReplies || []).map((r) => ({
       content: r.content,
@@ -416,7 +619,7 @@ Deno.serve(async (req) => {
     const insertedRows = [];
     for (const bot of replyBots) {
       const isPostAuthor = post.bot_user_id === bot.id;
-      const isDirectlyAddressed = mentionedBotIds.includes(bot.id);
+      const isDirectlyAddressed = directlyAddressedIds.has(bot.id);
       const prompt = buildReplyPrompt(
         post.content,
         postAuthorName,
@@ -445,10 +648,6 @@ Deno.serve(async (req) => {
           is_ai_generated: true,
         });
       } catch (err) {
-        // previously a failed call here just silently vanished with no
-        // trace -- if this happened to be the @mentioned bot, it would
-        // look like "the tagged bot never replied" with zero clue why.
-        // added it for future bug catching & less headache :)
         console.error(
           `Reply generation failed for bot ${bot.handle} (${bot.id}):`,
           err,
@@ -467,12 +666,6 @@ Deno.serve(async (req) => {
       .select();
     if (insertError) throw insertError;
 
-    // notify the post owner for every bot reply, unless there's no
-    // recipient to notify (shouldn't happen in practice, but to be safe).
-    // type is mention_reply if the reply @ mentions the recipient's own
-    // handle, otherwise bot_reply. non-fatal on failure -- the replies
-    // themselves already succeeded and shouldn't be rolled back over a
-    // notification insert issue.
     if (recipientId) {
       const { data: recipientProfile, error: recipientError } = await supabase
         .from("profiles")

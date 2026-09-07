@@ -647,10 +647,7 @@
       }
 
       .cw-img-zone input {
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        cursor: pointer;
+        display: none;
       }
 
       .cw-img-icon {
@@ -956,6 +953,231 @@
         transform: translateX(20px);
         background: var(--gold);
       }
+
+      .cc-header-preview-box {
+        width: 100%;
+        height: 130px;
+        background-color: var(--cw-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 40px;
+        cursor: pointer;
+        overflow: visible;
+      }
+
+      .cc-banner-text {
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: var(--muted2);
+        font-size: 12px;
+      }
+
+      .cc-header-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      .cc-avatar-circle {
+        position: absolute;
+        bottom: -32px;
+        left: 20px;
+        width: 68px;
+        height: 68px;
+        background: var(--surface2);
+        border: 1px solid var(--bg);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(4, 4, 4, 0.5);
+        border-color: var(--accent2);
+      }
+
+      .cc-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+      }
+
+      .cc-avatar-prompt {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--ink);
+        opacity: 0.7;
+        text-align: center;
+        pointer-events: none;
+      }
+
+      .cc-slider-container {
+        background-color: var(--cw-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px;
+        margin-top: 8px;
+      }
+
+      .cc-trait-row {
+        margin-bottom: 16px;
+      }
+
+      .cc-trait-row:last-child {
+        margin-bottom: 0;
+      }
+
+      .cc-trait-name {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .cc-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .cc-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        border-radius: 4px;
+        background: linear-gradient(
+          to right,
+          var(--gold) 0%,
+          var(--gold) calc((var(--val, 6) - 1) / 10 * 100%),
+          var(--border) calc((var(--val, 6) - 1) / 10 * 100%),
+          var(--border) 100%
+        );
+        outline: none;
+        cursor: pointer;
+      }
+
+      .cc-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--gold);
+        border: 2px solid var(--bg);
+        cursor: pointer;
+      }
+
+      .cc-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--gold);
+        border: 2px solid var(--bg);
+        cursor: pointer;
+      }
+
+      .cc-trait-summary {
+        margin-top: 10px;
+        padding: 12px;
+        background-color: var(--cw-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+
+      .cc-trait-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .cc-trait-chip {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+        background-color: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--ink);
+      }
+
+      .cc-overall-line {
+        font-size: 12px;
+        color: var(--muted2);
+        border-top: 1px solid var(--border);
+        padding-top: 8px;
+      }
+
+      .cc-overall-line span {
+        color: var(--gold);
+        font-weight: 700;
+      }
+
+      .cc-bio-box {
+        background-color: var(--cw-bg);
+        border: 1.5px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        transition: border-color 0.2s;
+      }
+
+      .cc-bio-box.border-disrupter {
+        border-color: #ff4133;
+      }
+
+      .cc-bio-box.border-professional {
+        border-color: #33ccff;
+      }
+
+      .cc-bio-box.border-fan-favorite {
+        border-color: #5cd65c;
+      }
+
+      .cc-bio-box.border-enigma {
+        border-color: var(--accent2);
+      }
+
+      .cc-bio-input {
+        background: transparent;
+        border: none;
+        color: var(--ink);
+        font-size: 13px;
+        line-height: 1.5;
+        width: 100%;
+        height: 50px;
+        resize: none;
+        outline: none;
+        padding: 0;
+      }
+
+      .cc-bio-input::placeholder {
+        color: var(--muted2);
+      }
+
+      .cc-char-counter {
+        align-self: flex-end;
+        color: var(--muted2);
+        font-size: 10px;
+        margin-top: 4px;
+      }
     </style>
   </head>
 
@@ -1089,7 +1311,7 @@
 
         <div class="cw-field">
           <label class="cw-label">Banner Image</label>
-          <div class="cw-img-zone" id="cwImgZone">
+          <div class="cw-img-zone" id="cwImgZone" onclick="document.getElementById('cwImgInput').click()">
             <input type="file" id="cwImgInput" accept="image/*" />
             <div class="cw-img-icon">&#8679;</div>
             <div class="cw-img-text">Click to upload an image</div>
@@ -1132,15 +1354,9 @@
           <label class="cw-label"
             >Characters <span class="cw-label-sub">(optional)</span></label
           >
-          <div class="cw-tags-row">
-            <input
-              type="text"
-              id="cwCharInput"
-              placeholder="e.g. @jinwoo_sung"
-              maxlength="32"
-            />
-            <button class="cw-tag-add" id="cwCharAddBtn">+ Add</button>
-          </div>
+          <button type="button" class="cw-tag-add" id="cwCharAddBtn">
+            + Add Character
+          </button>
           <div class="cw-tag-pills" id="cwCharList"></div>
         </div>
 
@@ -1191,10 +1407,73 @@
       </div>
     </div>
 
+    <div class="cw-overlay" id="ccOverlay">
+      <div class="cw-modal">
+        <div class="cw-header">
+          <div class="cw-title">Create Character</div>
+          <button class="cw-close" id="ccClose">&times;</button>
+        </div>
+
+        <input type="file" id="ccHeaderInput" accept="image/*" style="display: none" />
+        <input type="file" id="ccAvatarInput" accept="image/*" style="display: none" />
+
+        <div class="cc-header-preview-box" id="ccHeaderZone">
+          <img class="cc-header-img" id="ccHeaderImg" src="" alt="" style="display: none" />
+          <div class="cc-banner-text" id="ccBannerText">Tap to add banner</div>
+
+          <div class="cc-avatar-circle" id="ccAvatarZone">
+            <img class="cc-avatar-img" id="ccAvatarImg" src="" alt="" style="display: none" />
+            <div class="cc-avatar-prompt" id="ccAvatarPrompt">Add Pic</div>
+          </div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Display Name <span>*</span></label>
+          <input type="text" id="ccNameInput" placeholder="e.g. Jinwoo Sung" maxlength="40" />
+          <div class="cw-err" id="ccNameErr">Display name is required</div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Handle <span>*</span></label>
+          <input type="text" id="ccHandleInput" placeholder="e.g. jinwoo_sung" maxlength="32" />
+          <div class="cw-err" id="ccHandleErr">Handle is required</div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Personality</label>
+          <div class="cc-slider-container" id="ccTraitsContainer"></div>
+          <div class="cc-trait-summary">
+            <div class="cc-trait-tags" id="ccTraitTags"></div>
+            <div class="cc-overall-line">
+              Overall: <span id="ccOverallType">Independent</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cw-field">
+          <label class="cw-label">Bio <span>*</span></label>
+          <div class="cc-bio-box" id="ccBioBox">
+            <textarea
+              id="ccBioInput"
+              class="cc-bio-input"
+              maxlength="150"
+              placeholder="Who is this character?"
+            ></textarea>
+            <div class="cc-char-counter" id="ccCharCounter">0/150</div>
+          </div>
+          <div class="cw-err" id="ccBioErr">Bio is required</div>
+        </div>
+
+        <div class="cw-footer">
+          <button class="cw-btn-cancel" id="ccCancel">Cancel</button>
+          <button class="cw-btn-create" id="ccSubmit">Create Character</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="scripts/supabase.js"></script>
     <script src="scripts/theme.js"></script>
-    <script src="scripts/worlds.js"></script>
     <script src="scripts/world-scripts.js"></script>
   </body>
 </html>

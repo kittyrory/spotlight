@@ -32,6 +32,31 @@ function formatCount(value) {
     : value;
 }
 
+const TAG_PATTERN = /([@#][a-zA-Z0-9_]+)/g;
+
+function renderTaggedText(text) {
+  const fragment = document.createDocumentFragment();
+  let lastIndex = 0;
+  let match;
+  TAG_PATTERN.lastIndex = 0;
+  while ((match = TAG_PATTERN.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      fragment.appendChild(
+        document.createTextNode(text.slice(lastIndex, match.index)),
+      );
+    }
+    const span = document.createElement("span");
+    span.className = match[0].startsWith("@") ? "mention" : "hashtag";
+    span.textContent = match[0];
+    fragment.appendChild(span);
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  return fragment;
+}
+
 function timeSince(dateString) {
   const minutes = Math.max(
     1,
@@ -76,7 +101,7 @@ function renderUserPost(
   content.className = "postContent";
   if (post.content) {
     const text = document.createElement("p");
-    text.textContent = post.content;
+    text.appendChild(renderTaggedText(post.content));
     content.appendChild(text);
   }
   if (Array.isArray(post.image_urls) && post.image_urls.length) {
@@ -254,7 +279,7 @@ async function fetchAndCacheUserPosts(currentUser) {
   // reactions, profiles, and bot profiles all depend on `posts` (just
   // fetched above) but not on each other, so run them together instead
   // of one after another.
-  const [reactionsResult, profilesResult, botProfilesResult] = await Promise.all([
+  const [reactionsResult, profilesResult, npcProfilesResult, customBotProfilesResult] = await Promise.all([
     currentUser
       ? supabaseClient
           .from("post_reactions")
@@ -266,6 +291,12 @@ async function fetchAndCacheUserPosts(currentUser) {
       .from("profiles")
       .select("id, display_name, handle, avatar_url")
       .in("id", userIds),
+    botUserIds.length
+      ? supabaseClient
+          .from("npc_profiles")
+          .select("id, display_name, handle, avatar_url")
+          .in("id", botUserIds)
+      : Promise.resolve({ data: [], error: null }),
     botUserIds.length
       ? supabaseClient
           .from("bot_profiles")
@@ -285,13 +316,22 @@ async function fetchAndCacheUserPosts(currentUser) {
     (profiles || []).map((profile) => [profile.id, profile]),
   );
 
-  // bot authors live in a separate table since they aren't real
-  // auth users. fold their profiles into the same lookup keyed by post id
-  const { data: botProfiles, error: botProfileError } = botProfilesResult;
-  if (botProfileError)
-    console.error("Could not load bot profiles:", botProfileError);
+  // bot authors live in one of two separate tables since they aren't real
+  // auth users: npc_profiles (universal bot pool) or bot_profiles
+  // (custom, world-scoped bots). fold both into the same lookup keyed by
+  // post id -- a post's bot_user_id only ever exists in one of the two.
+  const { data: npcProfiles, error: npcProfileError } = npcProfilesResult;
+  if (npcProfileError)
+    console.error("Could not load npc profiles:", npcProfileError);
+  const { data: customBotProfiles, error: customBotProfileError } =
+    customBotProfilesResult;
+  if (customBotProfileError)
+    console.error("Could not load custom bot profiles:", customBotProfileError);
   const botProfileById = new Map(
-    (botProfiles || []).map((profile) => [profile.id, profile]),
+    [...(npcProfiles || []), ...(customBotProfiles || [])].map((profile) => [
+      profile.id,
+      profile,
+    ]),
   );
   const authorByPostId = new Map(
     posts.map((post) => [
@@ -357,45 +397,23 @@ async function loadUserPosts(currentUser, { useCache = false } = {}) {
 const AI_POST_COOLDOWN_MS = 60 * 1000;
 let lastAiPostGenerationAt = 0;
 
-// pregen world ids are plain array indices (small numbers), custom
-// world ids are Date.now() timestamps (always > 1,000,000) -- see
-// world-scripts.js where each is assigned. use that to know which
-// source to resolve each selected world against.
 async function resolveSelectedWorlds(selectedWorlds) {
   if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
 
-  const pregenIds = selectedWorlds
-    .filter((w) => w.id < 1000000)
-    .map((w) => w.id);
-  const customIds = selectedWorlds
-    .filter((w) => w.id >= 1000000)
-    .map((w) => w.id);
+  const ids = selectedWorlds.map((w) => w.id).filter(Boolean);
+  if (!ids.length) return [];
 
-  const pregenResolved = (window.WORLDS || [])
-    .filter((w) => pregenIds.includes(w.id))
-    .map((w) => ({
-      title: w.title,
-      description: w.description || w.descripton || "",
-      tags: w.tags || [],
-      category: w.category,
-    }));
-
-  let customResolved = [];
-  if (customIds.length) {
-    const { data: customWorlds, error } = await supabaseClient
-      .from("custom_worlds")
-      .select(
-        "title, description, category, tags, characters, drama, cross_universe",
-      )
-      .in("id", customIds);
-    if (error) {
-      console.error("Could not load custom worlds:", error);
-    } else {
-      customResolved = customWorlds || [];
-    }
+  const { data: worlds, error } = await supabaseClient
+    .from("worlds")
+    .select(
+      "title, description, category, tags, characters, drama, cross_universe",
+    )
+    .in("id", ids);
+  if (error) {
+    console.error("Could not load worlds:", error);
+    return [];
   }
-
-  return [...pregenResolved, ...customResolved];
+  return worlds || [];
 }
 
 // calls the supabase edge function that generates AI posts via gemini

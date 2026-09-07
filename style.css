@@ -252,19 +252,14 @@ button:active,
   transform: translateY(0);
 }
 
-button:focus-visible,
-a:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible,
-[tabindex]:focus-visible {
-  outline: 3px solid
-    color-mix(in srgb, var(--gold, currentColor) 45%, transparent);
-  outline-offset: 3px;
-}
-
 img {
   max-width: 100%;
+}
+
+.mention,
+.hashtag {
+  color: var(--gold);
+  font-weight: 700;
 }
 
 /* Minimalist family: simple task pages and short social views. */

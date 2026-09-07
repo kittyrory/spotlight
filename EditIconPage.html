@@ -12,6 +12,7 @@
         }
       })();
     </script>
+    <script src="scripts/profile-cache.js"></script>
     <link rel="stylesheet" href="style.css" />
     <style>
       * {
@@ -291,33 +292,9 @@
           </svg>
         </button>
         <div class="topbar-title">Edit Profile</div>
-        <button
-          class="circle-btn"
-          id="theme-toggle"
-          aria-label="Toggle light/dark mode"
-          type="button"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.1"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M12 3v2" />
-            <path d="M12 19v2" />
-            <path d="m4.22 4.22 1.42 1.42" />
-            <path d="m18.36 18.36 1.42 1.42" />
-            <path d="M3 12h2" />
-            <path d="M19 12h2" />
-            <path d="m4.22 19.78 1.42-1.42" />
-            <path d="m18.36 5.64 1.42-1.42" />
-            <circle cx="12" cy="12" r="4" />
-          </svg>
-        </button>
+        <div class="circle-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
       </div>
 
       <div class="fame-card">
@@ -409,6 +386,8 @@
       </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="scripts/supabase.js"></script>
     <script>
       // ---------- JS ---------- //
       const saveBtn = document.getElementById("save-profile-btn");
@@ -425,6 +404,7 @@
       const name = document.getElementById("name-input");
       const bio = document.getElementById("bio-input");
       const iconPage = "IconPage.html";
+      let currentProfile = null;
 
       //helper: read a file as a base64 data URL so it survives page navigation//
       //(blob: URLs from createObjectURL only live as long as this document does)//
@@ -448,7 +428,6 @@
         if (file) {
           const dataUrl = await readFileAsDataUrl(file);
           bannerImag.src = dataUrl;
-          localStorage.setItem("savedBanner", dataUrl);
         }
       });
 
@@ -463,26 +442,42 @@
         if (file) {
           const dataUrl = await readFileAsDataUrl(file);
           avatarImg.src = dataUrl;
-          localStorage.setItem("savedAvatar", dataUrl);
         }
       });
 
-      //pre-fill the form with whatever's already saved//
-      (function prefillForm() {
-        const localData = localStorage.getItem("savedProfile");
-        if (localData) {
-          try {
-            const parsed = JSON.parse(localData);
-            name.value = parsed.name || "";
-            handle.value = parsed.handle || "";
-            bio.value = parsed.bio || "";
-          } catch (e) {}
-        }
-        const savedAvatar = localStorage.getItem("savedAvatar");
-        const savedBanner = localStorage.getItem("savedBanner");
-        if (savedAvatar) avatarImg.src = savedAvatar;
-        if (savedBanner) bannerImag.src = savedBanner;
-      })();
+      //pre-fill the form with whatever's already saved, same source IconPage reads from//
+      function applyProfileToForm(profile) {
+        name.value = profile.display_name || "";
+        handle.value = profile.handle || "";
+        bio.value = profile.bio || "";
+        if (profile.avatar_url) avatarImg.src = profile.avatar_url;
+        if (profile.header_url) bannerImag.src = profile.header_url;
+      }
+
+      async function prefillForm() {
+        // paint the cached profile first so the form isn't empty while supabase loads//
+        const cachedProfile = window.SpotlightProfileCache.read();
+        if (cachedProfile) applyProfileToForm(cachedProfile);
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabaseClient.auth.getUser();
+        if (userError || !user) return;
+
+        const { data: profile, error } = await supabaseClient
+          .from("profiles")
+          .select("display_name, handle, bio, avatar_url, header_url")
+          .eq("id", user.id)
+          .single();
+
+        if (error || !profile) return;
+
+        currentProfile = profile;
+        applyProfileToForm(profile);
+      }
+
+      prefillForm();
 
       //back button: same behavior as cancel//
       backBtn.addEventListener("click", () => {
@@ -490,19 +485,42 @@
       });
 
       //update changes//
-      saveBtn.addEventListener("click", (e) => {
-        e.preventDefault(); // Securely blocks the link from navigating early
+      saveBtn.addEventListener("click", async (e) => {
+        e.preventDefault(); // blocks the link from navigating early
+
+        const {
+          data: { user },
+          error: userError,
+        } = await supabaseClient.auth.getUser();
+        if (userError || !user) {
+          console.log("Could not save profile:", userError || "No signed-in user.");
+          return;
+        }
 
         const profileData = {
-          name: name.value,
+          display_name: name.value,
           handle: handle.value,
           bio: bio.value,
+          avatar_url: avatarImg.src,
+          header_url: bannerImag.src,
         };
 
-        // Save data package to browser memory
-        localStorage.setItem("savedProfile", JSON.stringify(profileData));
+        const { data: updated, error } = await supabaseClient
+          .from("profiles")
+          .update(profileData)
+          .eq("id", user.id)
+          .select("display_name, handle, bio, avatar_url, header_url")
+          .single();
 
-        // Go back to the profile page so the changes are visible
+        if (error) {
+          console.log("Could not save profile:", error);
+          return;
+        }
+
+        currentProfile = updated;
+        window.SpotlightProfileCache.write(updated);
+
+        // go back to the profile page so the changes are visible
         window.location.href = iconPage;
       });
     </script>

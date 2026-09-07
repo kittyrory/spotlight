@@ -144,12 +144,16 @@ Deno.serve(async (req) => {
       return jsonResponse({ reactions: [] });
     }
 
-    const { data: bots, error: botsError } = await supabase
-      .from("bot_profiles")
-      .select("id, display_name, handle")
-      .in("id", [...new Set(rolls.map((r) => r.botId))]);
-    if (botsError) throw botsError;
-    const botById = new Map((bots || []).map((b) => [b.id, b]));
+    const botIds = [...new Set(rolls.map((r) => r.botId))];
+    const [npcResult, customResult] = await Promise.all([
+      supabase.from("npc_profiles").select("id, display_name, handle").in("id", botIds),
+      supabase.from("bot_profiles").select("id, display_name, handle").in("id", botIds),
+    ]);
+    if (npcResult.error) throw npcResult.error;
+    if (customResult.error) throw customResult.error;
+    const botById = new Map(
+      [...(npcResult.data || []), ...(customResult.data || [])].map((b) => [b.id, b]),
+    );
 
     const reactionRows = rolls.map((roll) => ({
       post_id: postId,

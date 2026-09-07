@@ -532,12 +532,13 @@
           ];
           let botProfiles = [];
           if (botIds.length) {
-            const { data, error: botError } = await supabaseClient
-              .from("bot_profiles")
-              .select("id, display_name, handle, avatar_url")
-              .in("id", botIds);
-            if (botError) console.error("Could not load bot profiles:", botError);
-            botProfiles = data || [];
+            const [npcResult, customResult] = await Promise.all([
+              supabaseClient.from("npc_profiles").select("id, display_name, handle, avatar_url").in("id", botIds),
+              supabaseClient.from("bot_profiles").select("id, display_name, handle, avatar_url").in("id", botIds),
+            ]);
+            if (npcResult.error) console.error("Could not load npc profiles:", npcResult.error);
+            if (customResult.error) console.error("Could not load custom bot profiles:", customResult.error);
+            botProfiles = [...(npcResult.data || []), ...(customResult.data || [])];
           }
           const botProfileById = new Map(botProfiles.map((b) => [b.id, b]));
 
