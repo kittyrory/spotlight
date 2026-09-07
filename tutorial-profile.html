@@ -187,7 +187,7 @@
       }
 
       .progress-dots span.active {
-        background: var(--gold2);
+        background: var(--gold);
         transform: scale(1.3);
       }
 
@@ -225,7 +225,7 @@
           title: "Now your profile...",
           subtitle: null,
           chunks: [
-            "So far, we know your character is a [IDENTITY], who is known as [FAME PATH], and got here via [ORIGIN].",
+            "So far, we know your character is [IDENTITY], who is known as [FAME PATH], and got here [ORIGIN].",
             "But what else? If they’re a K-Pop Idol, what group are they in? If they’re a Nepo Baby, who is their parent? Oh, and we can’t forget their name!",
             "Any extra information will reside here — but don’t worry! You can always come back and change it later.",
           ],
@@ -259,12 +259,12 @@
       };
 
       const ORIGIN_PHRASES = {
-        "viral-moment": "a viral moment",
-        "industry-plant": "being an industry plant",
-        "underground-legend": "being an underground legend",
-        "reality-tv": "reality TV",
-        "nepotism-baby": "being a nepotism baby",
-        "self-made": "being self-made",
+        "viral-moment": "via a viral moment",
+        "industry-plant": "by being an industry plant",
+        "underground-legend": "by being an underground legend",
+        "reality-tv": "via reality TV",
+        "nepotism-baby": "by being a nepo baby",
+        "self-made": "by being self-made",
       };
 
       // pull identity / fame_path / origin from Supabase and drop them into

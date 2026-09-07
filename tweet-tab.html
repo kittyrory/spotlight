@@ -624,13 +624,6 @@
 <script src="scripts/supabase.js"></script>
 <script src="scripts/post-cache.js"></script>
 <script src="scripts/theme.js"></script>
-<script src="scripts/worlds.js"></script>
-<script>
-  //  mirror the id-assignment from Feed.html
-  // looks pregen worlds up by the same ids in profiles.selected_worlds.
-  worlds.forEach((world, i) => { world.id = i; });
-  window.WORLDS = worlds;
-</script>
 <script>
   const composeInput = document.getElementById('composeInput');
   const wordCount = document.getElementById('wordCount');
@@ -871,33 +864,22 @@
   }
 
   // resolves a user's selected_worlds (array of {id}) into full world
-  // objects, mixing pregen worlds (from window.WORLDS) with custom worlds
-  // (from the custom_worlds table).
-  // ported from Feed.html so this page's AI post generation call gets the same world context.
+  // objects from worlds.
   async function resolveSelectedWorlds(selectedWorlds) {
     if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
 
-    const pregenIds = selectedWorlds.filter((w) => w.id < 1000000).map((w) => w.id);
-    const customIds = selectedWorlds.filter((w) => w.id >= 1000000).map((w) => w.id);
+    const ids = selectedWorlds.map((w) => w.id).filter(Boolean);
+    if (!ids.length) return [];
 
-    const pregenResolved = (window.WORLDS || [])
-      .filter((w) => pregenIds.includes(w.id))
-      .map((w) => ({ title: w.title, description: w.description || w.descripton || '', tags: w.tags || [], category: w.category }));
-
-    let customResolved = [];
-    if (customIds.length) {
-      const { data: customWorlds, error } = await supabaseClient
-        .from('custom_worlds')
-        .select('title, description, category, tags, characters, drama, cross_universe')
-        .in('id', customIds);
-      if (error) {
-        console.error('Could not load custom worlds:', error);
-      } else {
-        customResolved = customWorlds || [];
-      }
+    const { data: worlds, error } = await supabaseClient
+      .from('worlds')
+      .select('title, description, category, tags, characters, drama, cross_universe')
+      .in('id', ids);
+    if (error) {
+      console.error('Could not load worlds:', error);
+      return [];
     }
-
-    return [...pregenResolved, ...customResolved];
+    return worlds || [];
   }
 
   postBtn.addEventListener('click', async () => {

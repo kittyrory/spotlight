@@ -26,6 +26,29 @@ function timeSince(dateString) {
   return `${Math.floor(hours / 24)}d`;
 }
 
+const TAG_PATTERN = /([@#][a-zA-Z0-9_]+)/g;
+
+function renderTaggedText(text) {
+  const fragment = document.createDocumentFragment();
+  let lastIndex = 0;
+  let match;
+  TAG_PATTERN.lastIndex = 0;
+  while ((match = TAG_PATTERN.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      fragment.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+    const span = document.createElement("span");
+    span.className = match[0].startsWith("@") ? "mention" : "hashtag";
+    span.textContent = match[0];
+    fragment.appendChild(span);
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    fragment.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  return fragment;
+}
+
 function createReaction(type, icon, count) {
   const button = document.createElement("button");
   button.type = "button";
@@ -291,7 +314,7 @@ async function main() {
       ...new Set([post.bot_user_id, ...replyRows.map((r) => r.bot_user_id)].filter(Boolean)),
     ];
 
-    const [reactionsResult, profilesResult, botProfilesResult] = await Promise.all([
+    const [reactionsResult, profilesResult, npcProfilesResult, customBotProfilesResult] = await Promise.all([
       currentUser
         ? supabaseClient
             .from("post_reactions")
@@ -303,12 +326,8 @@ async function main() {
         .from("profiles")
         .select("id, display_name, handle, avatar_url")
         .in("id", userIds),
-      botUserIds.length
-        ? supabaseClient
-            .from("bot_profiles")
-            .select("id, display_name, handle, avatar_url")
-            .in("id", botUserIds)
-        : Promise.resolve({ data: [], error: null }),
+      botUserIds.length ? supabaseClient.from("npc_profiles").select("id, display_name, handle, avatar_url").in("id", botUserIds) : Promise.resolve({ data: [], error: null }),
+      botUserIds.length ? supabaseClient.from("bot_profiles").select("id, display_name, handle, avatar_url").in("id", botUserIds) : Promise.resolve({ data: [], error: null }),
     ]);
 
     const { data: myReactionRows, error: reactionsError } = reactionsResult;
@@ -319,9 +338,11 @@ async function main() {
     if (profileError) console.error("Could not load profiles:", profileError);
     profileById = new Map((profiles || []).map((p) => [p.id, p]));
 
-    const { data: botProfiles, error: botProfileError } = botProfilesResult;
-    if (botProfileError) console.error("Could not load bot profiles:", botProfileError);
-    botProfileById = new Map((botProfiles || []).map((p) => [p.id, p]));
+    const { data: npcProfiles, error: npcProfileError } = npcProfilesResult;
+    if (npcProfileError) console.error("Could not load npc profiles:", npcProfileError);
+    const { data: customBotProfiles, error: customBotProfileError } = customBotProfilesResult;
+    if (customBotProfileError) console.error("Could not load custom bot profiles:", customBotProfileError);
+    botProfileById = new Map([...(npcProfiles || []), ...(customBotProfiles || [])].map((p) => [p.id, p]));
 
     const postAuthor = authorFor(post, profileById, botProfileById);
 
@@ -375,11 +396,11 @@ async function main() {
         (id) => !botProfileById.has(id),
       );
       if (botIds.length) {
-        const { data: newBots } = await supabaseClient
-          .from("bot_profiles")
-          .select("id, display_name, handle, avatar_url")
-          .in("id", botIds);
-        (newBots || []).forEach((p) => botProfileById.set(p.id, p));
+        const [newNpcResult, newCustomResult] = await Promise.all([
+          supabaseClient.from("npc_profiles").select("id, display_name, handle, avatar_url").in("id", botIds),
+          supabaseClient.from("bot_profiles").select("id, display_name, handle, avatar_url").in("id", botIds),
+        ]);
+        [...(newNpcResult.data || []), ...(newCustomResult.data || [])].forEach((p) => botProfileById.set(p.id, p));
       }
       replyRows.push(...inserted);
       replyTree = buildReplyTree(replyRows);
@@ -411,7 +432,8 @@ async function main() {
     body.querySelector(".displayName").textContent = author?.display_name || "Spotlight user";
     body.querySelector(".username").textContent = `@${author?.handle?.replace(/^@/, "") || "spotlightuser"}`;
     body.querySelector(".postTime").textContent = `· ${timeSince(reply.created_at)}`;
-    body.querySelector(".threadText").textContent = reply.content;
+    body.querySelector(".threadText").textContent = "";
+    body.querySelector(".threadText").appendChild(renderTaggedText(reply.content));
   }
 
   function buildReactionRow(reply, container) {
@@ -579,7 +601,7 @@ async function main() {
 
     const body = document.createElement("div");
     body.className = "mainPostBody";
-    body.textContent = post.content || "";
+    body.appendChild(renderTaggedText(post.content || ""));
 
     el.append(meta, body);
 
