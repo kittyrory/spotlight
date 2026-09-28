@@ -980,7 +980,7 @@
       ];
 
       /* choice shape: { text, risk: 'safe'|'bold'|'wild', xp: [min, max] } */
-
+                          //-----------Data----------------
       const EVENTS = {
         easy: {
           sub: "Low stakes. Every option still earns XP — some just earn more than others.",
@@ -1825,6 +1825,7 @@
       let isFavorited = false;
       let hasSubmitted = false;
 
+      //button selectors
       const els = {
         modeSwitch: document.getElementById("modeSwitch"),
         modeSub: document.getElementById("modeSub"),
@@ -1891,16 +1892,49 @@
         const pool = gain ? OUTCOMES_GAIN : OUTCOMES_LOSS;
         return pool[Math.floor(Math.random() * pool.length)];
       }
+            
+      //call supabase
+// 1. Pass 'difficulty' as an argument into the function
+async function callGemini(difficulty) {
+  try {
+    console.log(`Triggering Gemini event generation with difficulty: ${difficulty}...`);
+    
+ const targetPlayerId = typeof currentUser !== 'undefined' && currentUser ? currentUser.id : "test-player-123";
 
-      function pickEvent() {
+    const { data, error } = await supabaseClient.functions.invoke('Generate-Events', {
+      body: { 
+        mockData: EVENTS,
+        difficulty: difficulty,
+        userId: targetPlayerId, 
+        timestamp: Date.now(),
+        seed: Math.random().toString(36).substring(7)
+      }
+    }
+  );
+
+    if (error) {
+      console.error('Supabase returned an error:', error);
+      return null;
+    }
+
+    console.log('Successfully received data from Gemini:', data);
+    return data; 
+
+  } catch (err) {
+    console.error('Network catch block triggered:', err);
+    return null;
+  }
+}
+
+/*
         const pool = EVENTS[mode].items;
         let idx;
         do {
           idx = Math.floor(Math.random() * pool.length);
         } while (pool.length > 1 && idx === lastIndex);
         lastIndex = idx;
-        return pool[idx];
-      }
+        return pool[idx]; */
+      
 
       function renderXPRange(ev) {
         const mins = ev.choices.map((c) => c.xp[0]);
@@ -1961,8 +1995,66 @@
         els.submitBtn.textContent = "Submit";
       }
 
-      function loadEvent() {
-        const ev = pickEvent();
+ async function loadEvent() {
+  try {
+    const chosenDifficulty = typeof mode !== 'undefined' ? mode : "medium"; 
+    let responseData = await callGemini(chosenDifficulty);
+
+    if (!responseData) {
+        console.error("No event received from Gemini.");
+        alert("Could not load AI event.");
+        return;
+    }
+ let ev = responseData.storyText || responseData;
+    if (Array.isArray(ev)) { ev = ev[0]; }
+    if (typeof ev === 'string') { ev = { text: ev }; }
+
+    // 2. 🌟 EXTRACT THE EXACT BACKEND XP VALUE FROM THE RESPONSE
+    // If your backend isn't sending it in 'backendAwardedXP' yet, it looks for it in 'awardedXP'
+    const backendPoints = responseData.backendAwardedXP || responseData.awardedXP || 19; 
+
+    // Safe fallbacks for layout text
+    ev.text = ev.text || ev.content || "No story scenario text generated.";
+    ev.emoji = ev.emoji || "📸";
+    ev.cat = ev.cat || "Personal";
+    ev.difficulty = ev.difficulty || chosenDifficulty;
+    
+    // Set progress bar limits based on difficultyThresholds
+    if (chosenDifficulty === "easy") {
+        ev.minXP = 4;  ev.maxXP = 24;
+    } else if (chosenDifficulty === "hard") {
+        ev.minXP = 50; ev.maxXP = 80;
+    } else { 
+        ev.minXP = 16; ev.maxXP = 40;
+    }
+
+    // 3. 🌟 FORCE MATCHING POINTS: Buttons display the exact number from the BE logs!
+    ev.choices = [
+        { 
+          text: "Address it immediately and release a statement", 
+          xp: [backendPoints, backendPoints], // 👈 Both values set to the exact backend points
+          risk: "high" 
+        },
+        { 
+          text: "Maintain radio silence and ignore the drama", 
+          xp: [Math.round(backendPoints * 0.5), backendPoints], 
+          risk: "low" 
+        }
+    ];
+
+    ev.choices = [
+        { 
+          text: "Drop a fire response track / address it immediately", 
+          xp: [ev.minXP, Math.floor(ev.maxXP * 0.6)], 
+          risk: "high" 
+        },
+        { 
+          text: "Maintain radio silence and let your team handle it", 
+          xp: [Math.floor(ev.minXP * 1.5), ev.maxXP], 
+          risk: "low" 
+        }
+    ];
+
         currentEvent = ev;
         hasSubmitted = false;
         els.catEmoji.textContent = ev.emoji;
@@ -1983,11 +2075,15 @@
         updateSubmitState();
 
         els.eventCard.classList.remove("easy", "medium", "hard");
-        els.eventCard.classList.add(mode);
+        els.eventCard.classList.add(chosenDifficulty);
         els.cardShine.classList.remove("play");
         void els.cardShine.offsetWidth;
         els.cardShine.classList.add("play");
       }
+      catch(err) {
+        console.log("error fetching gemini",err);
+      }
+    }
 
       function updateModeSub() {
         els.modeSub.textContent = EVENTS[mode].sub;
