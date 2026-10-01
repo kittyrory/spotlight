@@ -503,6 +503,10 @@
         gap: 6px;
         margin-top: 9px;
       }
+      .risk-range {
+        font-size: 11.5px;
+        color: var(--muted);
+      }
       .risk-badge {
         font-weight: 700;
         font-size: 10.5px;
@@ -525,10 +529,6 @@
         color: #2b0d0a;
         background: var(--red);
         box-shadow: 0 0 10px rgba(242, 104, 95, 0.4);
-      }
-      .risk-range {
-        font-size: 11.5px;
-        color: var(--muted);
       }
 
       .write-own {
@@ -855,13 +855,6 @@
         transform: scale(0.98);
       }
 
-      .note {
-        text-align: center;
-        color: var(--muted);
-        font-size: 12px;
-        margin-top: 26px;
-        line-height: 1.5;
-      }
     </style>
   </head>
   <body class="page-maximal">
@@ -891,7 +884,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z" />
             </svg>
-            <span id="xpLabelText">+14–36 XP</span>
+            <span id="xpLabelText"></span>
           </div>
         </div>
         <div class="event-text" id="eventText"></div>
@@ -925,11 +918,6 @@
       </div>
       <div class="toast" id="toast"></div>
 
-      <div class="note">
-        Prototype only — events are placeholder content and will be swapped for
-        feed-driven scenarios later. Risk badges preview each choice's XP range;
-        Wildcard picks swing hardest in both directions.
-      </div>
     </div>
 
     <div class="modal-overlay" id="modalOverlay">
@@ -938,8 +926,8 @@
         <div class="modal-sparkles" id="modalSparkles"></div>
         <div class="modal-icon" id="modalIcon"></div>
         <div class="modal-label">Outcome</div>
-        <div class="modal-xp" id="modalXP">+0 XP</div>
-        <div class="modal-outcome" id="modalOutcome">Nice.</div>
+        <div class="modal-xp" id="modalXP"></div>
+        <div class="modal-outcome" id="modalOutcome"></div>
         <div class="modal-choice-label">Your response</div>
         <div class="modal-choice" id="modalChoice"></div>
         <button class="modal-continue" id="modalContinue">Continue</button>
@@ -950,884 +938,24 @@
     <script src="scripts/supabase.js"></script>
     <script src="scripts/theme.js"></script>
     <script>
-      /* ---------- brand + persona tags (parody names, not real brands/people) ---------- */
-      const BRANDS = [
-        "@Gooci",
-        "@Chanoel",
-        "@Pradah",
-        "@Versaci",
-        "@LuiVuittone",
-        "@Diorr",
-        "@Balenciago",
-        "@Nykee",
-        "@Adedas",
-        "@Supreeme",
-        "@Fendii",
-        "@Burberri",
-        "@Cartierre",
-        "@Rolexx",
-        "@Tiffanie",
-      ];
-      const PEOPLE = [
-        "@RivaJax",
-        "@NoraNoire",
-        "@KaiVelvet",
-        "@LumenRae",
-        "@DashWilder",
-        "@EchoMonroe",
-        "@ZaraFlint",
-        "@OrionPage",
-      ];
-
-      /* choice shape: { text, risk: 'safe'|'bold'|'wild', xp: [min, max] } */
-                          //-----------Data---------------- /
-
-      const EVENTS = {
-        easy: {
-          sub: "Low stakes. Every option still earns XP — some just earn more than others.",
-          items: [
-            {
-              cat: "Weird",
-              emoji: "🌀",
-              text: "Your smart mirror auto-tags today's fit as 'Business Clown' and won't let you override it before your 10am post.",
-              choices: [
-                {
-                  text: "Quietly reset the mirror and re-shoot before anyone notices.",
-                  risk: "safe",
-                  xp: [7, 10],
-                },
-                {
-                  text: "Laugh it off and post the glitch caption unedited.",
-                  risk: "bold",
-                  xp: [8, 14],
-                },
-                {
-                  text: "Lean in hard — caption it 'new era, no notes.'",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Messy",
-              emoji: "🧻",
-              text: "A blended-berry smoothie erupts all over your cream trench coat two minutes before a rooftop shoot.",
-              choices: [
-                {
-                  text: "Change fast and blame the wind for the delay.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Turn the stain into a story — 'texture, apparently.'",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Shoot anyway and let the stain be part of the shot.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Slip-up",
-              emoji: "🎭",
-              text: "You caption a photo 'living my best life' on a post from three years ago you meant to delete, not repost.",
-              choices: [
-                {
-                  text: "Delete quietly and hope nobody screenshot it.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Turn it into a mini nostalgia post with new context.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Own it loudly — 'throwback vibes, no regrets.'",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Weird",
-              emoji: "🌀",
-              text: "Your ring light flickers into a strobe mid-selfie and now it looks like you're at a rave in your kitchen.",
-              choices: [
-                {
-                  text: "Reshoot with normal lighting, skip the chaos.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Add music and pretend it was intentional.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Post it raw with a chaotic all-caps caption.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                BRANDS[0] +
-                " sends a gifted bag in a color that got discontinued last spring, and stan accounts are already screenshotting.",
-              choices: [
-                {
-                  text: "Ask your team to clarify with their PR privately first.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Thank them publicly and style it your own way.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Post it as a 'vintage find' and let people guess.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Funny",
-              emoji: "😂",
-              text: "Autocorrect turns 'partnership' into 'partyship' in your caption, and it's somehow getting more engagement than the actual announcement.",
-              choices: [
-                {
-                  text: "Fix the typo and repost clean.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Leave it up — the internet loves it more this way.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Make a whole joke post riffing on the typo.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Slip-up",
-              emoji: "🎭",
-              text: "You like a three-month-old post by accident while doom-scrolling at 1am.",
-              choices: [
-                {
-                  text: "Unlike it immediately and move on.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Leave it — it's honestly not that deep.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Comment something ridiculous to own the moment.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Weird",
-              emoji: "🌀",
-              text: "A pigeon lands on your head mid-outdoor interview and just... stays there.",
-              choices: [
-                {
-                  text: "Gently relocate it and continue, mildly rattled.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Keep talking like nothing happened.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Name it live on air and adopt it as a bit.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Chaos",
-              emoji: "🌪️",
-              text: "Your assistant double-books you a hair appointment and a podcast recording, and both venues are already expecting you.",
-              choices: [
-                {
-                  text: "Reschedule the podcast and keep the hair appointment.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Show up to the podcast with damp, half-done hair.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Record the podcast from the salon chair on video.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Funny",
-              emoji: "😂",
-              text: "A stranger recognizes you at the grocery store and asks for a photo — while you're holding a family-size bag of chips and nothing else.",
-              choices: [
-                {
-                  text: "Set the chips down and take a normal photo.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Pose with the chips like they're a prop.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Gift them the chips on camera as a bit.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Awkward",
-              emoji: "😬",
-              text: "You accidentally address a room of twelve people as 'the whole team' when it's actually just three interns and a very confused caterer.",
-              choices: [
-                {
-                  text: "Correct yourself quickly and laugh it off.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Keep going like it was intentional enthusiasm.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Give the caterer an honorary team title.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                BRANDS[8] +
-                " tags you in a post you don't remember agreeing to, wearing a hoodie you're pretty sure you never received.",
-              choices: [
-                {
-                  text: "Ask your team to check the contract quietly.",
-                  risk: "safe",
-                  xp: [6, 14],
-                },
-                {
-                  text: "Comment a playful 'news to me 👀' on the post.",
-                  risk: "bold",
-                  xp: [8, 20],
-                },
-                {
-                  text: "Order the hoodie yourself and pretend you planned it.",
-                  risk: "wild",
-                  xp: [4, 24],
-                },
-              ],
-            },
-          ],
-        },
-        medium: {
-          sub: "Moderate stakes. Bold and Wildcard picks can now cost you XP, not just earn it.",
-          items: [
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                BRANDS[1] +
-                "'s team DMs asking, pointedly, why you wore a rival's shoes to their showcase last night.",
-              choices: [
-                {
-                  text: "Explain it was a styling mix-up and apologize privately.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Stand by your choice — you dress for you, not for brands.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Post publicly that you'll wear whatever you want.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Slip-up",
-              emoji: "🎭",
-              text: "A fan-run account claims your newest look is a direct copy of a smaller creator's, and the screenshots are compelling.",
-              choices: [
-                {
-                  text: "Credit the creator publicly and thank them for the inspiration.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Post a side-by-side explaining your process.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Stay quiet and let it blow over on its own.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Messy",
-              emoji: "🧻",
-              text: "You're photographed leaving a 2am diner with flour on your cheek and no explanation.",
-              choices: [
-                {
-                  text: "Explain it was a late-night baking mishap with friends.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Post the photo yourself with a funny caption first.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Ignore it completely and let the mystery ride.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Weird",
-              emoji: "🌀",
-              text: "Your ring light explodes on a livestream and the comments immediately decide it's a 'sign.'",
-              choices: [
-                {
-                  text: "Debunk it directly — 'it's just a bad bulb.'",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Play into the theory for laughs.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Cut the stream abruptly with no explanation.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Funny",
-              emoji: "😂",
-              text: "Your name gets voice-to-texted into a press release as 'a local weather event,' and nobody catches it before it goes out.",
-              choices: [
-                {
-                  text: "Request a correction and move on quietly.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Make your own joke version before anyone else does.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Repost the typo and lean all the way in.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                BRANDS[2] +
-                "'s stylist quietly uninvites you from the front row after last season's 'creative differences.'",
-              choices: [
-                {
-                  text: "Ask your team to smooth things over directly.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Post confidently about your own upcoming plans instead.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Call out the snub publicly, tagging their handle.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Slip-up",
-              emoji: "🎭",
-              text: "You're double-booked — a magazine cover shoot and your best friend's engagement brunch, exact same hour.",
-              choices: [
-                {
-                  text: "Ask your team to shift the shoot by two hours.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Send a gift, stay for the shoot, and video-call in later.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Push the shoot entirely and show up for your friend.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Messy",
-              emoji: "🧻",
-              text: "A collab candle you fronted gets recalled for a labeling mix-up, and #WaxGate is trending by lunch.",
-              choices: [
-                {
-                  text: "Post a transparent statement about the recall right away.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Address it lightly on your story, then go formal later.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Let the brand issue the statement and stay silent.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Feud",
-              emoji: "🔥",
-              text:
-                PEOPLE[1] +
-                " subtweets what sounds like a dig at your last collection, without naming you directly, and everyone's tagging you anyway.",
-              choices: [
-                {
-                  text: "Don't engage — let followers draw their own conclusions.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Reply with something light and vague, keeping it playful.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Quote-post it with a pointed comment of your own.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Awkward",
-              emoji: "😬",
-              text: "You mispronounce a major sponsor's name twice during a live Q&A, and the clip is already circulating with captions.",
-              choices: [
-                {
-                  text: "Correct yourself on the next mention and move forward.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Make a self-deprecating joke about it live.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Ignore it and hope nobody else noticed.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Chaos",
-              emoji: "🌪️",
-              text: "Your team accidentally sends a private strategy memo to a group chat that includes two journalists.",
-              choices: [
-                {
-                  text: "Call the journalists directly and ask for discretion.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Say nothing and hope it doesn't get picked up.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Get ahead of it by posting your own version first.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                BRANDS[9] +
-                " quietly drops a line in their newsletter implying your partnership 'underperformed expectations.'",
-              choices: [
-                {
-                  text: "Reach out privately to discuss the numbers.",
-                  risk: "safe",
-                  xp: [10, 24],
-                },
-                {
-                  text: "Post performance data that tells a different story.",
-                  risk: "bold",
-                  xp: [-8, 32],
-                },
-                {
-                  text: "Publicly announce you're ending the partnership first.",
-                  risk: "wild",
-                  xp: [-16, 40],
-                },
-              ],
-            },
-          ],
-        },
-        hard: {
-          sub: "High stakes. Every option can swing hard in either direction — Wildcard picks the hardest.",
-          items: [
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                "A leaked voice note has you sounding dismissive of " +
-                BRANDS[3] +
-                "'s new line, twelve hours before their show. The clip is out of context, but it's already been picked up by two major fashion outlets, and their CEO has gone quiet on your usual group thread.",
-              choices: [
-                {
-                  text: "Call their team directly, apologize for the tone, and offer to clarify the context privately before anything escalates further.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Post a measured public statement explaining the full context of the conversation.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Say nothing publicly and let your legal and PR teams handle it entirely, even if it drags on for days.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Scandal",
-              emoji: "🚨",
-              text: "You're accused of taking credit for a concept that was actually your stylist's, and the original mood board — dated weeks before your announcement — just resurfaced online. It's already being framed as a pattern, with two older, unrelated posts dug up as 'evidence.'",
-              choices: [
-                {
-                  text: "Publicly credit the stylist in full, no caveats, and acknowledge you should have done it sooner.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Explain that the collaboration was mutual from the start and post messages proving it.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Stay silent for a few days and let your team quietly negotiate a joint statement.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Messy",
-              emoji: "🧻",
-              text: "A wardrobe malfunction happens mid-runway walk, livestreamed to two million people in real time. The clip is already clipped, captioned, and spreading faster than your team can respond, and a rival designer has 'liked' three of the memes.",
-              choices: [
-                {
-                  text: "Finish the walk like a professional and address it calmly in a statement afterward.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Laugh about it openly on camera the moment it happens.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Walk off immediately and let your team manage the fallout without your input.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Feud",
-              emoji: "🔥",
-              text:
-                "A host presses you live, on-air, about a rumored falling-out with " +
-                PEOPLE[2] +
-                ", listing specific dates and events with unsettling accuracy. The studio audience goes quiet, and the clip is clearly going to outlive the segment.",
-              choices: [
-                {
-                  text: "Redirect calmly to your current projects without confirming or denying anything specific.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Address it briefly and honestly, admitting there was tension, then move on.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Push back on the host directly, live, for bringing it up at all.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Scandal",
-              emoji: "🚨",
-              text:
-                PEOPLE[0] +
-                "'s new brand deal drops the same week as yours, and three major outlets are already running side-by-side performance numbers — with yours coming in visibly lower on two of the three metrics.",
-              choices: [
-                {
-                  text: "Ignore the comparisons publicly and let your long-term results speak for themselves.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Post something warm acknowledging their launch, reframing it as no rivalry at all.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Push your team to rush out new numbers early, even if the data isn't fully verified yet.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Messy",
-              emoji: "🧻",
-              text: "An old group chat screenshot leaks, and one line — meant as a joke among friends — reads very differently out of context. It's already being quote-tweeted with a tone you never intended, and a few larger accounts have started weighing in.",
-              choices: [
-                {
-                  text: "Post the full context yourself immediately, before rumors spread further.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Apologize for the tone without over-explaining the specifics.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Let your team issue a short, clinical statement and say nothing personally.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Weird",
-              emoji: "🌀",
-              text: "A convincing deepfake clip of you 'endorsing' a random supplement brand is already at two million views before your team even wakes up. Comments are split between people who believe it and people demanding you address it now.",
-              choices: [
-                {
-                  text: "Post an urgent, clear denial with proof it's fabricated, right away.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Report it to platforms and wait for it to be taken down before commenting.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Address it calmly on your next scheduled livestream instead of reacting immediately.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Slip-up",
-              emoji: "🎭",
-              text: "You accidentally confirm a major collaboration live on-air that your team hasn't actually signed off on yet — naming the partner brand specifically, on record, in front of a large audience.",
-              choices: [
-                {
-                  text: "Clarify honestly afterward that it was premature to mention and you got ahead of the paperwork.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Walk it back gently as 'in early talks' without fully denying it.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Let it stand and scramble your team to actually finalize the deal overnight.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Scandal",
-              emoji: "🚨",
-              text: "A former employee posts a lengthy thread alleging you were difficult to work with on set, citing specific, hard-to-verify incidents. It's gaining traction fast, and two other former collaborators have already replied with vague agreement.",
-              choices: [
-                {
-                  text: "Respond with a calm, specific statement addressing what you can verify.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Reach out to the former employee privately before responding publicly at all.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Say nothing and let the thread run its course without engagement.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Brand Drama",
-              emoji: "🏷️",
-              text:
-                BRANDS[6] +
-                " quietly pulls your image from their campaign site overnight with no explanation, right as unrelated rumors about your 'reliability' start circulating in industry newsletters.",
-              choices: [
-                {
-                  text: "Contact their team directly to understand what happened before saying anything public.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Post about the partnership positively anyway, ignoring the removal entirely.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Publicly ask why your image was pulled, tagging the brand directly.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Feud",
-              emoji: "🔥",
-              text:
-                PEOPLE[4] +
-                " gives an interview implying you 'took an opportunity that wasn't yours to take,' without ever using your name — but the timeline lines up so precisely that nobody's in doubt about who it's about.",
-              choices: [
-                {
-                  text: "Stay silent publicly and address it privately if it continues.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Post a calm statement clarifying your side of the timeline.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Give your own interview responding point by point.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-            {
-              cat: "Weird",
-              emoji: "🌀",
-              text: "A viral theory claims your last three posts contain 'hidden messages' about an alleged falling-out within your team, based on nothing but color choices and caption timing — and it's somehow become the top trending topic under your name.",
-              choices: [
-                {
-                  text: "Address it directly with a short, dismissive statement and move on.",
-                  risk: "safe",
-                  xp: [-10, 30],
-                },
-                {
-                  text: "Ignore it completely and post normally, letting it fizzle out.",
-                  risk: "bold",
-                  xp: [-30, 55],
-                },
-                {
-                  text: "Play along with the theory as a joke to defuse it.",
-                  risk: "wild",
-                  xp: [-50, 80],
-                },
-              ],
-            },
-          ],
-        },
+      const MODE_SUBS = {
+        easy: "Low stakes. Every option still earns XP — some just earn more than others.",
+        medium: "Moderate stakes. Bold and Wildcard picks can now cost you XP, not just earn it.",
+        hard: "High stakes. Every option can swing hard in either direction — Wildcard picks the hardest.",
       };
 
       /* ---------- state ---------- */
       let mode = "medium";
-      let lastIndex = -1;
       let currentEvent = null;
       let selectedChoice = null;
       let usingOwnText = false;
       let isEditing = false;
       let isFavorited = false;
       let hasSubmitted = false;
+      let isSubmitting = false;
       let isFetching = false;
 
-      //button selectors
+      // button selectors
       const els = {
         modeSwitch: document.getElementById("modeSwitch"),
         modeSub: document.getElementById("modeSub"),
@@ -1878,11 +1006,6 @@
         return (n > 0 ? "+" : "") + n;
       }
 
-      function randomInRange(range) {
-        const [lo, hi] = range;
-        return Math.floor(lo + Math.random() * (hi - lo + 1));
-      }
-
       const OUTCOMES_GAIN = [
         "Handled like a total pro.",
         "The internet approves.",
@@ -1905,45 +1028,53 @@
         return pool[Math.floor(Math.random() * pool.length)];
       }
             
-      //call supabase
-async function callGemini(difficulty) {
-  try {
-    console.log(`Triggering Gemini event generation with difficulty: ${difficulty}...`);
+      // call supabase
+      async function callGemini(difficulty) {
+        try {
+          console.log(`Triggering Gemini event generation with difficulty: ${difficulty}...`);
 
- const targetPlayerId = typeof currentUser !== 'undefined' && currentUser?.id;
+          // the edge function works out who the player is from 
+          // the session token that invoke() sends along
+          const { data, error } = await supabaseClient.functions.invoke("Generate-Events", {
+            body: { difficulty },
+          });
 
-    const { data, error } = await supabaseClient.functions.invoke('Generate-Events', {
-      body: { 
-        mockData: EVENTS,
-        difficulty: difficulty,
-        userId: targetPlayerId, 
-        timestamp: Date.now(),
-        seed: Math.random().toString(36).substring(7)
+          if (error) {
+            console.error("Supabase returned an error:", error);
+            return null;
+          }
+
+          console.log("Successfully received data from Gemini:", data);
+          return data;
+        } catch (err) {
+          console.error("Network catch block triggered:", err);
+          return null;
+        }
       }
-    }
-  );
 
-    if (error) {
-      console.error('Supabase returned an error:', error);
-      return null;
-    }
-
-    console.log('Successfully received data from Gemini:', data);
-    return data; 
-
-  } catch (err) {
-    console.error('Network catch block triggered:', err);
-    return null;
-  }
-}
+      // asks the backend to roll + save the XP for the risk level the player picked
+      async function callResolve(difficulty, risk) {
+        try {
+          const { data, error } = await supabaseClient.functions.invoke("Generate-Events", {
+            body: { action: "resolve", difficulty, risk },
+          });
+          if (error || typeof data?.backendXP !== "number") {
+            console.error("Failed to resolve XP:", error || data);
+            return null;
+          }
+          return data.backendXP;
+        } catch (err) {
+          console.error("Network catch block triggered:", err);
+          return null;
+        }
+      }
 
       function renderXPRange(ev) {
-        const mins = ev.choices.map((c) => c.xp[0]);
-        const maxs = ev.choices.map((c) => c.xp[1]);
-        const lo = Math.min(...mins);
-        const hi = Math.max(...maxs);
+        const ranges = Object.values(ev.xpRanges);
+        const lo = Math.min(...ranges.map((r) => r[0]));
+        const hi = Math.max(...ranges.map((r) => r[1]));
         els.xpLabelText.textContent = `${fmtXP(lo)} to ${fmtXP(hi)} XP`;
-        els.xpLabel.className = "xp " + mode;
+        els.xpLabel.className = "xp " + ev.difficulty;
       }
 
       function riskLabel(risk) {
@@ -1997,149 +1128,80 @@ function renderChoices(choices) {
         els.submitBtn.textContent = "Submit";
       }
 
- async function loadEvent() {
-  async function loadEvent() {
-  // 1. Guard check: if already fetching, silently block the spam click
-  if (isFetching) return; 
+      async function loadEvent() {
+        // block spam clicks while a request is already running
+        if (isFetching) return;
+        isFetching = true;
 
-  try {
-    isFetching = true; // 2. Set lock state immediately
-    
-    const chosenDifficulty = typeof mode !== 'undefined' ? mode : "medium"; 
-    let responseData = await callGemini(chosenDifficulty);
-
-    els.eventCard.classList.remove("easy", "medium", "hard");
-    els.eventCard.classList.add(chosenDifficulty);
-    els.cardShine.classList.remove("play");
-    void els.cardShine.offsetWidth;
-    els.cardShine.classList.add("play");
-  }
-  catch(err) {
-    console.error("error fetching gemini", err);
-  }
-  finally {
-    isFetching = false; 
-  }
-}
-
-  try {
-    const chosenDifficulty = typeof mode !== 'undefined' ? mode : "medium"; 
-    let responseData = await callGemini(chosenDifficulty);
-
-
-    const exactBackendXP = responseData.backendXP || 19; 
-
-    let ev = {
-        text: '',
-        emoji: responseData.emoji || "📸", 
-        cat: responseData.cat || "Personal",
-        difficulty: chosenDifficulty
-    };
-
-    
-    // Define the range bounds using a safe lookup object
-    const bounds = {
-  easy: [4, 24],
-  medium: [ 16, 40],
-  hard: [50, 80],
-};
-
-    // Safely pull the correct array based on the difficulty
-    let displayRange = bounds[chosenDifficulty] || bounds.medium;
-
-    let parsedStory = responseData.story;
-    
-    // ✅ Extract the first item out of the array safely without square brackets
-    if (Array.isArray(parsedStory)) {
-        parsedStory = parsedStory.shift() || parsedStory.pop();
-    }
-    
-       if (typeof parsedStory === 'string') {
         try {
-            parsedStory = JSON.parse(parsedStory);
-        } catch (e) {
-            console.error("Failed to parse responseData.story string:", e);
+          const chosenDifficulty = mode;
+          const responseData = await callGemini(chosenDifficulty);
+
+          if (!responseData || !responseData.story) {
+            els.toast.textContent = "Couldn't generate an event. Try re-rolling.";
+            els.toast.className = "toast show loss";
+            return;
+          }
+
+          const story = responseData.story;
+          const validRisks = ["safe", "bold", "wild"];
+
+          const ev = {
+            text: story.text,
+            emoji: story.emoji || "🎭",
+            cat: story.cat || "Event",
+            difficulty: chosenDifficulty,
+            xpRanges: responseData.xpRanges,
+            choices: story.choices.map((c) => {
+              const risk = validRisks.includes(c.risk) ? c.risk : "bold";
+              return { text: c.text, risk, xp: responseData.xpRanges[risk] };
+            }),
+          };
+
+          currentEvent = ev;
+          hasSubmitted = false;
+          els.catEmoji.textContent = ev.emoji;
+          els.catLabel.textContent = ev.cat;
+          els.eventText.innerHTML = highlightMentions(ev.text);
+          els.editArea.value = ev.text;
+          els.editArea.style.display = "none";
+          els.eventText.style.display = "block";
+          isEditing = false;
+          renderXPRange(ev);
+          renderChoices(ev.choices);
+          els.writeOwnToggle.classList.remove("disabled");
+          selectedChoice = null;
+          usingOwnText = false;
+          els.ownTextarea.style.display = "none";
+          els.ownTextarea.value = "";
+          els.toast.classList.remove("show");
+          updateSubmitState();
+
+          els.eventCard.classList.remove("easy", "medium", "hard");
+          els.eventCard.classList.add(chosenDifficulty);
+          els.cardShine.classList.remove("play");
+          void els.cardShine.offsetWidth;
+          els.cardShine.classList.add("play");
+        } catch (err) {
+          console.error("error loading event", err);
+        } finally {
+          isFetching = false;
         }
-    }
-
-    // 2. Safely look for choice components across multiple potential prompt paths
-    const aiData = parsedStory || {};
-
-    const rawStoryText = aiData.text || aiData.content || 
-                         (aiData.posts && Array.isArray(aiData.posts) ? (aiData.posts.concat().shift() || {}).text : null) || 
-                         "No story scenario text generated.";
-   
-    ev.text = rawStoryText;
-    let rawChoices = aiData.choices || aiData.options;
-    if (!rawChoices && aiData.posts && Array.isArray(aiData.posts)) {
-        const firstPost = aiData.posts.concat().shift() || {};
-        rawChoices = firstPost.choices || firstPost.options;
-    }
-
-    if (rawChoices && Array.isArray(rawChoices)) {
-        ev.choices = rawChoices.map((c) => {
-            const choiceXP = typeof c.xp === 'number' ? c.xp : exactBackendXP;
-            return {
-                text: c.text || "Make a Move",
-                xp: displayRange, 
-                secretXP: choiceXP,    
-                risk: c.risk || "bold"
-            };
-        });
-    } else {
-        // Dynamic category fallback layout
-        ev.choices = [
-            { text: `Lean into this ${ev.cat || 'Situation'} and make a bold move`, xp: displayRange, secretXP: exactBackendXP, risk: "high" },
-            { text: `Handle this ${ev.cat || 'Situation'} quietly and wait it out`, xp: displayRange, secretXP: exactBackendXP, risk: "low" }
-        ];
-    }
-
-
-
-        currentEvent = ev;
-        hasSubmitted = false;
-        els.catEmoji.textContent = ev.emoji;
-        els.catLabel.textContent = ev.cat;
-        els.eventText.innerHTML = highlightMentions(ev.text);
-        els.editArea.value = ev.text;
-        els.editArea.style.display = "none";
-        els.eventText.style.display = "block";
-        isEditing = false;
-        renderXPRange(ev);
-        renderChoices(ev.choices);
-        els.writeOwnToggle.classList.remove("disabled");
-        selectedChoice = null;
-        usingOwnText = false;
-        els.ownTextarea.style.display = "none";
-        els.ownTextarea.value = "";
-        els.toast.classList.remove("show");
-        updateSubmitState();
-
-        els.eventCard.classList.remove("easy", "medium", "hard");
-        els.eventCard.classList.add(chosenDifficulty);
-        els.cardShine.classList.remove("play");
-        void els.cardShine.offsetWidth;
-        els.cardShine.classList.add("play");
       }
-      catch(err) {
-        console.log("error fetching gemini",err);
-      }
-    }
 
       function updateModeSub() {
-        els.modeSub.textContent = EVENTS[mode].sub;
+        els.modeSub.textContent = MODE_SUBS[mode];
       }
 
       /* ---------- events ---------- */
       els.modeSwitch.addEventListener("click", (e) => {
         const btn = e.target.closest(".mode-btn");
-        if (!btn) return;
+        if (!btn || isFetching) return;
         mode = btn.dataset.mode;
         [...els.modeSwitch.children].forEach((b) =>
           b.classList.remove("active"),
         );
         btn.classList.add("active");
-        lastIndex = -1;
         updateModeSub();
         loadEvent();
       });
@@ -2198,21 +1260,25 @@ function renderChoices(choices) {
         }
       }
 
-    els.submitBtn.addEventListener("click", () => {
-        if (hasSubmitted) return;
+    els.submitBtn.addEventListener("click", async () => {
+        if (hasSubmitted || isSubmitting) return;
         if (!els.submitBtn.classList.contains("ready")) return;
 
-        let xp, choiceText;
-        if (selectedChoice !== null) {
-          // ✅ FIX: Grab the exact backend points from our hidden secretXP key!
-          xp = currentEvent.choices[selectedChoice].secretXP;
-          choiceText = currentEvent.choices[selectedChoice].text;
-        } else {
-          // custom written response treated as a "bold" risk outcome
-          const lo = mode === "easy" ? 6 : mode === "medium" ? -8 : -30;
-          const hi = mode === "easy" ? 20 : mode === "medium" ? 32 : 55;
-          xp = randomInRange([lo, hi]);
-          choiceText = els.ownTextarea.value.trim();
+        // a custom written response is treated as a "bold" risk
+        const picked = selectedChoice !== null ? currentEvent.choices[selectedChoice] : null;
+        const risk = picked ? picked.risk : "bold";
+        const choiceText = picked ? picked.text : els.ownTextarea.value.trim();
+
+        isSubmitting = true;
+        els.submitBtn.textContent = "Submitting…";
+        const xp = await callResolve(currentEvent.difficulty, risk);
+        isSubmitting = false;
+
+        if (xp === null) {
+          els.toast.textContent = "Couldn't save your result. Try submitting again.";
+          els.toast.className = "toast show loss";
+          updateSubmitState();
+          return;
         }
 
         // lock everything so the button (and choices) can't be spammed for a new roll
@@ -2253,7 +1319,6 @@ function renderChoices(choices) {
 
       els.modalContinue.addEventListener("click", () => {
         els.modalOverlay.classList.remove("show");
-        // event has been submitted — send the player back to the feed.
         window.location.href = "Feed.html";
       });
 
@@ -2263,7 +1328,7 @@ function renderChoices(choices) {
         window.location.href = lastPage;
       });
       document.getElementById("addBtn").addEventListener("click", () => {
-        els.toast.textContent = "Power-ups not wired up yet — prototype only.";
+        els.toast.textContent = "Power-ups are coming soon.";
         els.toast.className = "toast show gain";
       });
 
