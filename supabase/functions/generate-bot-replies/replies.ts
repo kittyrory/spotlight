@@ -35,6 +35,7 @@ const GEMINI_API_KEY_FALLBACK = Deno.env.get("GEMINI_API_KEY_FALLBACK");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+// NOTE TO SELF: put this somewhere shared later
 const BOT_PROFILE_IDS = [
   "9c99876a-cef5-4f3c-b379-5e59bf6039b3",
   "698b21a4-238c-46b8-856d-171ff94ac60f",

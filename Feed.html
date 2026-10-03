@@ -622,15 +622,6 @@
     <script src="scripts/supabase.js"></script>
     <script src="scripts/post-cache.js"></script>
     <script src="scripts/theme.js"></script>
-    <script src="scripts/worlds.js"></script>
-    <script>
-      // worlds.js defines a plain `const worlds` array with no window
-      // assignment of its own
-      worlds.forEach((world, i) => {
-      world.id = i;
-      });
-      window.WORLDS = worlds;
-    </script>
     <script src="scripts/feed.js"></script> <!-- now separate since this file is becoming lengthy -->
     <script>
       (function () {

@@ -65,14 +65,14 @@ const BOT_PROFILE_IDS = [
 const POST_COUNT = 5;
 const COOLDOWN_MS = 60 * 1000; // 1 minute, enforced server-side too
 
-const BASE_SYSTEM_PROMPT = `You are generating short, realistic social media posts for a 
-fictional social app called Spotlight. Write posts the way real users write: casual, 
-lowercase-leaning, sometimes using slang, occasionally with a hashtag. Keep each post 
-under 220 characters. Do not use quotation marks around the post text. Avoid contractions 
-with apostrophes (write "dont" instead of "don't", "its" instead of "it's") since 
-apostrophes can break JSON formatting. Return ONLY valid 
-JSON, no markdown fences, no preamble, in this exact shape:
-{"posts": [{"content": "..."}, {"content": "..."}, {"content": "..."}, {"content": "..."}, {"content": "..."}]}`;
+const BASE_SYSTEM_PROMPT = `You are generating a short, realistic social media post for a 
+fictional social app called Spotlight, written as a specific character described in the 
+prompt. Write it the way a real user would: casual, lowercase-leaning, sometimes using 
+slang, occasionally with a hashtag. Keep it under 220 characters. Do not use quotation 
+marks around the post text. Avoid contractions with apostrophes (write "dont" instead of 
+"don't", "its" instead of "it's") since apostrophes can break JSON formatting. Return 
+ONLY valid JSON, no markdown fences, no preamble, in this exact shape:
+{"posts": [{"content": "..."}]}`;
 
 type ProfileContext = {
   origin?: string;
@@ -93,15 +93,68 @@ type WorldContext = {
   cross_universe?: boolean;
 };
 
-// builds a user-message describing this specific user's onboarding choices
-// and chosen worlds, so posts reference their actual context
+type ArchetypePersonality = {
+  archetype: string;
+  traits?: string[];
+  voice?: string;
+};
+
+type TraitPersonality = {
+  traits: Record<string, { label: string; value: number }>;
+  overallType: string;
+  overallDescription?: string;
+};
+
+type BotPersonality = ArchetypePersonality | TraitPersonality;
+
+type BotProfile = {
+  id: string;
+  display_name: string;
+  handle: string;
+  personality?: BotPersonality | null;
+};
+
+// npc bots use {archetype, traits: string[], voice}; custom bot_profiles
+// bots use {traits: {trait: {label, value}}, overallType} (same shape as
+// the user-facing personality system). same helper as the reply function.
+function formatPersonalityLine(personality: BotPersonality): string {
+  if ("archetype" in personality) {
+    let line = `Your personality: ${personality.archetype}.`;
+    if (personality.traits?.length)
+      line += ` Traits: ${personality.traits.join(", ")}.`;
+    if (personality.voice) line += ` ${personality.voice}`;
+    return line;
+  }
+
+  const traitDescriptions = Object.values(personality.traits)
+    .map((t) => t.label)
+    .join(", ");
+  let line = `Your personality type: ${personality.overallType}. Traits: ${traitDescriptions}.`;
+  if (personality.overallDescription) line += ` ${personality.overallDescription}`;
+  return line;
+}
+
+// builds a user-message describing which bot is writing this post, this
+// specific user's onboarding choices, and their chosen worlds, so posts
+// stay in character AND reference the user's actual context.
 // kept separate from the system prompt so the formatting rules stay
-// stable and only the user context section changes per call.
-function buildUserContextMessage(
+// stable and only the per-post context changes per call.
+function buildPostPrompt(
+  bot: BotProfile,
   profile: ProfileContext,
   worlds: WorldContext[],
 ): string {
   const lines: string[] = [];
+
+  lines.push(
+    `You are ${bot.display_name} (@${bot.handle.replace(/^@/, "")}), posting on Spotlight.`,
+  );
+  if (bot.personality) {
+    lines.push(formatPersonalityLine(bot.personality));
+    lines.push(
+      "Stay in character. Your tone and the things you post about should consistently reflect this personality.",
+    );
+  }
 
   if (profile) {
     if (profile.display_name)
@@ -127,15 +180,14 @@ function buildUserContextMessage(
     });
   }
 
-  if (!lines.length) {
-    return `Generate ${POST_COUNT} posts now. No specific user context available, keep them general.`;
-  }
-  return (
-    `Here is context about the user these posts are for. You are encourage to make ` +
-    `posts feel personal and relevant to their interests and identity, without being repetitive. Tag the users handle when replying \n\n` +
-    lines.join("\n") +
-    `\n\nGenerate ${POST_COUNT} posts now.`
+  lines.push(
+    "This is context about the user this post is for. Make the post feel personal " +
+      "and relevant to their interests and identity, without being repetitive with " +
+      "past posts. Only @ mention their handle occasionally, not every time.",
   );
+
+  lines.push("Generate 1 post now.");
+  return lines.join("\n");
 }
 
 // primary path: calls Gemini's own native API directly (not OpenRouter).
@@ -237,16 +289,11 @@ async function callOpenRouter(
 
 // tries native Gemini first; if that call fails, fall back once to OpenRouter
 async function callGemini(
-  profile: ProfileContext,
-  worlds: WorldContext[],
+  userMessage: string,
 ): Promise<{ content: string }[]> {
   if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not set");
 
-  const userMessage = buildUserContextMessage(profile, worlds);
-
-  // mainly used for debugging purposes, ex. bot is making generic posts
-  console.log("Profile context received:", JSON.stringify(profile));
-  console.log("Worlds context received:", JSON.stringify(worlds));
+  // mainly used for debugging purposes, ex. bot is making generic/OOC posts
   console.log("Full prompt sent to model:", userMessage);
 
   try {
@@ -382,10 +429,8 @@ Deno.serve(async (req) => {
       }
     }
 
-    const posts = await callGemini(body.profile ?? null, body.worlds ?? []);
-
     // pull this user's selected worlds so we know which bot_profiles (if any) are available to them
-    // bot_profiles is world-scoped, unlike the universal BOT_PROFILE_IDS npc pool above.
+    // bot_profiles is world-scoped, unlike the universal BOT_PROFILE_IDS npc pool below.
     const { data: profileRow, error: profileError } = await supabase
       .from("profiles")
       .select("selected_worlds")
@@ -397,32 +442,77 @@ Deno.serve(async (req) => {
       .map((w: { id?: string }) => w.id)
       .filter(Boolean);
 
-    let customBotIds: string[] = [];
+    let customBots: BotProfile[] = [];
     if (selectedWorldIds.length) {
-      const { data: customBots, error: customBotsError } = await supabase
+      const { data: customBotRows, error: customBotsError } = await supabase
         .from("bot_profiles")
-        .select("id")
+        .select("id, display_name, handle, personality")
         .in("world_id", selectedWorldIds);
       if (customBotsError) throw customBotsError;
-      customBotIds = (customBots ?? []).map((b) => b.id);
+      customBots = (customBotRows ?? []) as BotProfile[];
     }
+
+    // full npc rows (with personality), not just the raw id list -- we
+    // need each bot's personality to actually write in character.
+    const { data: npcBotRows, error: npcBotsError } = await supabase
+      .from("npc_profiles")
+      .select("id, display_name, handle, personality")
+      .in("id", BOT_PROFILE_IDS);
+    if (npcBotsError) throw npcBotsError;
+    const npcBots = (npcBotRows ?? []) as BotProfile[];
 
     // custom bots go first so they get picked before any npc filler, then
     // the universal npc pool fills whatever's left
-    const shuffledCustomBots = [...customBotIds].sort(
-      () => Math.random() - 0.5,
-    );
-    const shuffledNpcBots = [...BOT_PROFILE_IDS].sort(
-      () => Math.random() - 0.5,
-    );
+    const shuffledCustomBots = [...customBots].sort(() => Math.random() - 0.5);
+    const shuffledNpcBots = [...npcBots].sort(() => Math.random() - 0.5);
     const botPool = [...shuffledCustomBots, ...shuffledNpcBots];
 
-    const rows = posts.map((p, i) => ({
-      bot_user_id: botPool[i % botPool.length],
-      ai_owner_id: userId,
-      content: p.content,
-      is_ai_generated: true,
-    }));
+    if (!botPool.length) throw new Error("No bots available to post as");
+
+    const assignedBots = Array.from(
+      { length: POST_COUNT },
+      (_, i) => botPool[i % botPool.length],
+    );
+
+    const rows: {
+      bot_user_id: string;
+      ai_owner_id: string;
+      content: string;
+      is_ai_generated: boolean;
+    }[] = [];
+
+    for (const bot of assignedBots) {
+      const prompt = buildPostPrompt(bot, body.profile ?? null, body.worlds ?? []);
+      try {
+        const posts = await callGemini(prompt);
+        const content = posts[0]?.content;
+        if (!content) {
+          console.error(
+            `Bot ${bot.handle} (${bot.id}) returned no usable content, skipping`,
+          );
+          continue;
+        }
+        rows.push({
+          bot_user_id: bot.id,
+          ai_owner_id: userId,
+          content,
+          is_ai_generated: true,
+        });
+      } catch (err) {
+        console.error(
+          `Post generation failed for bot ${bot.handle} (${bot.id}):`,
+          err,
+        );
+        continue;
+      }
+    }
+
+    if (!rows.length) {
+      return new Response(JSON.stringify({ inserted: [] }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     console.log("Rows to insert:", JSON.stringify(rows));
 
@@ -430,6 +520,41 @@ Deno.serve(async (req) => {
     if (error) throw error;
 
     console.log("Inserted result:", JSON.stringify(data));
+
+    // bot posts never go through the client's "own post just landed" flow,
+    // so nothing was ever calling generate-bot-reactions for them -- fire
+    // it here for each post we just inserted, same trigger the client uses
+    // for user posts. best-effort: a failed roll shouldn't fail the whole
+    // request, the posts are already in.
+    await Promise.all(
+      (data ?? []).map(async (post) => {
+        try {
+          const res = await fetch(
+            `${SUPABASE_URL}/functions/v1/generate-bot-reactions`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                apikey: SUPABASE_SERVICE_ROLE_KEY,
+              },
+              body: JSON.stringify({ post_id: post.id, user_id: userId }),
+            },
+          );
+          if (!res.ok) {
+            console.error(
+              `generate-bot-reactions returned ${res.status} for post ${post.id}:`,
+              await res.text(),
+            );
+          }
+        } catch (err) {
+          console.error(
+            `Could not trigger reactions for post ${post.id}:`,
+            err,
+          );
+        }
+      }),
+    );
 
     // notify the user for any inserted post that @ mentions them.
     const notificationRows = buildMentionNotifications(
