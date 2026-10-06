@@ -485,6 +485,29 @@ async function generateAiPosts(reason, currentUser) {
   }
 }
 
+//function for AI to generate relationship schema 
+async function generateRelationshipSchema(currentUser) {
+  if (!currentUser) return;
+
+  try {
+    const { data, error } = await supabaseClient.functions.invoke(
+      "User-relationship-tracker",
+      {
+        body: {
+          user_id: currentUser.id,
+        },
+      },
+    )
+    if (error) {
+      console.error("Could not generate relationship schema:", error);
+      return;
+    } 
+    console.log("successfully generated relationship schema for user:", currentUser.id, "data:", data);
+  } catch (error) {
+    console.error("Could not generate relationship schema:", error);
+  }
+}
+
 // "has this ever run for THIS user" check,
 // backed by a column on profiles. so logging in
 //  on a new device never re-triggers it
