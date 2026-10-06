@@ -27,310 +27,745 @@
 
     <link rel="stylesheet" href="style.css" />
     <style>
-      :root, [data-theme="dark"] {
-      --track: #2a2a2f;
-      --stat-bg: rgba(255, 255, 255, 0.03);
-      --verified: #4fa8dd;
-      --surface-2: #151316;
-      --profile-glow-1: #f5c451;
-      --profile-glow-2: #b98b2c;
-      --profile-glow-3: #6b5320;
-      --profile-glow-opacity: 0.28;
+      :root,
+      [data-theme="dark"] {
+        --track: #2a2a2f;
+        --stat-bg: rgba(255, 255, 255, 0.03);
+        --verified: #4fa8dd;
+        --surface-2: #151316;
+        --profile-glow-1: #f5c451;
+        --profile-glow-2: #b98b2c;
+        --profile-glow-3: #6b5320;
+        --profile-glow-opacity: 0.28;
       }
 
       [data-theme="light"] {
-      --track: #e0ddd3;
-      --stat-bg: rgba(0, 0, 0, 0.03);
-      --verified: #4fa8dd;
-      --surface-2: #efece6;
-      --profile-glow-1: rgba(245, 196, 81, 0.38);
-      --profile-glow-2: rgba(224, 184, 78, 0.26);
-      --profile-glow-3: rgba(201, 154, 46, 0.18);
-      --profile-glow-opacity: 0.42;
+        --track: #e0ddd3;
+        --stat-bg: rgba(0, 0, 0, 0.03);
+        --verified: #4fa8dd;
+        --surface-2: #efece6;
+        --profile-glow-1: rgba(245, 196, 81, 0.38);
+        --profile-glow-2: rgba(224, 184, 78, 0.26);
+        --profile-glow-3: rgba(201, 154, 46, 0.18);
+        --profile-glow-opacity: 0.42;
       }
 
-  *{ box-sizing:border-box; }
-  html,body{ margin:0; padding:0; }
+      * {
+        box-sizing: border-box;
+      }
 
-  .bg-glow{
-    position:fixed; inset:0; z-index:0;
-    overflow:hidden; pointer-events:none;
-  }
-  .bg-glow span{
-    position:absolute; border-radius:50%;
-    filter: blur(80px); opacity:var(--profile-glow-opacity);
-    animation: drift 26s ease-in-out infinite alternate;
-  }
-  .bg-glow span:nth-child(1){ width:420px; height:420px; background: radial-gradient(circle, var(--profile-glow-1), transparent 70%); top:-140px; left:-100px; animation-duration:29s; }
-  .bg-glow span:nth-child(2){ width:360px; height:360px; background: radial-gradient(circle, var(--profile-glow-2), transparent 70%); bottom:-100px; right:-80px; animation-duration:33s; animation-delay:-6s; }
-  .bg-glow span:nth-child(3){ width:300px; height:300px; background: radial-gradient(circle, var(--profile-glow-3), transparent 70%); top:35%; right:8%; animation-duration:23s; animation-delay:-3s; }
-  @keyframes drift{
-    0%{ transform: translate(0,0) scale(1); }
-    50%{ transform: translate(30px,-25px) scale(1.12); }
-    100%{ transform: translate(-20px,20px) scale(0.96); }
-  }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
 
-  body{
-    background: radial-gradient(ellipse at top, var(--bg-glow) 0%, var(--bg) 55%);
-    position:relative; overflow-x:hidden;
-    color: var(--ink);
-min-height:100vh;
-    display:flex; justify-content:center;
-    padding: 20px 0 90px;
-  }
-  .phone{ width:100%; max-width:430px; padding:0 18px; position:relative; z-index:1; }
+      .bg-glow {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
 
-  .topbar{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:16px;
-  }
-  .circle-btn{
-    width:38px; height:38px; border-radius:50%;
-    background: var(--surface-1); border:1px solid var(--card-border);
-    display:flex; align-items:center; justify-content:center;
-    color: var(--ink-dim); cursor:pointer;
-  }
+      .bg-glow span {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: var(--profile-glow-opacity);
+        animation: drift 26s ease-in-out infinite alternate;
+      }
 
-  /* ---------- fame card ---------- */
-  .fame-card{
-    position:relative;
-    border-radius:28px;
-    background: linear-gradient(165deg, var(--fame-grad-1) 0%, var(--fame-grad-2) 60%, var(--fame-grad-3) 100%);
-    border:1.5px solid rgba(245,196,81,.28);
-    box-shadow: 0 12px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(245,196,81,.05) inset;
-    overflow:hidden;
-    animation: cardRise .5s cubic-bezier(.2,.9,.3,1.15);
-  }
-  @keyframes cardRise{
-    from{ opacity:0; transform:translateY(14px) scale(.97); }
-    to{ opacity:1; transform:none; }
-  }
-  .fame-card::after{
-    content:"";
-    position:absolute; top:-60%; left:-40%;
-    width:55%; height:220%;
-    background: linear-gradient(75deg, transparent 35%, rgba(245,220,160,.14) 48%, transparent 60%);
-    transform: rotate(8deg);
-    animation: shine 10s ease-in-out;
-    pointer-events:none;
-  }
-  @keyframes shine{
-    0%{ left:-60%; }
-    35%{ left:130%; }
-    100%{ left:130%; }
-  }
-  .sparkle{
-    position:absolute; border-radius:50%;
-    background: #f5c451;
-    box-shadow: 0 0 6px 1px rgba(245,196,81,.7);
-    animation: twinkle 3.2s ease-in-out infinite;
-  }
-  @keyframes twinkle{
-    0%,100%{ opacity:.15; transform:scale(.7); }
-    50%{ opacity:1; transform:scale(1.15); }
-  }
+      .bg-glow span:nth-child(1) {
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, var(--profile-glow-1), transparent 70%);
+        top: -140px;
+        left: -100px;
+        animation-duration: 29s;
+      }
 
-  .fame-banner{
-    position:relative;
-    height:130px;
-    background: var(--fame-grad-1);
-    overflow:hidden;
-    border-radius:26.5px 26.5px 0 0;
-  }
-  .fame-banner img{
-    width:100%; height:100%; object-fit:cover; display:block;
-  }
-  .fame-banner::after{
-    content:"";
-    position:absolute; inset:0;
-    background: linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,.05) 55%, rgba(10,9,6,.35) 100%);
-  }
-  .fame-banner-top{
-    position:absolute; top:12px; left:14px; right:14px;
-    display:flex; justify-content:space-between; align-items:center;
-    z-index:2;
-  }
-  .fame-banner-edit{
-    position:absolute; bottom:10px; right:12px; z-index:2;
-    width:30px; height:30px; border-radius:50%;
-    background:rgba(10,9,6,.55); backdrop-filter: blur(4px);
-    border:1px solid rgba(245,196,81,.25);
-    display:flex; align-items:center; justify-content:center;
-    color:#f5e6bf; cursor:pointer;
-  }
-  .fame-banner-edit:hover{ background:rgba(10,9,6,.75); }
+      .bg-glow span:nth-child(2) {
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, var(--profile-glow-2), transparent 70%);
+        bottom: -100px;
+        right: -80px;
+        animation-duration: 33s;
+        animation-delay: -6s;
+      }
 
-  .fame-body{
-    padding: 18px 22px 20px;
-    position:relative; z-index:1;
-    text-align:center;
-  }
-  .tier-chip, .level-chip{
-font-weight:700; font-size:11px;
-    letter-spacing:.05em; text-transform:uppercase;
-    padding:6px 11px; border-radius:999px;
-  }
-  .tier-chip{ background:rgba(10,9,6,.55); color: var(--gold); border:1px solid rgba(245,196,81,.35); backdrop-filter: blur(4px); }
-  .level-chip{ background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color:#1a1408; }
+      .bg-glow span:nth-child(3) {
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, var(--profile-glow-3), transparent 70%);
+        top: 35%;
+        right: 8%;
+        animation-duration: 23s;
+        animation-delay: -3s;
+      }
 
-  .fame-main{
-    display:flex; flex-direction:column; align-items:center;
-    margin-top:18px; position:relative; z-index:1;
-  }
-  .ring-avatar{ position:relative; width:88px; height:88px; flex-shrink:0; }
-  .ring-avatar svg{ position:absolute; inset:0; transform:rotate(-90deg); }
-  .ring-avatar .ring-track{ fill:none; stroke:var(--track); stroke-width:5; }
-  .ring-avatar .ring-fill{ fill:none; stroke:url(#ringGrad); stroke-width:5; stroke-linecap:round; stroke-dasharray:220; stroke-dashoffset:220; transition: stroke-dashoffset 1.1s cubic-bezier(.3,.8,.3,1); }
-  .avatar-photo{
-    position:absolute; top:8px; left:8px; width:72px; height:72px;
-    border-radius:50%; overflow:hidden; border:3px solid var(--fame-edge);
-  }
-  .avatar-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .ring-pct{
-    position:absolute; bottom:-2px; right:-4px;
-    background: var(--gold-deep); color:#1a1408;
-font-weight:700; font-size:10px;
-    padding:2px 6px; border-radius:999px; border:2px solid var(--fame-edge);
-  }
+      @keyframes drift {
+        0% {
+          transform: translate(0,0) scale(1);
+        }
 
-  .fame-id{ margin-top:12px; }
-  .fame-name-row{ display:flex; align-items:center; justify-content:center; gap:5px; }
-  .fame-name{ font-weight:800; font-size:19px; }
-  .verified{ width:16px; height:16px; color:var(--verified); flex-shrink:0; }
-  .fame-handle{ color:var(--ink-faint); font-size:13.5px; margin-top:2px; }
-  .fame-edit-btn{
-    margin-top:12px;
-    display:inline-flex; align-items:center; gap:5px;
-    background:transparent; border:1.5px solid rgba(245,196,81,.4);
-    color:var(--gold); font-weight:700;
-    font-size:11.5px; padding:7px 14px; border-radius:999px; cursor:pointer;
-  }
-  .fame-edit-btn:hover{ background: var(--gold-glow); }
+        50% {
+          transform: translate(30px,-25px) scale(1.12);
+        }
 
-  .fame-bio{
-    margin-top:16px; font-size:14px; line-height:1.55;
-    color: var(--ink-dim); position:relative; z-index:1;
-    max-width:320px; margin-left:auto; margin-right:auto;
-  }
+        100% {
+          transform: translate(-20px,20px) scale(0.96);
+        }
+      }
 
-  .fame-stats-row{
-    display:flex; gap:8px; margin-top:18px; position:relative; z-index:1;
-  }
-  .fame-stat{
-    flex:1; background: var(--stat-bg);
-    border:1px solid var(--card-border); border-radius:14px;
-    padding:10px 6px; text-align:center;
-  }
-  .fame-stat b{
-    display:block; font-weight:800; font-size:15px; color:var(--ink);
-  }
-  .fame-stat span{ font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; }
+      body {
+        background: radial-gradient(ellipse at top, var(--bg-glow) 0%, var(--bg) 55%);
+        position: relative;
+        overflow-x: hidden;
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 20px 0 90px;
+      }
 
-  /* ---------- segmented tabs ---------- */
-  .tabs{
-    display:flex; gap:6px; margin-top:24px;
-    background: var(--surface-2); border:1px solid var(--card-border);
-    border-radius:999px; padding:4px;
-  }
-  .tab-btn{
-    flex:1; border:none; background:transparent;
-font-weight:700; font-size:13.5px;
-    color: var(--ink-faint); padding:10px 0; border-radius:999px; cursor:pointer;
-    transition: background .2s ease, color .2s ease;
-  }
-  .tab-btn.active{ background: var(--gold-glow); color:var(--gold); }
+      .phone {
+        width: 100%;
+        max-width: 430px;
+        padding: 0 18px;
+        position: relative;
+        z-index: 1;
+      }
 
-  .tab-panel{ display:none; margin-top:20px; }
-  .tab-panel.active{ display:block; animation: fadeIn .35s ease; }
-  @keyframes fadeIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
 
-  /* ---------- overview: radial gauges ---------- */
-  .gauge-row{ display:flex; justify-content:space-between; gap:10px; }
-  .gauge{
-    flex:1; background: linear-gradient(180deg, var(--surface-grad-1) 0%, var(--surface-grad-2) 100%);
-    border:1px solid var(--card-border);
-    border-radius:20px; padding:16px 8px 14px; text-align:center;
-  }
-  .gauge svg{ transform:rotate(-90deg); }
-  .gauge-track{ fill:none; stroke:var(--track); stroke-width:8; }
-  .gauge-fill{ fill:none; stroke-width:8; stroke-linecap:round; transition: stroke-dashoffset 1s cubic-bezier(.3,.8,.3,1), stroke .3s ease; }
-  .gauge-wrap{ position:relative; width:78px; height:78px; margin:0 auto; }
-  .gauge-value{
-    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-font-weight:800; font-size:15px; color:var(--ink);
-  }
-  .gauge-label{ margin-top:10px; font-weight:700; font-size:12.5px; color:var(--ink); }
-  .gauge-delta{ font-size:11px; margin-top:2px; font-weight:600; }
-  .gauge-caption{ font-size:11.5px; color:var(--ink-faint); margin-top:6px; line-height:1.4; }
+      .circle-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--surface-1);
+        border: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-dim);
+        cursor: pointer;
+      }
 
-  /* ---------- circle: horizontal carousel ---------- */
-  .circle-scroll{
-    display:flex; gap:12px; overflow-x:auto;
-    padding: 2px 2px 12px;
-    scroll-snap-type:x mandatory;
-    -webkit-overflow-scrolling:touch;
-  }
-  .circle-scroll::-webkit-scrollbar{ height:5px; }
-  .circle-scroll::-webkit-scrollbar-thumb{ background: var(--card-border); border-radius:999px; }
-  .circle-card{
-    scroll-snap-align:start;
-    flex-shrink:0; width:158px;
-    background: linear-gradient(180deg, var(--surface-grad-1) 0%, var(--surface-grad-2) 100%);
-    border:1px solid var(--card-border);
-    border-radius:18px; padding:14px;
-  }
-  .circle-top{ display:flex; align-items:center; gap:9px; }
-  .circle-avatar{
-    width:38px; height:38px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-font-weight:800; font-size:12.5px; color:#0e0e11;
-    flex-shrink:0;
-  }
-  .circle-name{ font-weight:700; font-size:13px; line-height:1.2; color:var(--ink); }
-  .circle-handle{ font-size:11px; color:var(--ink-faint); }
-  .circle-meter{ margin-top:12px; display:flex; align-items:center; gap:8px; }
-  .circle-track{ flex:1; height:6px; background:var(--track); border-radius:999px; overflow:hidden; position:relative; }
-  .circle-fill{ height:100%; border-radius:999px; transition: width 1s cubic-bezier(.3,.8,.3,1), background-color .3s ease; }
-  .circle-pct{ font-weight:700; font-size:11.5px; white-space:nowrap; transition: color .3s ease; }
-  .circle-caption{ margin-top:9px; font-size:11px; line-height:1.45; color:var(--ink-dim); }
-  .circle-caption b{ font-weight:700; }
+      /* ---------- fame card ---------- */
+      .fame-card {
+        position: relative;
+        border-radius: 28px;
+        background: linear-gradient(165deg, var(--fame-grad-1) 0%, var(--fame-grad-2) 60%, var(--fame-grad-3) 100%);
+        border: 1.5px solid rgba(245,196,81,.28);
+        box-shadow: 0 12px 32px rgba(0,0,0,.45), 0 0 0 1px rgba(245,196,81,.05) inset;
+        overflow: hidden;
+        animation: cardRise .5s cubic-bezier(.2,.9,.3,1.15);
+      }
 
-  /* ---------- bottom nav ---------- */
-  .bottomTab{
-    position:fixed;
-    left:0; bottom:0;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:40px;
-    width:100%;
-    padding:10px 20px;
-    background-color: var(--bg);
-    border-top:1px solid var(--card-border);
-    z-index:9999;
-  }
-  .bottomTab a{
-    padding:6px 14px;
-    border:1px solid transparent;
-    border-radius:10px;
-    color:var(--ink);
-    font: bold 16px 'Urbanist', Arial, sans-serif;
-    text-align:center;
-    text-decoration:none;
-    transition: all 0.25s ease;
-  }
-  .bottomTab a:hover,
-  .bottomTab a[aria-current="page"]{
-    color:#ffd166;
-    border-color: rgba(255, 209, 102, 0.5);
-    background-color: rgba(255, 209, 102, 0.08);
-    box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
-    transform: translateY(-2px);
-  }
-  @media (max-width:480px){
-    .bottomTab{ gap:8px; }
-    .bottomTab a{ padding:6px 8px; font-size:14px; }
-  }
+      @keyframes cardRise {
+        from {
+          opacity: 0;
+          transform: translateY(14px) scale(.97);
+        }
+
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      .fame-card::after {
+        content: "";
+        position: absolute;
+        top: -60%;
+        left: -40%;
+        width: 55%;
+        height: 220%;
+        background: linear-gradient(75deg, transparent 35%, rgba(245,220,160,.14) 48%, transparent 60%);
+        transform: rotate(8deg);
+        animation: shine 10s ease-in-out;
+        pointer-events: none;
+      }
+
+      @keyframes shine {
+        0% {
+          left: -60%;
+        }
+
+        35% {
+          left: 130%;
+        }
+
+        100% {
+          left: 130%;
+        }
+      }
+
+      .sparkle {
+        position: absolute;
+        border-radius: 50%;
+        background: #f5c451;
+        box-shadow: 0 0 6px 1px rgba(245,196,81,.7);
+        animation: twinkle 3.2s ease-in-out infinite;
+      }
+
+      @keyframes twinkle {
+        0%, 100% {
+          opacity: .15;
+          transform: scale(.7);
+        }
+
+        50% {
+          opacity: 1;
+          transform: scale(1.15);
+        }
+      }
+
+      .fame-banner {
+        position: relative;
+        height: 130px;
+        background: var(--fame-grad-1);
+        overflow: hidden;
+        border-radius: 26.5px 26.5px 0 0;
+      }
+
+      .fame-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .fame-banner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,.4) 0%, rgba(0,0,0,.05) 55%, rgba(10,9,6,.35) 100%);
+      }
+
+      .fame-banner-top {
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        right: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 2;
+      }
+
+      .fame-banner-edit {
+        position: absolute;
+        bottom: 10px;
+        right: 12px;
+        z-index: 2;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(10,9,6,.55);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(245,196,81,.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #f5e6bf;
+        cursor: pointer;
+      }
+
+      .fame-banner-edit:hover {
+        background: rgba(10,9,6,.75);
+      }
+
+      .fame-body {
+        padding: 18px 22px 20px;
+        position: relative;
+        z-index: 1;
+        text-align: center;
+      }
+
+      .tier-chip,
+      .level-chip {
+        font-weight: 700;
+        font-size: 11px;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        padding: 6px 11px;
+        border-radius: 999px;
+      }
+
+      .tier-chip {
+        background: rgba(10,9,6,.55);
+        color: var(--gold);
+        border: 1px solid rgba(245,196,81,.35);
+        backdrop-filter: blur(4px);
+      }
+
+      .level-chip {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        color: #1a1408;
+      }
+
+      .fame-main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 18px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .ring-avatar {
+        position: relative;
+        width: 88px;
+        height: 88px;
+        flex-shrink: 0;
+      }
+
+      .ring-avatar svg {
+        position: absolute;
+        inset: 0;
+        transform: rotate(-90deg);
+      }
+
+      .ring-avatar .ring-track {
+        fill: none;
+        stroke: var(--track);
+        stroke-width: 5;
+      }
+
+      .ring-avatar .ring-fill {
+        fill: none;
+        stroke: url(#ringGrad);
+        stroke-width: 5;
+        stroke-linecap: round;
+        stroke-dasharray: 220;
+        stroke-dashoffset: 220;
+        transition: stroke-dashoffset 1.1s cubic-bezier(.3,.8,.3,1);
+      }
+
+      .avatar-photo {
+        position: absolute;
+        top: 8px;
+        left: 8px;
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid var(--fame-edge);
+      }
+
+      .avatar-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .ring-pct {
+        position: absolute;
+        bottom: -2px;
+        right: -4px;
+        background: var(--gold-deep);
+        color: #1a1408;
+        font-weight: 700;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 2px solid var(--fame-edge);
+      }
+
+      .fame-id {
+        margin-top: 12px;
+      }
+
+      .fame-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      .fame-name {
+        font-weight: 800;
+        font-size: 19px;
+      }
+
+      .verified {
+        width: 16px;
+        height: 16px;
+        color: var(--verified);
+        flex-shrink: 0;
+      }
+
+      .fame-handle {
+        color: var(--ink-faint);
+        font-size: 13.5px;
+        margin-top: 2px;
+      }
+
+      .fame-edit-btn {
+        margin-top: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: transparent;
+        border: 1.5px solid rgba(245,196,81,.4);
+        color: var(--gold);
+        font-weight: 700;
+        font-size: 11.5px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .fame-edit-btn:hover {
+        background: var(--gold-glow);
+      }
+
+      .fame-bio {
+        margin-top: 16px;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--ink-dim);
+        position: relative;
+        z-index: 1;
+        max-width: 320px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .fame-stats-row {
+        display: flex;
+        gap: 8px;
+        margin-top: 18px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .fame-stat {
+        flex: 1;
+        background: var(--stat-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 14px;
+        padding: 10px 6px;
+        text-align: center;
+      }
+
+      .fame-stat b {
+        display: block;
+        font-weight: 800;
+        font-size: 15px;
+        color: var(--ink);
+      }
+
+      .fame-stat span {
+        font-size: 10.5px;
+        color: var(--ink-faint);
+        text-transform: uppercase;
+        letter-spacing: .04em;
+      }
+
+      /* ---------- segmented tabs ---------- */
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-top: 24px;
+        background: var(--surface-2);
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        padding: 4px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-weight: 700;
+        font-size: 13.5px;
+        color: var(--ink-faint);
+        padding: 10px 0;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease;
+      }
+
+      .tab-btn.active {
+        background: var(--gold-glow);
+        color: var(--gold);
+      }
+
+      .tab-panel {
+        display: none;
+        margin-top: 20px;
+      }
+
+      .tab-panel.active {
+        display: block;
+        animation: fadeIn .35s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* ---------- overview: radial gauges ---------- */
+      .gauge-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .gauge {
+        flex: 1;
+        background: linear-gradient(180deg, var(--surface-grad-1) 0%, var(--surface-grad-2) 100%);
+        border: 1px solid var(--card-border);
+        border-radius: 20px;
+        padding: 16px 8px 14px;
+        text-align: center;
+      }
+
+      .gauge svg {
+        transform: rotate(-90deg);
+      }
+
+      .gauge-track {
+        fill: none;
+        stroke: var(--track);
+        stroke-width: 8;
+      }
+
+      .gauge-fill {
+        fill: none;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transition: stroke-dashoffset 1s cubic-bezier(.3,.8,.3,1), stroke .3s ease;
+      }
+
+      .gauge-wrap {
+        position: relative;
+        width: 78px;
+        height: 78px;
+        margin: 0 auto;
+      }
+
+      .gauge-value {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 15px;
+        color: var(--ink);
+      }
+
+      .gauge-label {
+        margin-top: 10px;
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--ink);
+      }
+
+      .gauge-delta {
+        font-size: 11px;
+        margin-top: 2px;
+        font-weight: 600;
+      }
+
+      .gauge-caption {
+        font-size: 11.5px;
+        color: var(--ink-faint);
+        margin-top: 6px;
+        line-height: 1.4;
+      }
+
+      /* ---------- circle: horizontal carousel ---------- */
+      .circle-scroll {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding: 2px 2px 12px;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .circle-scroll::-webkit-scrollbar {
+        height: 5px;
+      }
+
+      .circle-scroll::-webkit-scrollbar-thumb {
+        background: var(--card-border);
+        border-radius: 999px;
+      }
+
+      .circle-card {
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        width: 158px;
+        background: linear-gradient(180deg, var(--surface-grad-1) 0%, var(--surface-grad-2) 100%);
+        border: 1px solid var(--card-border);
+        border-radius: 18px;
+        padding: 14px;
+      }
+
+      .circle-card {
+        cursor: pointer;
+      }
+
+      .circle-card:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+      }
+
+      .circle-avatar {
+        overflow: hidden;
+      }
+
+      .circle-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .circle-empty {
+        font-size: 13px;
+        color: var(--ink-faint);
+        padding: 12px 4px;
+      }
+
+      .circle-top {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .circle-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 12.5px;
+        color: #0e0e11;
+        flex-shrink: 0;
+      }
+
+      .circle-name {
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 1.2;
+        color: var(--ink);
+      }
+
+      .circle-handle {
+        font-size: 11px;
+        color: var(--ink-faint);
+      }
+
+      .circle-meter {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .circle-track {
+        flex: 1;
+        height: 6px;
+        background: var(--track);
+        border-radius: 999px;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .circle-fill {
+        height: 100%;
+        border-radius: 999px;
+        transition: width 1s cubic-bezier(.3,.8,.3,1), background-color .3s ease;
+      }
+
+      .circle-pct {
+        font-weight: 700;
+        font-size: 11.5px;
+        white-space: nowrap;
+        transition: color .3s ease;
+      }
+
+      .circle-caption {
+        margin-top: 9px;
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--ink-dim);
+      }
+
+      .circle-caption b {
+        font-weight: 700;
+      }
+
+      /* ---------- bottom nav ---------- */
+      .bottomTab {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        width: 100%;
+        padding: 10px 20px;
+        background-color: var(--bg);
+        border-top: 1px solid var(--card-border);
+        z-index: 9999;
+      }
+
+      .bottomTab a {
+        padding: 6px 14px;
+        border: 1px solid transparent;
+        border-radius: 10px;
+        color: var(--ink);
+        font: bold 16px 'Urbanist', Arial, sans-serif;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.25s ease;
+      }
+
+      .bottomTab a:hover,
+      .bottomTab a[aria-current="page"] {
+        color: #ffd166;
+        border-color: rgba(255, 209, 102, 0.5);
+        background-color: rgba(255, 209, 102, 0.08);
+        box-shadow: 0 0 12px rgba(255, 209, 102, 0.35);
+        transform: translateY(-2px);
+      }
+
+      @media (max-width:480px) {
+        .bottomTab {
+          gap: 8px;
+        }
+
+        .bottomTab a {
+          padding: 6px 8px;
+          font-size: 14px;
+        }
+      }
     </style>
 </head>
 <body class="page-maximal">
@@ -407,7 +842,7 @@ font-weight:800; font-size:12.5px; color:#0e0e11;
       <div class="fame-stats-row">
         <div class="fame-stat"><b id="statFollowers">0</b><span>Followers</span></div>
         <div class="fame-stat"><b id="statFollowing">0</b><span>Following</span></div>
-        <div class="fame-stat"><b>#7</b><span>Rank</span></div>
+        <div class="fame-stat"><b id="statPosts">0</b><span>Posts</span></div>
       </div>
     </div>
   </div>
@@ -439,330 +874,6 @@ font-weight:800; font-size:12.5px; color:#0e0e11;
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="scripts/supabase.js"></script>
 <script src="scripts/theme.js"></script>
-
-<script>
-  /* ---------- load real profile data ---------- */
-  let currentProfile = null;
-
-  function applyProfileToDOM(profile) {
-    const handle = profile.handle ? `@${profile.handle.replace(/^@/, '')}` : '@yourhandle';
-    document.getElementById('fameHandle').textContent = handle;
-    document.getElementById('fameDisplayName').textContent = profile.display_name || handle;
-
-    if (profile.bio) {
-      document.getElementById('fameBio').textContent = profile.bio;
-    }
-    if (profile.avatar_url) {
-      document.getElementById('fameAvatarImg').src = profile.avatar_url;
-    }
-    if (profile.header_url) {
-      document.getElementById('fameHeaderImg').src = profile.header_url;
-    }
-  }
-
-  async function loadIconProfile() {
-    // 1. Paint the shared cache first, but continue to Supabase so it can
-    // refresh stale data for the next page.
-    const cachedProfile = window.SpotlightProfileCache.read();
-    if (cachedProfile) {
-      applyProfileToDOM(cachedProfile);
-    } else {
-      // Keep legacy editor data as a fallback for older sessions.
-      const localData = localStorage.getItem('savedProfile');
-      try {
-        if (localData) {
-          const parsedLocal = JSON.parse(localData);
-          applyProfileToDOM({
-            display_name: parsedLocal.name,
-            handle: parsedLocal.handle,
-            bio: parsedLocal.bio,
-            avatar_url: localStorage.getItem('savedAvatar') || null,
-            header_url: localStorage.getItem('savedBanner') || null,
-          });
-        }
-      } catch (error) {
-        console.warn('Could not parse legacy cached profile:', error);
-      }
-    }
-
-    // 2. Fetch from Supabase
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      if (userError?.name !== 'AuthSessionMissingError') {
-        console.error('Could not identify signed-in user:', userError);
-      }
-      return;
-    }
-
-    const { data: profile, error } = await supabaseClient
-      .from('profiles')
-      .select('display_name, handle, bio, avatar_url, header_url')
-      .eq('id', user.id)
-      .single();
-
-    // 3. If no profile exists, create one
-    if (error || !profile) {
-      if (error && error.code === 'PGRST116') {
-        // No profile row found — create one from auth metadata
-        const username = user.user_metadata?.username || user.email?.split('@')[0] || 'user';
-        const newProfile = {
-          id: user.id,
-          display_name: username,
-          handle: username,
-          bio: '',
-          avatar_url: null,
-          header_url: null,
-        };
-
-        const { error: insertError } = await supabaseClient
-          .from('profiles')
-          .insert(newProfile);
-
-        if (!insertError) {
-          // Remove id before applying to DOM
-          delete newProfile.id;
-          currentProfile = newProfile;
-          applyProfileToDOM(newProfile);
-          window.SpotlightProfileCache.write(newProfile);
-          return;
-        }
-      }
-
-      console.error('Could not load profile:', error);
-      return;
-    }
-
-    // 4. Profile loaded successfully
-    currentProfile = profile;
-    applyProfileToDOM(profile);
-    window.SpotlightProfileCache.write(profile);
-  }
-
-  // Load the profile when the page loads
-  loadIconProfile();
-</script>
-<script>
-  /* ---------- back button: return to whichever page the user came from ---------- */
-  document.getElementById('backBtn').addEventListener('click', () => {
-    const lastPage = sessionStorage.getItem('spotlight-last-page') || 'Feed.html';
-    window.location.href = lastPage;
-  });
-
-  /* ---------- sparkles inside fame card ---------- */
-  const fameCard = document.getElementById('fameCard');
-  const sparklePositions = [
-    {top:'58%', left:'88%', size:4, delay:'0s'},
-    {top:'74%', left:'8%', size:3, delay:'.8s'},
-    {top:'90%', left:'70%', size:5, delay:'1.6s'},
-    {top:'66%', left:'50%', size:3, delay:'2.2s'},
-  ];
-  sparklePositions.forEach(s => {
-    const el = document.createElement('div');
-    el.className = 'sparkle';
-    el.style.top = s.top; el.style.left = s.left;
-    el.style.width = s.size+'px'; el.style.height = s.size+'px';
-    el.style.animationDelay = s.delay;
-    fameCard.appendChild(el);
-  });
-
-  /* ---------- avatar progress ring ---------- */
-  const AVATAR_R = 37, AVATAR_C = 2*Math.PI*AVATAR_R;
-  const avatarRing = document.getElementById('avatarRing');
-  avatarRing.style.strokeDasharray = AVATAR_C;
-  function setAvatarRing(pct){
-    const offset = AVATAR_C * (1 - pct/100);
-    avatarRing.style.strokeDashoffset = offset;
-  }
-  requestAnimationFrame(() => setTimeout(() => setAvatarRing(68), 150));
-
-  /* ---------- count-up stats ---------- */
-  function countUp(el, target, suffix){
-    const duration = 900;
-    const t0 = performance.now();
-    function tick(now){
-      const p = Math.min(1, (now - t0) / duration);
-      const eased = 1 - Math.pow(1 - p, 3);
-      const val = target * eased;
-      el.textContent = (target >= 1000 ? val.toFixed(1) : Math.round(val)) + suffix;
-      if (p < 1) requestAnimationFrame(tick);
-      else el.textContent = target + suffix;
-    }
-    requestAnimationFrame(tick);
-  }
-  countUp(document.getElementById('statFollowers'), 128.4, 'K');
-  countUp(document.getElementById('statFollowing'), 892, '');
-
-  /* ---------- tabs ---------- */
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-    });
-  });
-
-  /* ---------- overview radial gauges ---------- */
-  const STATS = [
-    { id:'humor', label:'Humor', value:24, delta:1, color:'#f5c451', caption:"You're comedy gold." },
-    { id:'aura', label:'Aura', value:29, delta:2, color:'#6fcf97', caption:'Captivating presence.' },
-    { id:'chaos', label:'Chaos', value:41, delta:3, color:'#f2685f', caption:'Main-character energy.' },
-  ];
-  const G_R = 32, G_C = 2*Math.PI*G_R;
-  const gaugeRow = document.getElementById('gaugeRow');
-  STATS.forEach(s => {
-    const el = document.createElement('div');
-    el.className = 'gauge';
-    el.innerHTML = `
-      <div class="gauge-wrap">
-        <svg viewBox="0 0 78 78" width="78" height="78">
-          <circle class="gauge-track" cx="39" cy="39" r="${G_R}"/>
-          <circle class="gauge-fill" id="fill-${s.id}" cx="39" cy="39" r="${G_R}" stroke="${s.color}" stroke-dasharray="${G_C}" stroke-dashoffset="${G_C}"/>
-        </svg>
-        <div class="gauge-value" id="val-${s.id}">0%</div>
-      </div>
-      <div class="gauge-label">${s.label}</div>
-      <div class="gauge-delta" id="delta-${s.id}" style="color:${s.color};">+${s.delta}%</div>
-      <div class="gauge-caption">${s.caption}</div>
-    `;
-    gaugeRow.appendChild(el);
-  });
-
-  function setGauge(s, animate){
-    const fillEl = document.getElementById('fill-' + s.id);
-    const valEl = document.getElementById('val-' + s.id);
-    const deltaEl = document.getElementById('delta-' + s.id);
-    const offset = G_C * (1 - Math.max(0, Math.min(100, s.value)) / 100);
-    fillEl.style.strokeDashoffset = offset;
-    valEl.textContent = Math.round(s.value) + '%';
-    deltaEl.textContent = (s.delta >= 0 ? '+' : '') + s.delta + '%';
-    deltaEl.style.color = s.delta >= 0 ? '#6fcf97' : '#f2685f';
-    if (animate){
-      valEl.style.transition = 'none';
-      valEl.style.transform = 'scale(1.25)';
-      requestAnimationFrame(() => {
-        valEl.style.transition = 'transform .4s cubic-bezier(.34,1.56,.64,1)';
-        valEl.style.transform = 'scale(1)';
-      });
-    }
-  }
-
-  requestAnimationFrame(() => setTimeout(() => STATS.forEach(s => setGauge(s)), 150));
-
-  setInterval(() => {
-    const s = STATS[Math.floor(Math.random() * STATS.length)];
-    const delta = (Math.random() * 6) - 2;
-    s.value = Math.max(6, Math.min(94, s.value + delta));
-    s.delta = Math.round(delta * 10) / 10;
-    setGauge(s, true);
-  }, 3400);
-
-  /* ---------- inner circle carousel ---------- */
-  const RELATIONSHIPS = [
-    { name:"Kai Velvet", handle:"@KaiVelvet", initials:"KV", color:"#f5c451", pct:4.9, delta:1.9, caption:"Loves a good sleep joke, even about you." },
-    { name:"Nora Noire", handle:"@NoraNoire", initials:"NN", color:"#4fa8dd", pct:4.9, delta:1.0, caption:"Thinks your chaos era is iconic content." },
-    { name:"Lumen Rae", handle:"@LumenRae", initials:"LR", color:"#6fcf97", pct:22.9, delta:0.8, caption:"Your ride-or-die since day one." },
-    { name:"Dash Wilder", handle:"@DashWilder", initials:"DW", color:"#f2685f", pct:-1.9, delta:-1.0, caption:"Hates sharing the spotlight." },
-    { name:"Echo Monroe", handle:"@EchoMonroe", initials:"EM", color:"#c792ea", pct:9.4, delta:0.4, caption:"Likes your posts at odd hours." },
-    { name:"Zara Flint", handle:"@ZaraFlint", initials:"ZF", color:"#f2a13d", pct:15.2, delta:1.3, caption:"Your go-to for honest fit checks." },
-    { name:"Orion Page", handle:"@OrionPage", initials:"OP", color:"#8ab4f8", pct:-3.1, delta:-0.6, caption:"Still salty about the missed launch." },
-    { name:"Riva Jax", handle:"@RivaJax", initials:"RJ", color:"#f582ae", pct:6.7, delta:0.2, caption:"Cryptic comment-section emoji energy." },
-  ];
-
-  const verifiedSVG = `<svg width="12" height="12" viewBox="0 0 22 22" fill="currentColor" style="color:#4fa8dd;"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/></svg>`;
-
-  function scaleToBar(pct){
-    const clamped = Math.max(-30, Math.min(40, pct));
-    return Math.max(4, Math.min(96, ((clamped + 30) / 70) * 100));
-  }
-
-  const circleScroll = document.getElementById('circleScroll');
-  RELATIONSHIPS.forEach((r, i) => {
-    r.uid = 'circ-' + i;
-    const el = document.createElement('div');
-    el.className = 'circle-card';
-    el.innerHTML = `
-      <div class="circle-top">
-        <div class="circle-avatar" style="background:${r.color};">${r.initials}</div>
-        <div>
-          <div class="circle-name">${r.name} ${verifiedSVG}</div>
-          <div class="circle-handle">${r.handle}</div>
-        </div>
-      </div>
-      <div class="circle-meter">
-        <div class="circle-track"><div class="circle-fill" id="fill-${r.uid}" style="width:0%;"></div></div>
-        <div class="circle-pct" id="pct-${r.uid}">${r.pct > 0 ? '+' : ''}${r.pct.toFixed(1)}%</div>
-      </div>
-      <div class="circle-caption"><b style="color:${r.delta>=0?'#6fcf97':'#f2685f'};">${r.delta>0?'+':''}${r.delta}%</b> ${r.caption}</div>
-    `;
-    circleScroll.appendChild(el);
-  });
-
-  function setCircle(r, animate){
-    const pos = r.pct >= 0;
-    const color = pos ? '#6fcf97' : '#f2685f';
-    const width = scaleToBar(r.pct);
-    const fillEl = document.getElementById('fill-' + r.uid);
-    const pctEl = document.getElementById('pct-' + r.uid);
-    fillEl.style.width = width + '%';
-    fillEl.style.background = color;
-    pctEl.textContent = (r.pct > 0 ? '+' : '') + r.pct.toFixed(1) + '%';
-    pctEl.style.color = color;
-    if (animate){
-      pctEl.style.transform = 'scale(1.3)';
-      setTimeout(() => { pctEl.style.transition='transform .4s cubic-bezier(.34,1.56,.64,1)'; pctEl.style.transform='scale(1)'; }, 20);
-    }
-  }
-  requestAnimationFrame(() => setTimeout(() => RELATIONSHIPS.forEach(r => setCircle(r)), 150));
-  setInterval(() => {
-    const r = RELATIONSHIPS[Math.floor(Math.random() * RELATIONSHIPS.length)];
-    const delta = (Math.random() * 7) - 3.5;
-    r.pct = Math.max(-25, Math.min(35, r.pct + delta));
-    r.delta = Math.round(delta * 10) / 10;
-    setCircle(r, true);
-  }, 2800);
-
-  /* ---------- header camera button: direct upload ---------- */
-  const headerCameraBtn = document.getElementById('headerCameraBtn');
-  const headerCameraInput = document.getElementById('headerCameraInput');
-  const fameHeaderImg = document.getElementById('fameHeaderImg');
-
-  headerCameraBtn.addEventListener('click', () => headerCameraInput.click());
-
-  headerCameraInput.addEventListener('change', async function () {
-    const file = this.files[0];
-    if (!file) return;
-
-    const dataUrl = await readFileAsDataUrl(file);
-    fameHeaderImg.src = dataUrl;
-
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      console.log('Could not save header image:', userError || 'No signed-in user.');
-      return;
-    }
-
-    const { data: updated, error } = await supabaseClient
-      .from('profiles')
-      .update({ header_url: dataUrl })
-      .eq('id', user.id)
-      .select('display_name, handle, bio, avatar_url, header_url')
-      .single();
-
-    if (error) {
-      console.log('Could not save header image:', error);
-      return;
-    }
-    currentProfile = updated;
-    window.SpotlightProfileCache.write(updated);
-  });
-
-  /* ---------- Link to editIconPage ---------- */
-  editProfileBtn.addEventListener('click', () => {
-  sessionStorage.setItem('spotlight-last-page', window.location.href);
-  window.location.href = 'EditIconPage.html';
-});
-
-</script>
+<script src="scripts/iconpage.js">// was getting lengthy - trimmed out</script>
 </body>
 </html>
