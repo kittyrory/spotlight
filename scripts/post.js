@@ -367,16 +367,66 @@ async function main() {
 
   // saves the current post/replies/profiles snapshot
   // revisiting this post later renders instantly from cache
-  function persistCache() {
-    window.SpotlightPostCache?.writePost(postId, {
+  async function persistCache() {
+    async function generateRelationshipSchema(currentUser, feedInteraction, world_id) {
+  if (!currentUser) return;
+
+  try {
+    const { data, error } = await supabaseClient.functions.invoke(
+      "User-relationship-tracker",
+      {
+        body: {
+          playerId: currentUser.id,
+          botId: feedInteraction.bot_user_id || null,                    
+
+      worldId: world_id || null,                  
+      feedInteraction: {
+          bot_user_id: feedInteraction.bot_user_id || null,
+            likes: feedInteraction?.likes || 0,
+            replies: feedInteraction?.replies || 0,
+            tags: feedInteraction?.tags || 0,
+          },
+        },
+      },
+    )
+    if (error) {
+      console.error("Could not generate relationship schema:", error);
+      return;
+    } 
+    console.log("successfully generated relationship schema for user:", currentUser.id, "data:", data);
+    return data;
+  } catch (error) {
+    console.error("Could not generate relationship schema:", error);
+  }
+}
+ if (currentUser && post) {
+    const hasLiked = myReactions && [myReactions].includes("like") ? 1 : 0;
+    const userRepliesCount = replyRows ? replyRows.filter(r => r.user_id === currentUser.id).length : 0;
+
+    const calculatedFeedInteraction = {
+      bot_user_id: post.bot_user_id || null,
+      likes: hasLiked,
+      replies: userRepliesCount,
+      tags: 0
+    };
+  window.SpotlightPostCache?.writePost(postId, {
       post,
       replies: replyRows,
       myReactions: [...myReactions],
       profiles: [...profileById.values()],
       botProfiles: [...botProfileById.values()],
-    });
+      relationshipSchema: calculatedFeedInteraction,
+      cachedAt: Date.now(),
+    }
+  );
     console.log("[post] wrote cache at", Date.now(), "for post", postId);
+    const totalInteractions = calculatedFeedInteraction.likes + calculatedFeedInteraction.replies;
+    if (totalInteractions >= 3) {
+      console.log("Threshold met! Invoking relationship schema function...");
+      generateRelationshipSchema(currentUser, calculatedFeedInteraction, post.world_id || null);
+    }
   }
+}
 
   // parentReplyId tells the edge function which reply the bots should
   // respond to. without it, bots always landed as top-level replies on
