@@ -486,7 +486,7 @@ async function generateAiPosts(reason, currentUser) {
 }
 
 //function for AI to generate relationship schema 
-async function generateRelationshipSchema(currentUser) {
+async function generateRelationshipSchema(currentUser, feedInteraction, eventsXpId, worldId) {
   if (!currentUser) return;
 
   try {
@@ -495,6 +495,14 @@ async function generateRelationshipSchema(currentUser) {
       {
         body: {
           user_id: currentUser.id,
+          world_id: worldId,
+          bots_id: feedInteraction.bot_user_id || null,
+          feed_interaction: {
+            likes: feedInteraction?.likes || 0,
+            replies: feedInteraction?.replies || 0,
+            tags: feedInteraction?.tags || 0,
+          },
+          events_xp_id: eventsXpId || null, 
         },
       },
     )
