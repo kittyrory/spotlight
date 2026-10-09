@@ -307,131 +307,90 @@
     </div>
 
     <script>
-      // bond: -100 (worst) to +100 (best). Rendered on a center-anchored meter:
-      // negative values fill left of center, positive values fill right of center.
-      const CHARACTERS = [
-        {
-          name: "Roman Kastellan",
-          handle: "@romankastellan",
-          initial: "R",
-          accent: "var(--rel-lover)",
-          badge: "Lover",
-          xp: 45,
-          xpDir: "up",
-          note: "Left you a rose backstage",
-          bond: 92,
-        },
-        {
-          name: "Lena Marchetti",
-          handle: "@lenamarchetti",
-          initial: "L",
-          accent: "var(--gold-light)",
-          badge: "Close Friend",
-          xp: 30,
-          xpDir: "up",
-          note: "Invited you to rehearsal",
-          bond: 78,
-        },
-        {
-          name: "Jonas Everhart",
-          handle: "@jonaseverhart",
-          initial: "J",
-          accent: "var(--gold)",
-          badge: "Friend",
-          xp: 15,
-          xpDir: "up",
-          note: "Replied to your message",
-          bond: 61,
-        },
-        {
-          name: "Aria Delacroix",
-          handle: "@ariadelacroix",
-          initial: "A",
-          accent: "var(--ink-faint)",
-          badge: "Acquaintance",
-          xp: 8,
-          xpDir: "up",
-          note: "Noticed you in the crowd",
-          bond: 15,
-        },
-        {
-          name: "Selina Voss",
-          handle: "@selinavoss",
-          initial: "S",
-          accent: "var(--medium)",
-          badge: "Rival",
-          xp: 12,
-          xpDir: "down",
-          note: "Outshined you at the audition",
-          bond: -45,
-        },
-        {
-          name: "Viktor Sorrentino",
-          handle: "@viktorsorrentino",
-          initial: "V",
-          accent: "var(--red)",
-          badge: "Enemy",
-          xp: 30,
-          xpDir: "down",
-          note: "Badmouthed you to the press",
-          bond: -85,
-        },
-      ];
+    function clickfilters () {
+    const filterChips = document.querySelectorAll(".filter-chip");
+    filterChips.forEach(chip => {
+    chip.addEventListener("click", function() {
+      filterChips.forEach(c => c.classList.remove("active"));
+      this.classList.add("active");
+      
+      const filter = this.textContent.trim();
+      renderList(filter);
+    });
+  });
+}
+clickfilters();
 
-      const listEl = document.getElementById("list");
+      
+      /*check BE for relationship status between user and bot. If no relationship exists, 
+      return null. If relationship exists, return the relationship record.
+      if there's no relationship, then create a new relationship display in FE.
+      if relationship already exists, then check if relationship points are above threshold.
+      if relationship points are above threshold, then update relationship status.
+      write function to lock number of relationship points to a maximum of 5.
+      */
 
-      function renderList(filter) {
-        listEl.innerHTML = "";
-        CHARACTERS.filter(
-          (c) => filter === "All" || c.badge === filter,
-        ).forEach((c) => {
-          const isPos = c.bond >= 0;
-          const magnitude = Math.min(Math.abs(c.bond), 100); // 0-100, half of the track
-          const fillWidth = magnitude / 2; // percent of full track width
-          const fillLeft = isPos ? 50 : 50 - fillWidth;
+      //checks BE table for relationship status between user and bot. If no relationship exists, returns null. If relationship exists, returns the relationship record.
+  async function checkRelationshipStatus(currentUser, botUserId) {
+  try {
+  const { data, error } = await supabaseClient
+    .from("user-relationships")
+    .select("*")
+    .eq("player_id", currentUser.id)
+    .eq("bot_user_id", botUserId)
+    .single();
+    console.log("checkRelationshipStatus response:", data);
+    if (error) {
+    console.error("Error checking relationship status:", error);
+    return null;
+    }
 
-          const card = document.createElement("div");
-          card.className = "card";
-          card.style.setProperty("--card-accent", c.accent);
-          card.innerHTML = `
-          <div class="avatar">${c.initial}</div>
-          <div class="card-body">
-            <div class="card-top-row">
-              <div class="name-block">
-                <div class="char-name">${c.name}</div>
-                <div class="char-handle">${c.handle}</div>
-              </div>
-              <div class="rel-badge">${c.badge}</div>
-            </div>
-            <div class="activity-line">
-              <span class="xp ${c.xpDir}">${c.xpDir === "up" ? "+" : "−"}${c.xp} XP</span>
-              <span class="activity-text">${c.note}</span>
-            </div>
-            <div class="meter-row">
-              <div class="meter-label">Bond</div>
-              <div class="meter-value ${isPos ? "pos" : "neg"}">${isPos ? "+" : ""}${c.bond}</div>
-            </div>
-            <div class="meter-track">
-              <div class="meter-center"></div>
-              <div class="meter-fill" style="left:${fillLeft}%; width:${fillWidth}%;"></div>
-            </div>
+    return data; // Returns the relationship record if it exists
+    } catch (err) {
+    console.error("Unexpected error checking relationship status:", err);
+    return null;
+      }
+    }
+      
+//create new relationship record in FE if in BE and not already in FE
+
+    function createRelationshipCard(relationshipData, listEl) {
+    const card = document.createElement("div");
+    card.className = "card";
+    const bond = relationshipData.affinity_score || 0;
+    const isPos = bond >= 0;
+    const magnitude = Math.min(Math.abs(bond), 100);
+    const fillWidth = magnitude / 2;
+    const fillLeft = isPos ? 50 : 50 - fillWidth;
+
+  card.innerHTML = `
+          <div class="meter-track">
+            <div class="meter-fill" style="width: ${fillWidth}%; left: ${fillLeft}%;"></div>
           </div>
         `;
-          listEl.appendChild(card);
-        });
+        listEl.appendChild(card);
       }
 
-      renderList("All");
+  function animateRelationshipUpdate(card, newBond, threshold = 0) {
+  if (newBond > threshold) { 
+  const isPos = newBond >= 0;
+  const magnitude = Math.min(Math.abs(newBond), 100);
+  const fillWidth = magnitude / 2;
+  const fillLeft = isPos ? 50 : 50 - fillWidth;
 
-      document.querySelectorAll(".filter-chip").forEach((chip) => {
-        chip.addEventListener("click", () => {
-          document
-            .querySelectorAll(".filter-chip")
-            .forEach((c) => c.classList.remove("active"));
-          chip.classList.add("active");
-          renderList(chip.textContent.trim());
-        });
-      });
+  const meterFill = card.querySelector(".meter-fill");
+  meterFill.style.transition = "width 0.5s ease, left 0.5s ease";
+  meterFill.style.width = `${fillWidth}%`;
+  meterFill.style.left = `${fillLeft}%`;
+   }
+  }
+
+  function lockNumberOfRelationships (createRelationshipCard) {
+      const maxPoints = 5;
+      return Math.min(relationshipPoints, maxPoints)
+      lockNumberOfRelationships(createRelationshipCard);
+    }
+
     </script>
     <script src="scripts/theme.js"></script>
   </body>
