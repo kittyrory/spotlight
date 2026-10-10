@@ -1,11 +1,10 @@
-
 [functions.generate-ai-posts]
 enabled = true
 verify_jwt = false
 import_map = "./functions/generate-ai-posts/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/generate-ai-posts/index.ts"
+entrypoint = "./functions/generate-ai-posts/posts.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/generate-ai-posts/*.html" ]
@@ -14,20 +13,22 @@ entrypoint = "./functions/generate-ai-posts/index.ts"
 enabled = true
 verify_jwt = false
 import_map = "./functions/generate-bot-replies/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/generate-bot-replies/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/generate-bot-replies/*.html" ]
+entrypoint = "./functions/generate-bot-replies/replies.ts"
 
 [functions.generate-bot-reactions]
 enabled = true
 verify_jwt = false
 import_map = "./functions/generate-bot-reactions/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/generate-bot-reactions/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/generate-bot-reactions/*.html" ]
+entrypoint = "./functions/generate-bot-reactions/reactions.ts"
+
+[functions.Generate-Events]
+enabled = true
+verify_jwt = false
+import_map = "./functions/Generate-Events/deno.json"
+entrypoint = "./functions/Generate-Events/index.ts"
+
+[functions.swift-api]
+enabled = true
+verify_jwt = false
+import_map = "./functions/swift-api/deno.json"
+entrypoint = "./functions/swifft-api/index.ts"

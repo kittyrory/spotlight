@@ -62,5 +62,34 @@
     };
   }
 
+  // follower / following / post counts for the profile page, cached per user so the numbers paint right away.
+  // supabase stays the source of truth: the page refreshes these after every load.
+  // bot-profile.html updates the same entry when you follow or unfollow (key format: spotlight-stats:<userId>).
+  const STATS_PREFIX = "spotlight-stats:";
+
+  function readStats(userId) {
+    if (!userId) return null;
+    try {
+      const cached = localStorage.getItem(STATS_PREFIX + userId);
+      return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+      console.error("Could not read cached Spotlight stats:", error);
+      return null;
+    }
+  }
+
+  function writeStats(userId, stats) {
+    if (!userId || !stats) return null;
+
+    const merged = { ...(readStats(userId) || {}), ...stats, updatedAt: Date.now() };
+    try {
+      localStorage.setItem(STATS_PREFIX + userId, JSON.stringify(merged));
+    } catch (error) {
+      console.error("Could not cache Spotlight stats:", error);
+    }
+    return merged;
+  }
+
   window.SpotlightProfileCache = { read, write, load };
+  window.SpotlightStatsCache = { read: readStats, write: writeStats };
 })();

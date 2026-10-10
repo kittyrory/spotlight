@@ -1,14 +1,24 @@
 // Edge function that generates bot replies to a post's reply thread.
 // Triggered two ways from the client:
 //   1. reason: "reply_opened" -- user pressed the Reply button for the
-//      first time on a post with no replies yet. 3 random bots reply to
-//      the post itself.
+//      first time on a post with no replies yet. REPLIES_PER_BATCH bots
+//      reply to the post itself.
 //   2. reason: "user_replied" -- user submitted their own reply. Bots
-//      (chosen by @ mention if present, otherwise random) reply again to
-//      the thread, aware of the latest message. Each bot can only
-//      generate up to MAX_REPLIES_PER_BOT_PER_THREAD replies total in a
-//      given post's thread -- once a bot hits that cap it just stops
-//      being eligible, other bots keep going.
+//      reply again to the thread, aware of the latest message. Each bot
+//      can only generate up to MAX_REPLIES_PER_BOT_PER_THREAD replies
+//      total in a given post's thread -- once a bot hits that cap it just
+//      stops being eligible, other bots keep going.
+//
+// BOT SELECTION (same for both triggers, see pickReplyBots):
+//   - Priority bots go first: @mentioned bots, the post's author bot (on
+//     user_replied), and the bot that wrote the parent reply.
+//   - Every batch is guaranteed at least one custom bot (bot_profiles,
+//     loaded from the thread owner's selected_worlds, plus any
+//     mentioned/author bots outside them), as long as one is eligible. A
+//     slot is reserved for it if no priority bot is already custom.
+//   - Remaining slots are filled by weighted random from all eligible
+//     bots. Custom bots are weighted CUSTOM_BOT_WEIGHT (1.5x) vs 1x for
+//     npc_profiles bots, so they are slightly more likely to be rolled.
 //
 // MODEL PROVIDER:
 // Primary calls go straight to Gemini's native API (generativelanguage.
@@ -129,6 +139,34 @@ function formatPersonalityLine(personality: BotPersonality): string {
   return line;
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// pulls world ids out of profiles.selected_worlds no matter how it was
+// stored: [{id}], [{world_id}], ["id"], numbers, or a JSON string.
+function extractWorldIds(raw: unknown): string[] {
+  let value: unknown = raw;
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [value as string];
+    }
+  }
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((w: any) =>
+      typeof w === "string" || typeof w === "number"
+        ? String(w)
+        : (w?.id ?? w?.world_id ?? w?.worldId),
+    )
+    .filter(Boolean)
+    .map(String)
+    // legacy preset ids ("1", "2", ...) aren't uuids and can't have bot_profiles;
+    // passing them to a uuid column would make the whole query error.
+    .filter((id: string) => UUID_RE.test(id));
+}
+
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -165,26 +203,82 @@ function extractMentionedHandles(text: string): string[] {
   return [...handles];
 }
 
+// custom (bot_profiles) bots get a slightly bigger weight than npc bots
+// when rolling for the non-priority slots.
+const CUSTOM_BOT_WEIGHT = 1.5;
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// weighted random sample without replacement
+function weightedSample(
+  pool: BotProfile[],
+  count: number,
+  customIds: Set<string>,
+): BotProfile[] {
+  const remaining = [...pool];
+  const picked: BotProfile[] = [];
+  while (picked.length < count && remaining.length) {
+    const weights = remaining.map((b) =>
+      customIds.has(b.id) ? CUSTOM_BOT_WEIGHT : 1,
+    );
+    let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
+    let idx = 0;
+    for (; idx < remaining.length - 1; idx++) {
+      roll -= weights[idx];
+      if (roll < 0) break;
+    }
+    picked.push(remaining.splice(idx, 1)[0]);
+  }
+  return picked;
+}
+
+// every batch is guaranteed at least one custom bot (if any is eligible).
+// priority bots (mentioned / post author / parent reply author) go first,
+// but one slot is held back for a custom bot if none of the priority bots
+// is custom. remaining slots are filled by weighted random.
 function pickReplyBots(
   eligibleBots: BotProfile[],
   priorityIds: string[],
   count: number,
+  customIds: Set<string>,
 ): BotProfile[] {
-  // priority bots compete for a slot within the batch just like
-  // anyone else -- they just go first. if there are more of them than
-  // the batch has room for, only a random subset makes it in.
-  const priorityEligible = eligibleBots.filter((b) =>
-    priorityIds.includes(b.id),
+  const priorityEligible = shuffle(
+    eligibleBots.filter((b) => priorityIds.includes(b.id)),
   );
   const rest = eligibleBots.filter((b) => !priorityIds.includes(b.id));
-  const shuffledRest = [...rest].sort(() => Math.random() - 0.5);
+  const restCustom = rest.filter((b) => customIds.has(b.id));
 
-  const priorityPool =
-    priorityEligible.length > count
-      ? [...priorityEligible].sort(() => Math.random() - 0.5).slice(0, count)
-      : priorityEligible;
+  const needsCustomSlot =
+    restCustom.length > 0 &&
+    !priorityEligible.some((b) => customIds.has(b.id));
 
-  return [...priorityPool, ...shuffledRest].slice(0, count);
+  // trim priority bots, leaving room for the guaranteed custom bot if needed
+  const priorityPool = priorityEligible.slice(
+    0,
+    needsCustomSlot ? Math.max(count - 1, 0) : count,
+  );
+
+  const picked = [...priorityPool];
+  let remainingPool = rest;
+
+  if (needsCustomSlot && picked.length < count) {
+    const guaranteed =
+      restCustom[Math.floor(Math.random() * restCustom.length)];
+    picked.push(guaranteed);
+    remainingPool = rest.filter((b) => b.id !== guaranteed.id);
+  }
+
+  picked.push(
+    ...weightedSample(remainingPool, count - picked.length, customIds),
+  );
+  return picked;
 }
 
 // primary path: calls Gemini's own native API directly (not OpenRouter).
@@ -432,11 +526,14 @@ Deno.serve(async (req) => {
           ownerProfileError,
         );
       }
-      const selectedWorldIds: string[] = (
-        ownerProfile?.selected_worlds ?? []
-      )
-        .map((w: { id?: string }) => w.id)
-        .filter(Boolean);
+      const selectedWorldIds = extractWorldIds(ownerProfile?.selected_worlds);
+      console.log("custom bot lookup:", {
+        threadOwnerId,
+        worldEntryKeys: Array.isArray(ownerProfile?.selected_worlds)
+          ? Object.keys(ownerProfile.selected_worlds[0] ?? {}).filter((k) => k !== "image")
+          : typeof ownerProfile?.selected_worlds,
+        selectedWorldIds,
+      });
 
       if (selectedWorldIds.length) {
         const { data: customBotRows, error: customBotsError } = await supabase
@@ -447,6 +544,10 @@ Deno.serve(async (req) => {
           console.error("Could not load custom bots:", customBotsError);
         } else {
           customBots = (customBotRows || []) as BotProfile[];
+          console.log(
+            `bot_profiles rows for worlds [${selectedWorldIds.join(", ")}]:`,
+            customBots.length,
+          );
         }
       }
     }
@@ -580,21 +681,14 @@ Deno.serve(async (req) => {
       priorityBotIds.add(parentReplyBotId);
     }
 
+    // the custom-bot guarantee now lives inside pickReplyBots so it applies
+    // to every batch, not just the first custom reply in a thread.
     const customBotIds = new Set(customBots.map((b) => b.id));
-    const hasCustomBotReplied = (existingReplies || []).some(
-      (r) => r.bot_user_id && customBotIds.has(r.bot_user_id),
-    );
-    if (!hasCustomBotReplied) {
-      const eligibleCustomBots = eligibleBots.filter((b) =>
-        customBotIds.has(b.id),
+    if (!eligibleBots.some((b) => customBotIds.has(b.id))) {
+      console.warn(
+        "No eligible custom bots for this thread (none loaded, or all capped)",
+        { threadOwnerId, loadedCustomBots: customBots.length },
       );
-      if (eligibleCustomBots.length) {
-        const pick =
-          eligibleCustomBots[
-            Math.floor(Math.random() * eligibleCustomBots.length)
-          ];
-        priorityBotIds.add(pick.id);
-      }
     }
 
     // a bot with a slot should know if it's the one actually being
@@ -608,6 +702,7 @@ Deno.serve(async (req) => {
       eligibleBots,
       [...priorityBotIds],
       batchSize,
+      customBotIds,
     );
 
     const threadForPrompt = (existingReplies || []).map((r) => ({

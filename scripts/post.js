@@ -135,6 +135,25 @@ function buildReplyTree(flatReplies) {
   return roots;
 }
 
+// where clicking an author should go. bots -> bot-profile.html (same page the inner circle uses).
+// ASSUMES real users live at profile.html?id=<user id>; change if your page is named differently.
+function profileUrlFor(row) {
+  if (row.bot_user_id) return `bot-profile.html?id=${encodeURIComponent(row.bot_user_id)}`;
+  if (row.user_id) return `profile.html?id=${encodeURIComponent(row.user_id)}`;
+  return null;
+}
+
+function makeProfileLink(el, row) {
+  const url = profileUrlFor(row);
+  if (!el || !url) return;
+  el.style.cursor = "pointer";
+  el.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sessionStorage.setItem("spotlight-last-page", window.location.href);
+    window.location.href = url;
+  });
+}
+
 function authorFor(row, profileById, botProfileById) {
   return row.bot_user_id ? botProfileById.get(row.bot_user_id) : profileById.get(row.user_id);
 }
@@ -531,6 +550,9 @@ async function main() {
     body.className = "threadBody";
     body.innerHTML = replyFooterHtml(reply, reply.id);
     fillReplyMeta(body, reply, author);
+    makeProfileLink(avatarEl, reply);
+    makeProfileLink(body.querySelector(".displayName"), reply);
+    makeProfileLink(body.querySelector(".username"), reply);
 
     const footerRow = body.querySelector(`[data-reaction-row="${reply.id}"]`);
     footerRow.appendChild(buildReactionRow(reply, el));
@@ -598,6 +620,9 @@ async function main() {
     handleSpan.textContent = `@${author?.handle?.replace(/^@/, "") || "spotlightuser"}`;
     names.append(nameSpan, handleSpan);
     meta.append(avatar, names);
+    makeProfileLink(avatar, post);
+    makeProfileLink(nameSpan, post);
+    makeProfileLink(handleSpan, post);
 
     const body = document.createElement("div");
     body.className = "mainPostBody";

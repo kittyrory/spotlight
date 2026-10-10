@@ -397,10 +397,18 @@ async function loadUserPosts(currentUser, { useCache = false } = {}) {
 const AI_POST_COOLDOWN_MS = 60 * 1000;
 let lastAiPostGenerationAt = 0;
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 async function resolveSelectedWorlds(selectedWorlds) {
   if (!Array.isArray(selectedWorlds) || !selectedWorlds.length) return [];
 
-  const ids = selectedWorlds.map((w) => w.id).filter(Boolean);
+  // only real worlds (uuids) can be looked up. a legacy preset id like "1"
+  // would make the whole .in() query error and drop every world, including
+  // the valid ones, so the model would get no world context at all.
+  const ids = selectedWorlds
+    .map((w) => w?.id)
+    .filter((id) => id && UUID_RE.test(String(id)));
   if (!ids.length) return [];
 
   const { data: worlds, error } = await supabaseClient
@@ -516,6 +524,259 @@ async function FirstLoadAiPosts(currentUser) {
   await generateAiPosts("first_load", currentUser);
 }
 
+//------------------
+// WORLD HEALTH CHECK
+// profiles.selected_worlds is a snapshot, so it can end up pointing at a world 
+// that was deleted (stale) or at an old preset id like "1" from before worlds 
+// lived in the database (legacy). neither can load custom bots or world context, 
+// so posts and replies silently error and become generic. only the user can pick 
+// a replacement (not possible to do it automatically from my knowledge, so we tell 
+// them and link to world-selection.html. a second, softer notice covers characters 
+// the user made for a world that isn't selected.
+//------------------
+
+const WORLD_HEALTH_SNOOZE_KEY = "spotlight_world_health_snoozed"; // sessionStorage
+const WORLD_HEALTH_DISMISSED_KEY = "spotlight_unselected_worlds_dismissed"; // localStorage
+
+function readStoredList(storage, key) {
+  try {
+    const parsed = JSON.parse(storage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function showWorldHealthDialog({
+  heading,
+  message,
+  items = [],
+  footnote = "",
+  primaryLabel,
+  secondaryLabel,
+  onSecondary,
+}) {
+  document.getElementById("worldHealthDialog")?.remove();
+
+  if (!document.getElementById("worldHealthStyles")) {
+    const style = document.createElement("style");
+    style.id = "worldHealthStyles";
+    style.textContent = `
+      .worldHealthOverlay{position:fixed;inset:0;z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.6)}
+      .worldHealthBox{max-width:440px;width:100%;max-height:85vh;overflow:auto;padding:20px;border-radius:12px;background:var(--bg);color:var(--ink);font:14px/1.5;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+      .worldHealthBox h2{margin:0 0 8px;font-size:18px}
+      .worldHealthBox p{margin:0 0 12px;}
+      .worldHealthBox ul{margin:0 0 12px;padding-left:18px;}
+      .worldHealthBox li small{opacity:.7;}
+      .worldHealthActions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+      .worldHealthActions button{padding:8px 14px;border-radius:15px;border:1px solid #444;background:transparent;color:inherit;cursor:pointer;font:inherit}
+      .worldHealthActions .primary{background:var(--gold);color:#000;border:0px}
+    `;
+    document.head.appendChild(style);
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "worldHealthDialog";
+  overlay.className = "worldHealthOverlay";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+
+  const box = document.createElement("div");
+  box.className = "worldHealthBox";
+
+  const h = document.createElement("h2");
+  h.textContent = heading;
+  const p = document.createElement("p");
+  p.textContent = message;
+  box.append(h, p);
+
+  if (items.length) {
+    const ul = document.createElement("ul");
+    items.forEach(({ title, detail }) => {
+      const li = document.createElement("li");
+      // textContent on purpose: world titles are user-written
+      const strong = document.createElement("strong");
+      strong.textContent = title;
+      const small = document.createElement("small");
+      small.textContent = detail ? ` (${detail})` : "";
+      li.append(strong, small);
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  }
+
+  if (footnote) {
+    const note = document.createElement("p");
+    note.textContent = footnote;
+    box.appendChild(note);
+  }
+
+  const actions = document.createElement("div");
+  actions.className = "worldHealthActions";
+  const secondary = document.createElement("button");
+  secondary.type = "button";
+  secondary.textContent = secondaryLabel;
+  const primary = document.createElement("button");
+  primary.type = "button";
+  primary.className = "primary";
+  primary.textContent = primaryLabel;
+  actions.append(secondary, primary);
+  box.appendChild(actions);
+  overlay.appendChild(box);
+
+  function close() {
+    document.removeEventListener("keydown", onKey);
+    overlay.remove();
+  }
+  function onKey(e) {
+    if (e.key === "Escape") secondary.click();
+  }
+  secondary.addEventListener("click", () => {
+    close();
+    onSecondary?.();
+  });
+  primary.addEventListener("click", () => {
+    window.location.href = "world-selection.html";
+  });
+  document.addEventListener("keydown", onKey);
+
+  document.body.appendChild(overlay);
+  primary.focus();
+}
+
+async function checkWorldHealth(currentUser) {
+  if (!currentUser) return;
+  try {
+    if (sessionStorage.getItem(WORLD_HEALTH_SNOOZE_KEY)) return;
+
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("selected_worlds")
+      .eq("id", currentUser.id)
+      .single();
+    if (profileError) {
+      console.error("[worlds] could not read selected_worlds:", profileError);
+      return;
+    }
+
+    const selected = (
+      Array.isArray(profile?.selected_worlds) ? profile.selected_worlds : []
+    )
+      .map((w) => (typeof w === "string" ? { id: w } : w))
+      .filter((w) => w && w.id);
+    const selectedIds = new Set(selected.map((w) => String(w.id)));
+
+    // legacy ids ("1", "2", ...) are incompatible by definition, and can't
+    // be sent to a uuid column, so classify them locally
+    const legacy = selected.filter((w) => !UUID_RE.test(String(w.id)));
+    const uuidSelected = selected.filter((w) => UUID_RE.test(String(w.id)));
+
+    let existingIds = new Set();
+    if (uuidSelected.length) {
+      const { data: found, error: worldsError } = await supabaseClient
+        .from("worlds")
+        .select("id")
+        .in(
+          "id",
+          uuidSelected.map((w) => w.id),
+        );
+      if (worldsError) {
+        // can't tell, so don't alarm the user over a failed lookup
+        console.error("[worlds] could not verify worlds:", worldsError);
+        return;
+      }
+      existingIds = new Set((found || []).map((r) => r.id));
+    }
+    const stale = uuidSelected.filter((w) => !existingIds.has(w.id));
+
+    // characters this user created under worlds that aren't selected
+    // (world_id only: the other columns hold big image data urls)
+    const { data: botRows, error: botError } = await supabaseClient
+      .from("bot_profiles")
+      .select("world_id")
+      .eq("created_by", currentUser.id);
+    if (botError) console.error("[worlds] could not read characters:", botError);
+    const unselectedWorldIds = [
+      ...new Set(
+        (botRows || [])
+          .map((r) => r.world_id)
+          .filter((id) => id && !selectedIds.has(String(id))),
+      ),
+    ];
+
+    let unselectedWorlds = [];
+    if (unselectedWorldIds.length) {
+      const { data: rows } = await supabaseClient
+        .from("worlds")
+        .select("id, title")
+        .in("id", unselectedWorldIds);
+      unselectedWorlds = rows || [];
+    }
+
+    const invalid = [...legacy, ...stale];
+    const shortId = (id) => String(id).slice(0, 8);
+
+    if (invalid.length) {
+      const items = [
+        ...legacy.map((w) => ({
+          title: w.title || "Untitled world",
+          detail: `older format, id ${shortId(w.id)}`,
+        })),
+        ...stale.map((w) => ({
+          title: w.title || "Untitled world",
+          detail: `no longer exists, id ${shortId(w.id)}`,
+        })),
+      ];
+      const suggestion = unselectedWorlds.length
+        ? `You have characters in: ${unselectedWorlds
+            .map((w) => w.title || "Untitled world")
+            .join(", ")}. Selecting that world again will bring them back.`
+        : "";
+      showWorldHealthDialog({
+        heading: "Something's wrong with your world!",
+        message:
+          "The world(s) saved on your account is either missing or in an older format that Spotlight can't use anymore. Until it's fixed, your bots won't know about it and may post generic things.",
+        items,
+        footnote: suggestion,
+        primaryLabel: "Fix it",
+        secondaryLabel: "Not now",
+        onSecondary: () => {
+          try {
+            sessionStorage.setItem(WORLD_HEALTH_SNOOZE_KEY, "1");
+          } catch (_) {}
+        },
+      });
+      return;
+    }
+
+    const dismissed = new Set(
+      readStoredList(localStorage, WORLD_HEALTH_DISMISSED_KEY),
+    );
+    const toMention = unselectedWorlds.filter((w) => !dismissed.has(w.id));
+    if (toMention.length) {
+      showWorldHealthDialog({
+        heading: "Some of your characters aren't in use",
+        message: `You created characters in ${toMention
+          .map((w) => w.title || "an untitled world")
+          .join(", ")}, but that world isn't selected, so they won't show up. Want to select it?`,
+        primaryLabel: "Choose worlds",
+        secondaryLabel: "Dismiss",
+        onSecondary: () => {
+          try {
+            localStorage.setItem(
+              WORLD_HEALTH_DISMISSED_KEY,
+              JSON.stringify([...dismissed, ...toMention.map((w) => w.id)]),
+            );
+          } catch (_) {}
+        },
+      });
+    }
+  } catch (error) {
+    // a broken check must never break the feed
+    console.error("[worlds] world health check failed:", error);
+  }
+}
+
 function hidePageLoader() {
   const loader = document.getElementById("pageLoader");
   if (loader) loader.classList.add("hidden");
@@ -576,6 +837,9 @@ async function initFeed() {
     // cheap no-op if loadingpage.html already ran this (it's guarded by
     // the ai_posts_seeded db flag), so always safe to call again here.
     await FirstLoadAiPosts(currentUser);
+
+    // after the feed is on screen; never blocks or breaks it
+    checkWorldHealth(currentUser);
   } catch (error) {
     console.error("Could not finish loading the feed:", error);
   } finally {

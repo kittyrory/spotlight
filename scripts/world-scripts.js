@@ -233,59 +233,130 @@ function renderWorlds(list) {
   const tagPills = document.getElementById("cwTagPills");
   const tagLimit = document.getElementById("cwTagLimit");
 
+  const DRAFT_KEY = "spotlight_world_draft";
   let tags = [];
-  let characters = [];
+  // characters are staged here and only written to bot_profiles together with
+  // the world itself, so nothing can be orphaned if the user backs out.
+  let stagedCharacters = [];
   let imageDataUrl = "";
-  let currentWorldId = crypto.randomUUID();
+  let draftSaveTimer = null;
 
-  // wire the existing create button
-  document
-    .querySelector(".create-btn")
-    .addEventListener("click", async function () {
-      currentWorldId = crypto.randomUUID();
+  //------------------
+  // DRAFT CACHE
+  // Lives in localStorage only. Nothing touches the database until the world
+  // has every mandatory field and the user presses Create World.
+  //------------------
 
-      const {
-        data: { user },
-      } = await supabaseClient.auth.getUser();
+  function readDraft() {
+    return {
+      title: document.getElementById("cwTitleInput").value,
+      description: document.getElementById("cwdescription").value,
+      category: document.getElementById("cwCategory").value,
+      drama: parseInt(document.getElementById("cwDramaSlider").value) || 3,
+      crossUniverse: document.getElementById("cwCrossUniverse").checked,
+      tags: [...tags],
+      imageDataUrl: imageDataUrl,
+      characters: stagedCharacters,
+    };
+  }
 
-      const { error } = await supabaseClient.from("worlds").insert({
-        id: currentWorldId,
-        created_by: user ? user.id : null,
-        title: "",
-        description: "",
-        category: "",
-        image: "",
-        tags: [],
-        characters: [],
-        drama: 3,
-        cross_universe: false,
-      });
+  function draftIsEmpty(d) {
+    return (
+      !d.title.trim() &&
+      !d.description.trim() &&
+      !d.category &&
+      d.drama === 3 &&
+      !d.crossUniverse &&
+      !d.tags.length &&
+      !d.imageDataUrl &&
+      !d.characters.length
+    );
+  }
 
-      if (error) {
-        console.error("Error starting world draft:", error);
+  function saveDraftNow() {
+    clearTimeout(draftSaveTimer);
+    const d = readDraft();
+    try {
+      if (draftIsEmpty(d)) {
+        localStorage.removeItem(DRAFT_KEY);
         return;
       }
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+    } catch (e) {
+      // most likely over the storage quota (images are data URLs). keep the
+      // text fields and drop the heavy images rather than losing everything.
+      try {
+        localStorage.setItem(
+          DRAFT_KEY,
+          JSON.stringify({
+            ...d,
+            imageDataUrl: "",
+            characters: d.characters.map(function (c) {
+              return { ...c, avatar_url: "", header_url: "" };
+            }),
+          }),
+        );
+      } catch (_) {}
+    }
+  }
 
-      overlay.classList.add("open");
-      document.getElementById("cwTitleInput").focus();
-    });
+  function scheduleDraftSave() {
+    clearTimeout(draftSaveTimer);
+    draftSaveTimer = setTimeout(saveDraftNow, 400);
+  }
 
-  function close() {
+  function clearDraftStorage() {
+    clearTimeout(draftSaveTimer);
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (_) {}
+  }
+
+  function restoreDraft() {
+    let d = null;
+    try {
+      d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    } catch (_) {}
+    if (!d) return;
+
+    document.getElementById("cwTitleInput").value = d.title || "";
+    document.getElementById("cwdescription").value = d.description || "";
+    document.getElementById("cwCategory").value = d.category || "";
+    const drama = d.drama || 3;
+    document.getElementById("cwDramaSlider").value = drama;
+    document.getElementById("cwDramaValue").textContent = getDramaLabel(drama);
+    document.getElementById("cwCrossUniverse").checked = !!d.crossUniverse;
+    tags = Array.isArray(d.tags) ? d.tags.slice(0, 6) : [];
+    renderTags();
+    imageDataUrl = d.imageDataUrl || "";
+    if (imageDataUrl) {
+      imgPreview.src = imageDataUrl;
+      imgZone.classList.add("has-img");
+    }
+    stagedCharacters = Array.isArray(d.characters) ? d.characters : [];
+    renderCharacters();
+  }
+
+  // opening the modal never writes to the database anymore
+  document.querySelector(".create-btn").addEventListener("click", function () {
+    overlay.classList.add("open");
+    document.getElementById("cwTitleInput").focus();
+  });
+
+  // closing (X / click outside) just hides the modal and keeps the draft
+  function hideOverlay() {
     overlay.classList.remove("open");
-    reset();
   }
 
-  async function cancelCreate() {
-    const { error } = await supabaseClient
-      .from("worlds")
-      .delete()
-      .eq("id", currentWorldId);
-    if (error) console.error("Error cleaning up draft world:", error);
-    close();
+  // Cancel throws the draft away. Nothing is in the database yet, so there is
+  // nothing to clean up there.
+  function discardDraft() {
+    clearDraftStorage();
+    resetForm();
+    hideOverlay();
   }
 
-  function reset() {
-    currentWorldId = crypto.randomUUID();
+  function resetForm() {
     document.getElementById("cwTitleInput").value = "";
     document.getElementById("cwdescription").value = "";
     document.getElementById("cwCategory").value = "";
@@ -294,8 +365,9 @@ function renderWorlds(list) {
     document.getElementById("cwCrossUniverse").checked = false;
     tagInput.value = "";
     tags = [];
-    characters = [];
+    stagedCharacters = [];
     imageDataUrl = "";
+    imgInput.value = "";
     imgPreview.src = "";
     imgZone.classList.remove("has-img");
     tagPills.innerHTML = "";
@@ -307,11 +379,13 @@ function renderWorlds(list) {
     });
   }
 
-  closeBtn.addEventListener("click", cancelCreate);
-  cancelBtn.addEventListener("click", cancelCreate);
+  closeBtn.addEventListener("click", hideOverlay);
+  cancelBtn.addEventListener("click", discardDraft);
   overlay.addEventListener("click", function (e) {
-    if (e.target === overlay) cancelCreate();
+    if (e.target === overlay) hideOverlay();
   });
+  overlay.addEventListener("input", scheduleDraftSave);
+  overlay.addEventListener("change", scheduleDraftSave);
 
   // image handling
   imgInput.addEventListener("change", function () {
@@ -322,6 +396,7 @@ function renderWorlds(list) {
       imageDataUrl = e.target.result;
       imgPreview.src = imageDataUrl;
       imgZone.classList.add("has-img");
+      scheduleDraftSave();
     };
     reader.readAsDataURL(file);
   });
@@ -347,6 +422,7 @@ function renderWorlds(list) {
     const atMax = tags.length >= 6;
     tagAddBtn.disabled = atMax;
     atMax ? tagLimit.classList.add("show") : tagLimit.classList.remove("show");
+    scheduleDraftSave();
   }
 
   function addTag() {
@@ -391,12 +467,12 @@ function renderWorlds(list) {
   // character handling
   function renderCharacters() {
     const list = document.getElementById("cwCharList");
-    list.innerHTML = characters
+    list.innerHTML = stagedCharacters
       .map(function (c, i) {
         return (
           '<div class="cw-char-pill">' +
           '<span class="cw-char-handle">@' +
-          c +
+          c.handle +
           "</span>" +
           '<button class="cw-tag-pill-remove" data-ci="' +
           i +
@@ -407,10 +483,11 @@ function renderWorlds(list) {
       .join("");
     list.querySelectorAll(".cw-tag-pill-remove").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        characters.splice(parseInt(btn.dataset.ci), 1);
+        stagedCharacters.splice(parseInt(btn.dataset.ci), 1);
         renderCharacters();
       });
     });
+    scheduleDraftSave();
   }
 
   // character creator modal
@@ -652,35 +729,6 @@ function renderWorlds(list) {
     document.getElementById("ccBioErr").classList.remove("show");
   });
 
-  async function saveCharacterToDb(character) {
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-
-    if (!user) return null;
-
-    const { data, error } = await supabaseClient
-      .from("bot_profiles")
-      .insert({
-        created_by: user.id,
-        world_id: currentWorldId,
-        display_name: character.display_name,
-        handle: character.handle,
-        bio: character.bio,
-        avatar_url: character.avatar_url,
-        header_url: character.header_url,
-        personality: character.personality,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Error saving character:", error);
-      return null;
-    }
-    return data;
-  }
-
   ccSubmit.addEventListener("click", async function () {
     let valid = true;
     const name = document.getElementById("ccNameInput").value.trim();
@@ -713,10 +761,17 @@ function renderWorlds(list) {
 
     if (!valid) return;
 
-    ccSubmit.disabled = true;
-    ccSubmit.textContent = "Saving...";
+    // staged locally; written to bot_profiles together with the world on submit
+    if (
+      stagedCharacters.some(function (c) {
+        return c.handle.toLowerCase() === handle.toLowerCase();
+      })
+    ) {
+      document.getElementById("ccHandleErr").classList.add("show");
+      return;
+    }
 
-    const saved = await saveCharacterToDb({
+    stagedCharacters.push({
       display_name: name,
       handle: handle,
       bio: bio,
@@ -724,13 +779,6 @@ function renderWorlds(list) {
       header_url: ccHeaderDataUrl || "",
       personality: buildCcPersonalityPayload(),
     });
-
-    ccSubmit.disabled = false;
-    ccSubmit.textContent = "Create Character";
-
-    if (!saved) return;
-
-    characters.push(handle);
     renderCharacters();
     closeCc();
   });
@@ -770,43 +818,100 @@ function renderWorlds(list) {
     submitBtn.disabled = true;
     submitBtn.textContent = "Saving...";
 
-    const { error } = await supabaseClient
-      .from("worlds")
-      .update({
-        title,
-        description,
-        category: cat,
-        image: imageDataUrl || "",
-        tags: [...tags],
-        characters: [...characters],
-        drama,
-        cross_universe: crossUniverse,
-      })
-      .eq("id", currentWorldId);
+    function finish() {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create World";
+    }
 
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Create World";
-
-    if (error) {
-      console.error("Error saving custom world:", error);
+    const {
+      data: { user },
+    } = await supabaseClient.auth.getUser();
+    if (!user) {
+      console.error("No logged in user, cannot save world");
+      finish();
       return;
     }
 
-    window.WORLDS.push({
-      id: currentWorldId,
+    const worldId = crypto.randomUUID();
+
+    const { error } = await supabaseClient.from("worlds").insert({
+      id: worldId,
+      created_by: user.id,
       title,
       description,
       category: cat,
       image: imageDataUrl || "",
       tags: [...tags],
-      characters: [...characters],
+      characters: stagedCharacters.map(function (c) {
+        return c.handle;
+      }),
+      drama,
+      cross_universe: crossUniverse,
+    });
+
+    if (error) {
+      console.error("Error saving custom world:", error);
+      finish();
+      return;
+    }
+
+    if (stagedCharacters.length) {
+      const { error: botsError } = await supabaseClient
+        .from("bot_profiles")
+        .insert(
+          stagedCharacters.map(function (c) {
+            return {
+              created_by: user.id,
+              world_id: worldId,
+              display_name: c.display_name,
+              handle: c.handle,
+              bio: c.bio,
+              avatar_url: c.avatar_url,
+              header_url: c.header_url,
+              personality: c.personality,
+            };
+          }),
+        );
+
+      if (botsError) {
+        // all-or-nothing: remove the world again and keep the draft cached
+        // so the user can fix whatever failed and retry.
+        console.error("Error saving characters, rolling back world:", botsError);
+        const { error: rollbackError } = await supabaseClient
+          .from("worlds")
+          .delete()
+          .eq("id", worldId);
+        if (rollbackError)
+          console.error("Could not roll back world:", rollbackError);
+        finish();
+        return;
+      }
+    }
+
+    finish();
+
+    window.WORLDS.push({
+      id: worldId,
+      title,
+      description,
+      category: cat,
+      image: imageDataUrl || "",
+      tags: [...tags],
+      characters: stagedCharacters.map(function (c) {
+        return c.handle;
+      }),
       drama,
       crossUniverse,
     });
 
     window.applyFilters();
-    close();
+    clearDraftStorage();
+    resetForm();
+    hideOverlay();
   });
+
+  // bring back an unfinished draft from a previous visit
+  restoreDraft();
 })();
 
 //------------------
@@ -875,6 +980,7 @@ window.saveWorldsAndContinue = async function () {
     .from("worlds")
     .select("*")
     .or(`created_by.is.null,created_by.eq.${user.id}`)
+    .neq("title", "") // ignore leftover blank drafts from the old flow
     .order("created_at", { ascending: false });
 
   if (error) {

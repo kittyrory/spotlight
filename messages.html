@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotlight | Messages</title>
+<script>
+  // apply saved theme immediately to avoid a flash of the wrong theme.
+  (function () {
+    var saved = localStorage.getItem('spotlight-theme');
+    if (saved) document.documentElement.setAttribute('data-theme', saved);
+  })();
+</script>
+
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      :root,
+      [data-theme="dark"] {
+        --track: #2a2a2f;
+        --stat-bg: rgba(255, 255, 255, 0.03);
+        --verified: #4fa8dd;
+        --online: #6fcf97;
+        --surface-2: #151316;
+        --profile-glow-1: #f5c451;
+        --profile-glow-2: #b98b2c;
+        --profile-glow-3: #6b5320;
+        --profile-glow-opacity: 0.28;
+      }
+
+      [data-theme="light"] {
+        --track: #e0ddd3;
+        --stat-bg: rgba(0, 0, 0, 0.03);
+        --verified: #4fa8dd;
+        --online: #3fae6c;
+        --surface-2: #efece6;
+        --profile-glow-1: rgba(245, 196, 81, 0.38);
+        --profile-glow-2: rgba(224, 184, 78, 0.26);
+        --profile-glow-3: rgba(201, 154, 46, 0.18);
+        --profile-glow-opacity: 0.42;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      .bg-glow {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      .bg-glow span {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: var(--profile-glow-opacity);
+        animation: drift 26s ease-in-out infinite alternate;
+      }
+
+      .bg-glow span:nth-child(1) {
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle, var(--profile-glow-1), transparent 70%);
+        top: -140px;
+        left: -100px;
+        animation-duration: 29s;
+      }
+
+      .bg-glow span:nth-child(2) {
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle, var(--profile-glow-2), transparent 70%);
+        bottom: -100px;
+        right: -80px;
+        animation-duration: 33s;
+        animation-delay: -6s;
+      }
+
+      @keyframes drift {
+        0% {
+          transform: translate(0,0) scale(1);
+        }
+        50% {
+          transform: translate(30px,-25px) scale(1.12);
+        }
+        100% {
+          transform: translate(-20px,20px) scale(0.96);
+        }
+      }
+
+      body {
+        background: radial-gradient(ellipse at top, var(--bg-glow) 0%, var(--bg) 55%);
+        position: relative;
+        overflow-x: hidden;
+        color: var(--ink);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 20px 0 20px;
+      }
+
+      .phone {
+        width: 100%;
+        max-width: 430px;
+        padding: 0 18px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .topbar h1 {
+        margin: 0;
+        font-size: 19px;
+        font-weight: 800;
+      }
+
+      .circle-btn {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: var(--surface-1);
+        border: 1px solid var(--card-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--ink-dim);
+        cursor: pointer;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .circle-btn:hover {
+        color: var(--gold);
+      }
+
+      .circle-btn:focus-visible,
+      .tab-btn:focus-visible,
+      .convo:focus-visible,
+      .profile-btn:focus-visible,
+      .send-btn:focus-visible {
+        outline: 2px solid var(--gold);
+        outline-offset: 2px;
+      }
+
+      /* ---------- search ---------- */
+      .search {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px;
+        height: 44px;
+        border-radius: 999px;
+        background: var(--surface-1);
+        border: 1px solid var(--card-border);
+        color: var(--ink-faint);
+      }
+
+      .search:focus-within {
+        border-color: var(--gold);
+      }
+
+      .search input {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        color: var(--ink);
+        font-size: 14px;
+      }
+
+      .search input::placeholder {
+        color: var(--ink-faint);
+      }
+
+      /* ---------- segmented tabs ---------- */
+      .tabs {
+        display: flex;
+        gap: 6px;
+        margin-top: 16px;
+        background: var(--surface-2);
+        border: 1px solid var(--card-border);
+        border-radius: 999px;
+        padding: 4px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-weight: 700;
+        font-size: 13.5px;
+        color: var(--ink-faint);
+        padding: 10px 0;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: background .2s ease, color .2s ease;
+      }
+
+      .tab-btn.active {
+        background: var(--gold-glow);
+        color: var(--gold);
+      }
+
+      .tab-count {
+        margin-left: 4px;
+        font-size: 12px;
+        opacity: 0.8;
+      }
+
+      /* ---------- conversation list ---------- */
+      .convo-list {
+        list-style: none;
+        margin: 16px 0 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .convo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        text-align: left;
+        padding: 14px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, var(--surface-grad-1) 0%, var(--surface-grad-2) 100%);
+        border: 1px solid var(--card-border);
+        color: var(--ink);
+        cursor: pointer;
+        font: inherit;
+      }
+
+      .avatar {
+        position: relative;
+        width: 46px;
+        height: 46px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 14px;
+        color: #0e0e11;
+        flex-shrink: 0;
+      }
+
+      .online-dot {
+        position: absolute;
+        right: -1px;
+        bottom: -1px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--online);
+        border: 2px solid var(--card);
+      }
+
+      .convo-main {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .convo-top {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .convo-name {
+        font-weight: 700;
+        font-size: 14px;
+        line-height: 1.2;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .convo-time {
+        margin-left: auto;
+        font-size: 11.5px;
+        color: var(--ink-faint);
+        flex-shrink: 0;
+      }
+
+      .convo-bottom {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .convo-preview {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 13px;
+        color: var(--ink-faint);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .convo.unread .convo-preview {
+        color: var(--ink);
+      }
+
+      .convo.unread .convo-time {
+        color: var(--gold);
+      }
+
+      .unread-badge {
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        color: #1a1408;
+        font-weight: 800;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .request-card {
+        padding: 14px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, var(--surface-grad-1) 0%, var(--surface-grad-2) 100%);
+        border: 1px solid var(--card-border);
+      }
+
+      .request-top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .request-card .button-row {
+        margin-top: 12px;
+      }
+
+      .empty {
+        margin: 40px 0 0;
+        text-align: center;
+        font-size: 13.5px;
+        color: var(--ink-faint);
+      }
+
+      /* ---------- buttons ---------- */
+      .profile-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 10px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+      }
+
+      .primary-btn {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        border: 1px solid transparent;
+        color: #1a1408;
+      }
+
+      .secondary-btn {
+        background: transparent;
+        border: 1px solid var(--card-border);
+        color: var(--ink);
+      }
+
+      .secondary-btn:hover {
+        border-color: var(--gold);
+        background: var(--gold-glow);
+      }
+
+      /* ---------- thread ---------- */
+      /* thread header stays pinned to the top while the conversation scrolls */
+      #threadView .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        margin: 0 -18px 12px;
+        padding: 12px 18px;
+        background: transparent;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .thread-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .thread-head .avatar {
+        width: 38px;
+        height: 38px;
+        font-size: 12.5px;
+      }
+
+      .thread-name {
+        font-weight: 800;
+        font-size: 15px;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .thread-sub {
+        font-size: 12px;
+        color: var(--ink-faint);
+      }
+
+      .day-label {
+        margin: 8px 0 14px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--ink-faint);
+      }
+
+      .thread-intro {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        margin: 40px 0;
+        text-align: center;
+      }
+
+      .thread-intro .avatar {
+        width: 64px;
+        height: 64px;
+        font-size: 20px;
+        margin-bottom: 8px;
+      }
+
+      .thread-intro h2 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .thread-intro p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--ink-faint);
+      }
+
+      .messages {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding-bottom: 16px;
+      }
+
+      .msg {
+        display: flex;
+        flex-direction: column;
+        max-width: 78%;
+      }
+
+      .msg.me {
+        align-self: flex-end;
+        align-items: flex-end;
+      }
+
+      .msg.them {
+        align-self: flex-start;
+        align-items: flex-start;
+      }
+
+      .bubble {
+        margin: 0;
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+
+      .msg.them .bubble {
+        background: var(--surface-1);
+        border: 1px solid var(--card-border);
+        color: var(--ink);
+        border-bottom-left-radius: 6px;
+      }
+
+      .msg.me .bubble {
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        color: #1a1408;
+        border-bottom-right-radius: 6px;
+      }
+
+      .msg-time {
+        margin: 4px 4px 8px;
+        font-size: 11px;
+        color: var(--ink-faint);
+      }
+
+      .typing .bubble {
+        display: flex;
+        gap: 4px;
+        padding: 14px;
+      }
+
+      .typing .bubble span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--ink-faint);
+        animation: blink 1.2s ease-in-out infinite;
+      }
+
+      .typing .bubble span:nth-child(2) {
+        animation-delay: .15s;
+      }
+
+      .typing .bubble span:nth-child(3) {
+        animation-delay: .3s;
+      }
+
+      @keyframes blink {
+        0%,
+        80%,
+        100% {
+          opacity: .25;
+        }
+        40% {
+          opacity: 1;
+        }
+      }
+
+      .composer {
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        margin: 0 -18px;
+        padding: 12px 18px;
+        background: transparent;
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+      }
+
+      .composer .search {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .send-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: none;
+        background: linear-gradient(135deg, var(--gold), var(--gold-deep));
+        color: #1a1408;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        flex-shrink: 0;
+      }
+
+      .send-btn:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+    </style>
+</head>
+<body class="page-minimal">
+<div class="bg-glow"><span></span><span></span></div>
+<div class="phone">
+
+  <!-- ---------- inbox ---------- -->
+  <section id="listView">
+    <div class="topbar">
+      <button class="circle-btn" id="backBtn" aria-label="Go back" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <h1>Messages</h1>
+      <button class="circle-btn" id="composeBtn" aria-label="New message" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+      </button>
+    </div>
+
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="search" id="searchInput" placeholder="Search messages" autocomplete="off">
+    </label>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="inbox" type="button">Messages</button>
+      <button class="tab-btn" data-tab="requests" type="button">Requests<span class="tab-count" id="requestCount"></span></button>
+    </div>
+
+    <ul class="convo-list" id="convoList"></ul>
+    <p class="empty" id="emptyState" hidden></p>
+  </section>
+
+  <!-- ---------- conversation ---------- -->
+  <section id="threadView" hidden>
+    <div class="topbar">
+      <button class="circle-btn" id="threadBackBtn" aria-label="Back to messages" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <div class="thread-head">
+        <div class="avatar" id="threadAvatar"></div>
+        <div>
+          <div class="thread-name"><span id="threadName"></span><span id="threadVerified"></span></div>
+          <div class="thread-sub" id="threadSub"></div>
+        </div>
+      </div>
+      <button class="circle-btn" aria-label="More options" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+    </div>
+
+    <div class="day-label" id="dayLabel">Today</div>
+    <div class="messages" id="messages"></div>
+
+    <form class="composer" id="composer" autocomplete="off">
+      <label class="search">
+        <input type="text" id="messageInput" placeholder="Message" aria-label="Message">
+      </label>
+      <button class="send-btn" id="sendBtn" aria-label="Send" type="submit" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+      </button>
+    </form>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="scripts/supabase.js"></script>
+<script src="scripts/theme.js"></script>
+<script>
+  /* ---------- bot data ---------- */
+  const verifiedSVG = `<svg width="13" height="13" viewBox="0 0 22 22" fill="currentColor" style="color:var(--verified);"><path d="M11 0l2.4 1.4 2.7-.6 1.4 2.4 2.7.6.3 2.8 2 1.9-1.2 2.5 1.2 2.5-2 1.9-.3 2.8-2.7.6-1.4 2.4-2.7-.6L11 22l-2.4-1.4-2.7.6-1.4-2.4-2.7-.6-.3-2.8-2-1.9 1.2-2.5L.2 8.5l2-1.9.3-2.8 2.7-.6L6.6.8 9.3 1.4 11 0z"/><path fill="#0e0e11" d="M9.3 14.9L5.6 11.2l1.4-1.4 2.3 2.3 5-5 1.4 1.4z"/></svg>`;
+
+  // real custom bots come from the bot_profiles table (see loadBots below).
+  // every bot starts out as a message request. a bot only moves to the inbox once the
+  // user has opened its inbox thread (clicking 'message' on its profile), sent it a
+  // message, or accepted its request. those ids are remembered in localStorage so the
+  // bot stays in the inbox after a reload.
+  let CONVOS = [];
+  let REQUESTS = [];
+  const OPENED_KEY = 'spotlight-inbox-opened';
+
+  function readOpened(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(OPENED_KEY));
+      return Array.isArray(saved) ? saved.map(String) : [];
+    } catch (e) { return []; }
+  }
+  function markOpened(id){
+    const opened = readOpened();
+    if (opened.includes(String(id))) return;
+    opened.push(String(id));
+    try { localStorage.setItem(OPENED_KEY, JSON.stringify(opened)); } catch (e) { /* storage full / blocked */ }
+  }
+  // takes a convo out of requests, puts it in the inbox, and remembers that
+  // (ephemeral convos have no real profile behind them, so they only last for the session)
+  function moveToInbox(c){
+    REQUESTS = REQUESTS.filter(r => r.id !== c.id);
+    if (!CONVOS.includes(c)) CONVOS.unshift(c);
+    if (!c.ephemeral) markOpened(c.id);
+  }
+
+  /* ---------- message history: saved per bot id in localStorage ---------- */
+  const MESSAGES_KEY = 'spotlight-messages';
+
+  function readAllMessages(){
+    try {
+      const saved = JSON.parse(localStorage.getItem(MESSAGES_KEY));
+      return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    } catch (e) { return {}; }
+  }
+  function savedMessagesFor(id){
+    const list = readAllMessages()[String(id)];
+    return Array.isArray(list) ? list.filter(m => m && m.text) : [];
+  }
+  function saveMessages(c){
+    if (c.ephemeral) return;
+    const all = readAllMessages();
+    all[String(c.id)] = c.messages.map(m => ({ from: m.from, text: m.text, ts: m.ts }));
+    try { localStorage.setItem(MESSAGES_KEY, JSON.stringify(all)); } catch (e) { /* storage full / blocked */ }
+  }
+  // timestamps are stored so 'Now' doesn't stay 'Now' forever
+  function timeLabel(ts){
+    const minutes = Math.floor((Date.now() - ts) / 60000);
+    if (minutes < 1) return 'Now';
+    if (minutes < 60) return minutes + 'm';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + 'h';
+    const days = Math.floor(hours / 24);
+    if (days < 7) return days + 'd';
+    return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+  function lastTs(c){
+    const last = c.messages[c.messages.length - 1];
+    return last && last.ts ? last.ts : 0;
+  }
+
+  const AVATAR_COLORS = ['#f5c451', '#4fa8dd', '#6fcf97', '#f2685f', '#c792ea', '#f2a13d', '#8ab4f8', '#f582ae'];
+
+  const REPLIES = [
+    'placeholder! :)',
+    'this feature is not yet connected to the ai, so you cant actually text the bot. but hey, you get to pretend at least!',
+    'tell me more!',
+    'wow!'
+  ];
+
+  function hashString(str){
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  function initialsOf(name){
+    const parts = String(name || '?').replace(/^@/, '').trim().split(/[\s_.-]+/).filter(Boolean);
+    const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : (parts[0] || '?').slice(0, 2);
+    return letters.toUpperCase();
+  }
+
+  function botToConvo(b){
+    const handle = String(b.handle || '').replace(/^@/, '');
+    const name = b.display_name || handle || 'Bot';
+    const messages = savedMessagesFor(b.id);
+    const last = messages[messages.length - 1];
+    return {
+      id: b.id,
+      name: name,
+      handle: '@' + handle,
+      initials: initialsOf(name),
+      avatar: b.avatar_url || null,
+      color: AVATAR_COLORS[hashString(String(b.id)) % AVATAR_COLORS.length],
+      verified: !!b.verified,
+      online: false,
+      unread: 0,
+      time: last && last.ts ? timeLabel(last.ts).replace('Now', 'now') : '',
+      preview: 'Say hi to start the conversation',
+      messages: messages,
+    };
+  }
+
+  async function loadBots(){
+    const { data, error } = await supabaseClient.from('bot_profiles').select('*');
+    if (error){
+      console.error('Could not load bot profiles:', error);
+      return;
+    }
+    const convos = (data || []).map(botToConvo);
+    const opened = readOpened();
+    CONVOS = convos.filter(c => opened.includes(String(c.id)));
+    REQUESTS = convos.filter(c => !opened.includes(String(c.id)));
+
+    // npcs the user has messaged live in npc_profiles, so bring those back into the inbox too
+    const missing = opened.filter(id => !convos.some(c => String(c.id) === id));
+    if (missing.length){
+      const npcRes = await supabaseClient.from('npc_profiles').select('*').in('id', missing);
+      if (npcRes.error) console.error('Could not load npc profiles:', npcRes.error);
+      else CONVOS = CONVOS.concat((npcRes.data || []).map(botToConvo));
+    }
+
+    // most recently active conversations first (ones with no messages keep their order after)
+    CONVOS.sort((a, b) => lastTs(b) - lastTs(a));
+  }
+
+  // used for ?user=handle when the person isn't already in the lists (e.g. an npc)
+  async function findProfileByHandle(handle){
+    for (const table of ['bot_profiles', 'npc_profiles']){
+      const { data, error } = await supabaseClient
+        .from(table)
+        .select('*')
+        .in('handle', [handle, '@' + handle])
+        .limit(1);
+      if (!error && data && data.length) return botToConvo(data[0]);
+    }
+    return null;
+  }
+
+  /* ---------- elements ---------- */
+  const listView = document.getElementById('listView');
+  const threadView = document.getElementById('threadView');
+  const convoList = document.getElementById('convoList');
+  const emptyState = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  const requestCount = document.getElementById('requestCount');
+  const messagesEl = document.getElementById('messages');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  let activeTab = 'inbox';
+  let activeConvo = null;
+
+  function lastMessage(c){
+    return c.messages[c.messages.length - 1];
+  }
+
+  function previewText(c){
+    const last = lastMessage(c);
+    if (!last) return c.preview || '';
+    return (last.from === 'me' ? 'You: ' : '') + last.text;
+  }
+
+  function makeAvatar(c, withDot){
+    const el = document.createElement('div');
+    el.className = 'avatar';
+    el.style.background = c.color;
+    if (c.avatar){
+      const img = document.createElement('img');
+      img.src = c.avatar;
+      img.alt = '';
+      img.onerror = () => { img.remove(); el.prepend(document.createTextNode(c.initials)); };
+      el.appendChild(img);
+    } else {
+      el.textContent = c.initials;
+    }
+    if (withDot && c.online){
+      const dot = document.createElement('span');
+      dot.className = 'online-dot';
+      el.appendChild(dot);
+    }
+    return el;
+  }
+
+  /* ---------- inbox list ---------- */
+  function renderList(){
+    const query = searchInput.value.trim().toLowerCase();
+    convoList.innerHTML = '';
+    requestCount.textContent = REQUESTS.length ? '(' + REQUESTS.length + ')' : '';
+
+    const source = activeTab === 'inbox' ? CONVOS : REQUESTS;
+    const rows = source.filter(c => {
+      const hay = (c.name + ' ' + c.handle + ' ' + previewText(c)).toLowerCase();
+      return hay.includes(query);
+    });
+
+    rows.forEach(c => {
+      const li = document.createElement('li');
+      if (activeTab === 'inbox') li.appendChild(buildConvoRow(c));
+      else li.appendChild(buildRequestRow(c));
+      convoList.appendChild(li);
+    });
+
+    if (!rows.length){
+      emptyState.hidden = false;
+      emptyState.textContent = query
+        ? 'No messages match your search.'
+        : (activeTab === 'inbox' ? 'No messages yet. Accept a request or message someone from their profile.' : 'No message requests right now.');
+    } else {
+      emptyState.hidden = true;
+    }
+  }
+
+  function buildConvoRow(c){
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'convo' + (c.unread ? ' unread' : '');
+    row.appendChild(makeAvatar(c, true));
+
+    const main = document.createElement('div');
+    main.className = 'convo-main';
+
+    const top = document.createElement('div');
+    top.className = 'convo-top';
+    const name = document.createElement('span');
+    name.className = 'convo-name';
+    name.textContent = c.name;
+    top.appendChild(name);
+    if (c.verified) top.insertAdjacentHTML('beforeend', verifiedSVG);
+    const time = document.createElement('span');
+    time.className = 'convo-time';
+    time.textContent = c.time;
+    top.appendChild(time);
+
+    const bottom = document.createElement('div');
+    bottom.className = 'convo-bottom';
+    const preview = document.createElement('p');
+    preview.className = 'convo-preview';
+    preview.textContent = previewText(c);
+    bottom.appendChild(preview);
+    if (c.unread){
+      const badge = document.createElement('span');
+      badge.className = 'unread-badge';
+      badge.textContent = c.unread;
+      bottom.appendChild(badge);
+    }
+
+    main.appendChild(top);
+    main.appendChild(bottom);
+    row.appendChild(main);
+    row.addEventListener('click', () => openThread(c));
+    return row;
+  }
+
+  function buildRequestRow(c){
+    const card = document.createElement('div');
+    card.className = 'request-card';
+
+    const top = document.createElement('div');
+    top.className = 'request-top';
+    top.appendChild(makeAvatar(c, false));
+
+    const main = document.createElement('div');
+    main.className = 'convo-main';
+    main.innerHTML = '<div class="convo-top"><span class="convo-name"></span><span class="convo-time"></span></div><div class="convo-bottom"><p class="convo-preview"></p></div>';
+    main.querySelector('.convo-name').textContent = c.name;
+    main.querySelector('.convo-time').textContent = c.time;
+    main.querySelector('.convo-preview').textContent = previewText(c);
+    top.appendChild(main);
+    card.appendChild(top);
+
+    const actions = document.createElement('div');
+    actions.className = 'button-row';
+    const accept = document.createElement('button');
+    accept.type = 'button';
+    accept.className = 'profile-btn primary-btn';
+    accept.textContent = 'Accept';
+    const decline = document.createElement('button');
+    decline.type = 'button';
+    decline.className = 'profile-btn secondary-btn';
+    decline.textContent = 'Decline';
+    actions.appendChild(accept);
+    actions.appendChild(decline);
+    card.appendChild(actions);
+
+    accept.addEventListener('click', () => {
+      c.unread = 0;
+      moveToInbox(c);
+      renderList();
+    });
+    decline.addEventListener('click', () => {
+      REQUESTS = REQUESTS.filter(r => r.id !== c.id);
+      renderList();
+    });
+    return card;
+  }
+
+  searchInput.addEventListener('input', renderList);
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeTab = btn.dataset.tab;
+      renderList();
+    });
+  });
+
+  /* ---------- thread ---------- */
+  function renderMessages(){
+    messagesEl.innerHTML = '';
+    const list = activeConvo.messages;
+    document.getElementById('dayLabel').hidden = !list.length;
+
+    if (!list.length){
+      const intro = document.createElement('div');
+      intro.className = 'thread-intro';
+      intro.appendChild(makeAvatar(activeConvo, false));
+      const title = document.createElement('h2');
+      title.textContent = activeConvo.name;
+      const handle = document.createElement('p');
+      handle.textContent = activeConvo.handle;
+      const hint = document.createElement('p');
+      hint.textContent = 'Say hi to start the conversation.';
+      intro.appendChild(title);
+      intro.appendChild(handle);
+      intro.appendChild(hint);
+      messagesEl.appendChild(intro);
+      return;
+    }
+
+    list.forEach((m, i) => {
+      const next = list[i + 1];
+      messagesEl.appendChild(buildMessage(m, !next || next.from !== m.from));
+    });
+    window.scrollTo(0, document.body.scrollHeight);
+  }
+
+  function buildMessage(m, showTime){
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + m.from;
+    const bubble = document.createElement('p');
+    bubble.className = 'bubble';
+    bubble.textContent = m.text;
+    wrap.appendChild(bubble);
+    if (showTime){
+      const t = document.createElement('span');
+      t.className = 'msg-time';
+      t.textContent = m.ts ? timeLabel(m.ts) : m.time;
+      wrap.appendChild(t);
+    }
+    return wrap;
+  }
+
+  function openThread(c){
+    activeConvo = c;
+    c.unread = 0;
+
+    const avatar = document.getElementById('threadAvatar');
+    avatar.replaceWith(Object.assign(makeAvatar(c, true), { id:'threadAvatar' }));
+    document.getElementById('threadName').textContent = c.name;
+    document.getElementById('threadVerified').innerHTML = c.verified ? verifiedSVG : '';
+    document.getElementById('threadSub').textContent = c.online ? 'Active now' : c.handle;
+
+    renderMessages();
+    listView.hidden = true;
+    threadView.hidden = false;
+    messageInput.value = '';
+    sendBtn.disabled = true;
+  }
+
+  function closeThread(){
+    activeConvo = null;
+    threadView.hidden = true;
+    listView.hidden = false;
+    renderList();
+    window.scrollTo(0, 0);
+  }
+
+  messageInput.addEventListener('input', () => {
+    sendBtn.disabled = !messageInput.value.trim();
+  });
+
+  document.getElementById('composer').addEventListener('submit', e => {
+    e.preventDefault();
+    const text = messageInput.value.trim();
+    if (!text || !activeConvo) return;
+
+    const convo = activeConvo;
+    moveToInbox(convo);
+    convo.messages.push({ from:'me', text:text, ts:Date.now() });
+    convo.time = 'now';
+    saveMessages(convo);
+    messageInput.value = '';
+    sendBtn.disabled = true;
+    renderMessages();
+
+    // reply loading, as for rn its fake until an edge function is created
+    const typing = document.createElement('div');
+    typing.className = 'msg them typing';
+    typing.innerHTML = '<p class="bubble"><span></span><span></span><span></span></p>';
+    messagesEl.appendChild(typing);
+    window.scrollTo(0, document.body.scrollHeight);
+
+    setTimeout(() => {
+      convo.messages.push({ from:'them', text:REPLIES[Math.floor(Math.random() * REPLIES.length)], ts:Date.now() });
+      convo.time = 'now';
+      saveMessages(convo);
+      if (activeConvo === convo) renderMessages();
+    }, 1400);
+  });
+
+  /* ---------- opened from a profile: only that user's thread, back goes to their page ---------- */
+  const params = new URLSearchParams(window.location.search);
+  const deepLinkUser = (params.get('user') || '').replace(/^@/, '').toLowerCase();
+
+  function goBackToProfile(){
+    window.location.href = sessionStorage.getItem('spotlight-dm-return') || 'IconPage.html';
+  }
+
+  document.getElementById('threadBackBtn').addEventListener('click', () => {
+    if (deepLinkUser) goBackToProfile();
+    else closeThread();
+  });
+
+  /* ---------- back button: return to whichever page the user came from ---------- */
+  document.getElementById('backBtn').addEventListener('click', () => {
+    const lastPage = sessionStorage.getItem('spotlight-last-page') || 'Feed.html';
+    window.location.href = lastPage;
+  });
+
+  async function init(){
+    await loadBots();
+    renderList();
+
+    if (!deepLinkUser) return;
+    const all = CONVOS.concat(REQUESTS);
+    let target = all.find(c => c.handle.replace(/^@/, '').toLowerCase() === deepLinkUser);
+    if (!target) target = await findProfileByHandle(deepLinkUser);
+    if (!target){
+      target = {
+        id:deepLinkUser,
+        name:deepLinkUser,
+        handle:'@' + deepLinkUser,
+        initials:initialsOf(deepLinkUser),
+        avatar:null,
+        color:AVATAR_COLORS[0],
+        verified:false,
+        online:false,
+        unread:0,
+        time:'now',
+        messages:[],
+        ephemeral:true,   // no profile exists for this handle, so nothing about it is saved
+      };
+    }
+    // clicking 'message' on a profile opens their inbox thread, so they leave requests
+    moveToInbox(target);
+    renderList();
+    openThread(target);
+  }
+
+  init();
+</script>
+</body>
+</html>

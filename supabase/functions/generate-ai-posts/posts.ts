@@ -12,6 +12,14 @@
 // available for free tier users; it's not a typo that the two model providers
 // use different models. Once we start paying, it'll be reverted to 2.5
 //
+// BOT SELECTION (see pickPostBots):
+// Each batch of POST_COUNT posts is guaranteed at least one custom bot
+// (bot_profiles, loaded from the user's selected_worlds) as long as one
+// exists. The remaining slots are filled by weighted random from all
+// bots without repeats, with custom bots weighted CUSTOM_BOT_WEIGHT
+// (1.5x) vs 1x for npc_profiles bots, so they're slightly more likely to
+// be rolled. Same logic as the reply function.
+//
 // PRIVACY MODEL:
 // Each inserted post gets `ai_owner_id` set to the requesting user's id.
 // Only that user's feed query (`ai_owner_id.eq.<their id>`) will ever
@@ -64,6 +72,10 @@ const BOT_PROFILE_IDS = [
 ];
 const POST_COUNT = 5;
 const COOLDOWN_MS = 60 * 1000; // 1 minute, enforced server-side too
+
+// custom (bot_profiles) bots get a slightly bigger weight than npc bots
+// when rolling for the non-guaranteed slots.
+const CUSTOM_BOT_WEIGHT = 1.5;
 
 const BASE_SYSTEM_PROMPT = `You are generating a short, realistic social media post for a 
 fictional social app called Spotlight, written as a specific character described in the 
@@ -132,6 +144,89 @@ function formatPersonalityLine(personality: BotPersonality): string {
   let line = `Your personality type: ${personality.overallType}. Traits: ${traitDescriptions}.`;
   if (personality.overallDescription) line += ` ${personality.overallDescription}`;
   return line;
+}
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// pulls world ids out of profiles.selected_worlds no matter how it was
+// stored: [{id}], [{world_id}], ["id"], numbers, or a JSON string.
+function extractWorldIds(raw: unknown): string[] {
+  let value: unknown = raw;
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return [value as string];
+    }
+  }
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((w: any) =>
+      typeof w === "string" || typeof w === "number"
+        ? String(w)
+        : (w?.id ?? w?.world_id ?? w?.worldId),
+    )
+    .filter(Boolean)
+    .map(String)
+    // legacy preset ids ("1", "2", ...) aren't uuids and can't have bot_profiles;
+    // passing them to a uuid column would make the whole query error.
+    .filter((id: string) => UUID_RE.test(id));
+}
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// weighted random sample without replacement
+function weightedSample(
+  pool: BotProfile[],
+  count: number,
+  customIds: Set<string>,
+): BotProfile[] {
+  const remaining = [...pool];
+  const picked: BotProfile[] = [];
+  while (picked.length < count && remaining.length) {
+    const weights = remaining.map((b) =>
+      customIds.has(b.id) ? CUSTOM_BOT_WEIGHT : 1,
+    );
+    let roll = Math.random() * weights.reduce((a, b) => a + b, 0);
+    let idx = 0;
+    for (; idx < remaining.length - 1; idx++) {
+      roll -= weights[idx];
+      if (roll < 0) break;
+    }
+    picked.push(remaining.splice(idx, 1)[0]);
+  }
+  return picked;
+}
+
+// guarantees one custom bot (if any exist), then fills the rest of the
+// slots by weighted random from everyone left. the final order is
+// shuffled so the guaranteed custom bot isn't always the first post.
+function pickPostBots(
+  customBots: BotProfile[],
+  npcBots: BotProfile[],
+  count: number,
+): BotProfile[] {
+  const customIds = new Set(customBots.map((b) => b.id));
+  const picked: BotProfile[] = [];
+  let remainingPool = [...customBots, ...npcBots];
+
+  if (customBots.length && count > 0) {
+    const guaranteed =
+      customBots[Math.floor(Math.random() * customBots.length)];
+    picked.push(guaranteed);
+    remainingPool = remainingPool.filter((b) => b.id !== guaranteed.id);
+  }
+
+  picked.push(...weightedSample(remainingPool, count - picked.length, customIds));
+  return shuffle(picked);
 }
 
 // builds a user-message describing which bot is writing this post, this
@@ -438,9 +533,14 @@ Deno.serve(async (req) => {
       .single();
     if (profileError) throw profileError;
 
-    const selectedWorldIds: string[] = (profileRow?.selected_worlds ?? [])
-      .map((w: { id?: string }) => w.id)
-      .filter(Boolean);
+    const selectedWorldIds = extractWorldIds(profileRow?.selected_worlds);
+    console.log("custom bot lookup:", {
+      userId,
+      worldEntryKeys: Array.isArray(profileRow?.selected_worlds)
+          ? Object.keys(profileRow.selected_worlds[0] ?? {}).filter((k) => k !== "image")
+          : typeof profileRow?.selected_worlds,
+      selectedWorldIds,
+    });
 
     let customBots: BotProfile[] = [];
     if (selectedWorldIds.length) {
@@ -448,8 +548,16 @@ Deno.serve(async (req) => {
         .from("bot_profiles")
         .select("id, display_name, handle, personality")
         .in("world_id", selectedWorldIds);
-      if (customBotsError) throw customBotsError;
-      customBots = (customBotRows ?? []) as BotProfile[];
+      if (customBotsError) {
+        // custom bots are a bonus; don't take the whole request down over them
+        console.error("Could not load custom bots:", customBotsError);
+      } else {
+        customBots = (customBotRows ?? []) as BotProfile[];
+      }
+      console.log(
+        `bot_profiles rows for worlds [${selectedWorldIds.join(", ")}]:`,
+        customBots.length,
+      );
     }
 
     // full npc rows (with personality), not just the raw id list -- we
@@ -461,18 +569,17 @@ Deno.serve(async (req) => {
     if (npcBotsError) throw npcBotsError;
     const npcBots = (npcBotRows ?? []) as BotProfile[];
 
-    // custom bots go first so they get picked before any npc filler, then
-    // the universal npc pool fills whatever's left
-    const shuffledCustomBots = [...customBots].sort(() => Math.random() - 0.5);
-    const shuffledNpcBots = [...npcBots].sort(() => Math.random() - 0.5);
-    const botPool = [...shuffledCustomBots, ...shuffledNpcBots];
+    if (!customBots.length && !npcBots.length)
+      throw new Error("No bots available to post as");
+    if (!customBots.length) {
+      console.warn("No custom bots loaded for this user", {
+        userId,
+        selectedWorldIds,
+      });
+    }
 
-    if (!botPool.length) throw new Error("No bots available to post as");
-
-    const assignedBots = Array.from(
-      { length: POST_COUNT },
-      (_, i) => botPool[i % botPool.length],
-    );
+    // one custom bot guaranteed, rest weighted random (custom 1.5x npc)
+    const assignedBots = pickPostBots(customBots, npcBots, POST_COUNT);
 
     const rows: {
       bot_user_id: string;
