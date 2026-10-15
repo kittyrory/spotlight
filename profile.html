@@ -762,9 +762,9 @@
     </div>
 
     <div class="bio-box-container" id="bio-container">
-      <textarea id="bio" class="bio-input" maxlength="150"
+      <textarea id="bio" class="bio-input" maxlength="300"
         placeholder="Tell the world who you are. Be iconic, be real, be chaotic-your words unlock hidden traits and shape how celebrities and fans treat you...."></textarea>
-      <div class="char-counter" id="char-counter">0/150</div>
+      <div class="char-counter" id="char-counter">0/300</div>
     </div>
 
     <p class="bio-suggestions">
@@ -819,7 +819,7 @@
     const charCounter  = document.getElementById('char-counter');
 
     bioInput.addEventListener('input', () => {
-      charCounter.textContent = `${bioInput.value.length}/150`;
+      charCounter.textContent = `${bioInput.value.length}/300`;
     });
 
     // validation helpers

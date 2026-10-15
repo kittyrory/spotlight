@@ -252,6 +252,7 @@ function buildPostPrompt(
   }
 
   if (profile) {
+    lines.push('Below contains information about the user these posts are for. This is not the character you are roleplaying as, so do not mix it up.')
     if (profile.display_name)
       lines.push(`Display name: ${profile.display_name}`);
     if (profile.handle)
@@ -266,7 +267,7 @@ function buildPostPrompt(
 
   if (worlds?.length) {
     lines.push(
-      "You are encouraged to mention these worlds, and if you do, act as if the setting or characters are real and you are living in the world.",
+      "You are encouraged to mention these worlds and act as if the setting or characters are real and you are living in the world.",
     );
     worlds.forEach((w) => {
       const parts = [w.title, w.category, w.description].filter(Boolean);

@@ -707,25 +707,156 @@
     if (!c.ephemeral) markOpened(c.id);
   }
 
-  /* ---------- message history: saved per bot id in localStorage ---------- */
-  const MESSAGES_KEY = 'spotlight-messages';
+  /* ---------- message history: saved in the supabase messages table ---------- */
+  // name of the edge function that generates the bot's reply
+  const DM_FUNCTION = 'generate-dms';
 
-  function readAllMessages(){
+  // a user message with no reply after this long is treated as a failed send and deleted on reload
+  const STALE_UNANSWERED_MS = 2 * 60 * 1000;
+
+  let currentUserId = null;
+  let userContext = null;   // { profile, worlds }, sent along with every reply request
+  let DB_MESSAGES = {};     // bot id -> { convoId, messages, unread }
+
+  async function loadCurrentUser(){
+    const { data, error } = await supabaseClient.auth.getUser();
+    if (error || !data || !data.user){
+      console.error('Could not get the current user:', error);
+      return;
+    }
+    currentUserId = data.user.id;
+  }
+
+  // pulls every dm the user has with every bot in one query, then groups it by bot.
+  // db rows use role 'user' / 'bot', the page uses from 'me' / 'them'.
+  async function loadMessagesFromDb(){
+    DB_MESSAGES = {};
+    if (!currentUserId) return;
+    const { data, error } = await supabaseClient
+      .from('messages')
+      .select('id, convo_id, bot_id, role, content, created_at, read_at')
+      .eq('user_id', currentUserId)
+      .not('convo_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1000);
+    if (error){
+      console.error('Could not load messages:', error);
+      return;
+    }
+    // fetched newest first so the limit keeps the latest ones, then flipped back into reading order
+    (data || []).reverse().forEach(m => {
+      if (!m.bot_id || (m.role !== 'user' && m.role !== 'bot')) return;
+      const key = String(m.bot_id);
+      if (!DB_MESSAGES[key]) DB_MESSAGES[key] = { convoId: m.convo_id, messages: [], unread: 0 };
+      DB_MESSAGES[key].messages.push({
+        id: m.id,
+        from: m.role === 'user' ? 'me' : 'them',
+        text: m.content,
+        ts: Date.parse(m.created_at),
+      });
+      if (m.role === 'bot' && !m.read_at) DB_MESSAGES[key].unread++;
+    });
+
+    // user messages at the end of a thread that never got a reply (the reply failed)
+    // get deleted. the age check keeps this from touching a reply that's still being generated.
+    const staleIds = [];
+    Object.keys(DB_MESSAGES).forEach(key => {
+      const list = DB_MESSAGES[key].messages;
+      while (list.length && list[list.length - 1].from === 'me' && Date.now() - list[list.length - 1].ts > STALE_UNANSWERED_MS){
+        staleIds.push(list.pop().id);
+      }
+    });
+    if (staleIds.length){
+      const { error: delError } = await supabaseClient
+        .from('messages')
+        .delete()
+        .in('id', staleIds)
+        .eq('user_id', currentUserId)
+        .eq('role', 'user');
+      if (delError) console.error('Could not delete unanswered messages:', delError);
+    }
+  }
+
+  // profile + worlds sent to the edge function so replies reference the user's own context.
+  // adjust the table / column names here if yours differ.
+  async function loadUserContext(){
+    const ctx = { profile: null, worlds: [] };
     try {
-      const saved = JSON.parse(localStorage.getItem(MESSAGES_KEY));
-      return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
-    } catch (e) { return {}; }
+      const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', currentUserId)
+        .maybeSingle();
+      if (error) throw error;
+      if (data){
+        ctx.profile = {
+          origin: data.origin,
+          fame_path: data.fame_path,
+          identity: data.identity,
+          display_name: data.display_name,
+          handle: data.handle,
+          bio: data.bio,
+        };
+        let worlds = data.selected_worlds;
+        if (typeof worlds === 'string'){
+          try { worlds = JSON.parse(worlds); } catch (e) { worlds = []; }
+        }
+        ctx.worlds = Array.isArray(worlds) ? worlds.filter(w => w && typeof w === 'object') : [];
+      }
+    } catch (e){
+      console.error('Could not load profile context:', e);
+    }
+    return ctx;
   }
-  function savedMessagesFor(id){
-    const list = readAllMessages()[String(id)];
-    return Array.isArray(list) ? list.filter(m => m && m.text) : [];
+
+  // marks the bot's messages in this thread (and their notifications) as read.
+  // only counts if the tab is actually visible, otherwise it stays unread.
+  async function markThreadRead(c){
+    if (!currentUserId || !c || !c.convoId) return;
+    if (document.visibilityState !== 'visible') return;
+    const now = new Date().toISOString();
+
+    const msgRes = await supabaseClient
+      .from('messages')
+      .update({ read_at: now })
+      .eq('user_id', currentUserId)
+      .eq('convo_id', c.convoId)
+      .eq('role', 'bot')
+      .is('read_at', null);
+    if (msgRes.error) console.error('Could not mark messages read:', msgRes.error);
+
+    const notifRes = await supabaseClient
+      .from('notifications')
+      .update({ read_at: now })
+      .eq('user_id', currentUserId)
+      .eq('convo_id', c.convoId)
+      .is('read_at', null);
+    if (notifRes.error) console.error('Could not mark notifications read:', notifRes.error);
   }
-  function saveMessages(c){
-    if (c.ephemeral) return;
-    const all = readAllMessages();
-    all[String(c.id)] = c.messages.map(m => ({ from: m.from, text: m.text, ts: m.ts }));
-    try { localStorage.setItem(MESSAGES_KEY, JSON.stringify(all)); } catch (e) { /* storage full / blocked */ }
+
+  // asks the edge function for the bot's reply. the user's message has to be saved
+  // first, since the function reads the chat history from the table.
+  async function requestReply(convo){
+    if (!userContext) userContext = await loadUserContext();
+    const { data, error } = await supabaseClient.functions.invoke(DM_FUNCTION, {
+      body: {
+        user_id: currentUserId,
+        bot_id: convo.id,
+        convo_id: convo.convoId,
+        profile: userContext.profile,
+        worlds: userContext.worlds,
+      },
+    });
+    if (error){
+      // invoke hides the real error message inside error.context
+      let detail = null;
+      try { detail = await error.context.json(); } catch (e) { /* no json body */ }
+      const detailMsg = detail && detail.error;
+      throw new Error(typeof detailMsg === 'string' ? detailMsg : (detailMsg ? JSON.stringify(detailMsg) : error.message));
+    }
+    return (data && data.inserted) || [];
   }
+
   // timestamps are stored so 'Now' doesn't stay 'Now' forever
   function timeLabel(ts){
     const minutes = Math.floor((Date.now() - ts) / 60000);
@@ -766,7 +897,8 @@
   function botToConvo(b){
     const handle = String(b.handle || '').replace(/^@/, '');
     const name = b.display_name || handle || 'Bot';
-    const messages = savedMessagesFor(b.id);
+    const saved = DB_MESSAGES[String(b.id)];
+    const messages = saved ? saved.messages : [];
     const last = messages[messages.length - 1];
     return {
       id: b.id,
@@ -777,7 +909,8 @@
       color: AVATAR_COLORS[hashString(String(b.id)) % AVATAR_COLORS.length],
       verified: !!b.verified,
       online: false,
-      unread: 0,
+      unread: saved ? saved.unread : 0,
+      convoId: saved ? saved.convoId : null,   // created on the first message if there isn't one yet
       time: last && last.ts ? timeLabel(last.ts).replace('Now', 'now') : '',
       preview: 'Say hi to start the conversation',
       messages: messages,
@@ -1050,6 +1183,7 @@
     threadView.hidden = false;
     messageInput.value = '';
     sendBtn.disabled = true;
+    markThreadRead(c);
   }
 
   function closeThread(){
@@ -1064,33 +1198,81 @@
     sendBtn.disabled = !messageInput.value.trim();
   });
 
-  document.getElementById('composer').addEventListener('submit', e => {
-    e.preventDefault();
-    const text = messageInput.value.trim();
-    if (!text || !activeConvo) return;
-
-    const convo = activeConvo;
-    moveToInbox(convo);
-    convo.messages.push({ from:'me', text:text, ts:Date.now() });
-    convo.time = 'now';
-    saveMessages(convo);
-    messageInput.value = '';
-    sendBtn.disabled = true;
-    renderMessages();
-
-    // reply loading, as for rn its fake until an edge function is created
+  function showTyping(){
     const typing = document.createElement('div');
     typing.className = 'msg them typing';
     typing.innerHTML = '<p class="bubble"><span></span><span></span><span></span></p>';
     messagesEl.appendChild(typing);
     window.scrollTo(0, document.body.scrollHeight);
+  }
 
-    setTimeout(() => {
-      convo.messages.push({ from:'them', text:REPLIES[Math.floor(Math.random() * REPLIES.length)], ts:Date.now() });
+  document.getElementById('composer').addEventListener('submit', async e => {
+    e.preventDefault();
+    const text = messageInput.value.trim();
+    // convo.waiting stops a second message going out while the bot is still replying
+    if (!text || !activeConvo || activeConvo.waiting) return;
+
+    const convo = activeConvo;
+    moveToInbox(convo);
+    convo.messages.push({ from:'me', text:text, ts:Date.now() });
+    convo.time = 'now';
+    messageInput.value = '';
+    sendBtn.disabled = true;
+    renderMessages();
+    showTyping();
+
+    // ephemeral convos have no bot behind them (and a signed out user has nowhere to save),
+    // so those keep the placeholder replies
+    if (convo.ephemeral || !currentUserId){
+      setTimeout(() => {
+        convo.messages.push({ from:'them', text:REPLIES[Math.floor(Math.random() * REPLIES.length)], ts:Date.now() });
+        convo.time = 'now';
+        if (activeConvo === convo) renderMessages();
+      }, 1400);
+      return;
+    }
+
+    convo.waiting = true;
+    try {
+      if (!convo.convoId) convo.convoId = crypto.randomUUID();
+
+      // save the user's message first, the edge function reads it back from the table
+      const { error: saveError } = await supabaseClient.from('messages').insert({
+        convo_id: convo.convoId,
+        user_id: currentUserId,
+        bot_id: convo.id,
+        role: 'user',
+        content: text,
+      });
+      if (saveError) throw saveError;
+
+      const inserted = await requestReply(convo);
+      inserted.forEach(m => {
+        convo.messages.push({ from:'them', text:m.content, ts:Date.parse(m.created_at) });
+      });
       convo.time = 'now';
-      saveMessages(convo);
+
+      if (activeConvo === convo){
+        // thread is open, so they're looking at it: mark it read right away
+        renderMessages();
+        await markThreadRead(convo);
+      } else {
+        // they left before the reply landed. it stays unread (and so does its notification)
+        convo.unread += inserted.length;
+      }
+    } catch (err){
+      console.error('Could not get a reply:', err);
+      const cooldown = String(err && err.message).includes('Cooldown');
+      alert("Slow down, you're on cooldown! \n 1If it's been more than 5 seconds, look in the browser console for an error before reporting it.")
       if (activeConvo === convo) renderMessages();
-    }, 1400);
+    } finally {
+      convo.waiting = false;
+    }
+  });
+
+  // if they come back to the tab while a thread is open, count it as read then
+  document.addEventListener('visibilitychange', () => {
+    if (activeConvo) markThreadRead(activeConvo);
   });
 
   /* ---------- opened from a profile: only that user's thread, back goes to their page ---------- */
@@ -1113,6 +1295,8 @@
   });
 
   async function init(){
+    await loadCurrentUser();
+    await loadMessagesFromDb();
     await loadBots();
     renderList();
 

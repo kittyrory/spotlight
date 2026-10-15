@@ -631,7 +631,7 @@ function renderWorlds(list) {
     document.getElementById("ccNameInput").value = "";
     document.getElementById("ccHandleInput").value = "";
     ccBioInput.value = "";
-    ccCharCounter.textContent = "0/150";
+    ccCharCounter.textContent = "0/300";
     ccBioBox.classList.remove(
       "border-disrupter", "border-professional", "border-fan-favorite", "border-enigma",
     );
@@ -710,7 +710,7 @@ function renderWorlds(list) {
   });
 
   ccBioInput.addEventListener("input", function () {
-    ccCharCounter.textContent = ccBioInput.value.length + "/150";
+    ccCharCounter.textContent = ccBioInput.value.length + "/300";
 
     ccBioBox.classList.remove(
       "border-disrupter", "border-professional", "border-fan-favorite", "border-enigma",

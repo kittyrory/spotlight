@@ -504,7 +504,9 @@
         margin-right: auto;
       }
 
-      .fame-banner img[hidden] {
+      .fame-banner img[hidden],
+      .circle-btn[hidden],
+      .profile-btn[hidden] {
         display: none;
       }
 
@@ -1010,8 +1012,8 @@
 
     <div id="editBioWrap">
       <label class="sheet-label" for="editBio">Bio</label>
-      <textarea class="sheet-textarea" id="editBio" maxlength="150"></textarea>
-      <div class="sheet-counter" id="editBioCount">0/150</div>
+      <textarea class="sheet-textarea" id="editBio" maxlength="300"></textarea>
+      <div class="sheet-counter" id="editBioCount">0/300</div>
     </div>
 
     <label class="sheet-label">Personality</label>
@@ -1052,7 +1054,7 @@
 <script src="scripts/theme.js"></script>
 
 <script>
-  /* ---------- bot profile: npc_profiles OR bot_profiles, looked up by ?id= ---------- */
+  /* ---------- profile: npc_profiles, bot_profiles OR profiles (real users), looked up by ?id= ---------- */
   const BOT_FOLLOWING_PLACEHOLDER = 0;    // PLACEHOLDER: bots don't track who they follow yet
 
   const $ = (id) => document.getElementById(id);
@@ -1239,6 +1241,7 @@
 
   let currentBot = null;
   let currentIsCustom = false;
+  let currentIsUser = false;   // true when the id came from `profiles` (a real user, not a bot)
   let baseFollowers = 0;
   let isFollowing = false;
 
@@ -1257,41 +1260,69 @@
       if (Number.isFinite(cached.posts)) showCount($('statPosts'), cached.posts);
     }
 
-    // 2. the id could belong to either table, so ask both
-    const [botRes, npcRes] = await Promise.all([
+    // 2. the id could belong to any of the three tables, so ask all of them
+    const [botRes, npcRes, userRes] = await Promise.all([
       supabaseClient.from('bot_profiles').select('*').eq('id', id).maybeSingle(),
       supabaseClient.from('npc_profiles').select('*').eq('id', id).maybeSingle(),
+      supabaseClient.from('profiles').select('*').eq('id', id).maybeSingle(),
     ]);
     const isCustomBot = !!botRes.data;
-    const profile = botRes.data || npcRes.data;
+    const isUser = !botRes.data && !npcRes.data && !!userRes.data;
+    const profile = botRes.data || npcRes.data || userRes.data;
     if (!profile) {
       if (botRes.error) console.error('Could not load bot profile:', botRes.error);
       if (npcRes.error) console.error('Could not load npc profile:', npcRes.error);
+      if (userRes.error) console.error('Could not load user profile:', userRes.error);
       showMissing();
       return;
     }
     currentBot = profile;
     currentIsCustom = isCustomBot;
+    currentIsUser = isUser;
     applyBotToDOM(profile);
 
-    // every post / reply the bot has made is found through bot_user_id.
-    // the follower sync and follow lookup run at the same time instead of one after another
+    // real users get edited from their own profile page, not here
+    if (isUser) $('moreBtn').hidden = true;
+    // no point following / dming yourself
+    if (isUser && userId === id) {
+      $('followBtn').hidden = true;
+      $('messageBtn').hidden = true;
+    }
+
+    // bots own their posts / replies through bot_user_id, real users through user_id.
+    // the follower sync (bots only) and follow lookup run at the same time instead of one after another
+    const authorCol = isUser ? 'user_id' : 'bot_user_id';
     const [postsRes, repliesRes, freshBase, freshFollowing] = await Promise.all([
       supabaseClient.from('posts')
         .select('id, content, like_count, dislike_count, repost_count, created_at', { count: 'exact' })
-        .eq('bot_user_id', id)
+        .eq(authorCol, id)
         .order('created_at', { ascending: false })
         .limit(50),
       supabaseClient.from('post_replies')
         .select('id, post_id, parent_reply_id, content, created_at', { count: 'exact' })
-        .eq('bot_user_id', id)
+        .eq(authorCol, id)
         .order('created_at', { ascending: false })
         .limit(50),
-      resolveFollowers(id),
+      isUser ? Promise.resolve(null) : resolveFollowers(id),
       lookupFollow(userId, id),
     ]);
-    if (postsRes.error) console.error('Could not load bot posts:', postsRes.error);
-    if (repliesRes.error) console.error('Could not load bot replies:', repliesRes.error);
+    if (postsRes.error) console.error('Could not load posts:', postsRes.error);
+    if (repliesRes.error) console.error('Could not load replies:', repliesRes.error);
+
+    // users don't have rolled follower counts, so use the real rows in `follows`
+    let freshUserFollowing = null;
+    let freshUserBase = null;
+    if (isUser) {
+      const [followersRes, followingRes] = await Promise.all([
+        supabaseClient.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', id),
+        supabaseClient.from('follows').select('following_id', { count: 'exact', head: true }).eq('follower_id', id),
+      ]);
+      if (followersRes.error) console.error('Could not count followers:', followersRes.error);
+      if (followingRes.error) console.error('Could not count following:', followingRes.error);
+      // baseFollowers excludes the viewer, the +1 for "I follow them" gets added when showing
+      if (followersRes.count !== null) freshUserBase = Math.max(0, followersRes.count - (freshFollowing ? 1 : 0));
+      if (followingRes.count !== null) freshUserFollowing = followingRes.count;
+    }
 
     const posts = postsRes.data || [];
     const replies = repliesRes.data || [];
@@ -1305,10 +1336,11 @@
 
     // a failed sync / lookup keeps whatever the cache already showed
     if (freshBase !== null) baseFollowers = freshBase;
+    if (freshUserBase !== null) baseFollowers = freshUserBase;
     if (freshFollowing !== null) isFollowing = freshFollowing;
     updateFollowBtn();
     showCount($('statFollowers'), baseFollowers + (isFollowing ? 1 : 0));
-    showCount($('statFollowing'), BOT_FOLLOWING_PLACEHOLDER);
+    showCount($('statFollowing'), freshUserFollowing !== null ? freshUserFollowing : BOT_FOLLOWING_PLACEHOLDER);
     showCount($('statPosts'), postCount);
 
     if (userId) writeLocal(botCacheKey(userId, id), { base: baseFollowers, following: isFollowing, posts: postCount });
@@ -1455,7 +1487,7 @@
 
   /* open / close */
   function openEdit() {
-    if (!currentBot) return;
+    if (!currentBot || currentIsUser) return;
     const bot = currentBot;
     pendingAvatar = null;
     pendingHeader = null;
@@ -1470,7 +1502,7 @@
     // npcs are plain on purpose: no bio field for them
     $('editBioWrap').hidden = !currentIsCustom;
     $('editBio').value = bot.bio || '';
-    $('editBioCount').textContent = ($('editBio').value.length) + '/150';
+    $('editBioCount').textContent = ($('editBio').value.length) + '/300';
 
     const personality = parsePersonality(bot.personality);
     $('npcPersonality').hidden = currentIsCustom;
@@ -1496,7 +1528,7 @@
   $('editCancelBtn').addEventListener('click', closeEdit);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeEdit(); });
 
-  $('editBio').addEventListener('input', () => { $('editBioCount').textContent = $('editBio').value.length + '/150'; });
+  $('editBio').addEventListener('input', () => { $('editBioCount').textContent = $('editBio').value.length + '/300'; });
   $('editBanner').addEventListener('click', () => $('editHeaderInput').click());
   $('editAvatar').addEventListener('click', (e) => { e.stopPropagation(); $('editAvatarInput').click(); });
 

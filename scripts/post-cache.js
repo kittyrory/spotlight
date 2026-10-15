@@ -74,6 +74,88 @@
     }
   }
 
+  // re-check for new activity at most this often. if the cache is younger
+  // than this, we skip even the cheap query below and just trust it.
+  const POST_STALE_CHECK_TTL_MS = 10 * 1000;
+
+  function isPostCacheRecent(cached) {
+    const cacheAgeMs = Date.now() - (cached?.cachedAt || 0);
+    console.log("[post] cache age ms:", cacheAgeMs, "cachedAt:", cached?.cachedAt);
+    return cacheAgeMs < POST_STALE_CHECK_TTL_MS;
+  }
+
+  // turns the raw cached blob into the stuff post.js actually uses
+  // (maps for profiles, set for my reactions, etc)
+  function unpackPost(cached) {
+    return {
+      post: cached.post,
+      replyRows: cached.replies || [],
+      myReactions: new Set(cached.myReactions || []),
+      profileById: new Map((cached.profiles || []).map((p) => [p.id, p])),
+      botProfileById: new Map((cached.botProfiles || []).map((p) => [p.id, p])),
+    };
+  }
+
+  // saves the current post/replies/profiles snapshot
+  // revisiting this post later renders instantly from cache
+  function savePostSnapshot(postId, { post, replyRows, myReactions, profileById, botProfileById }) {
+    writePost(postId, {
+      post,
+      replies: replyRows,
+      myReactions: [...myReactions],
+      profiles: [...profileById.values()],
+      botProfiles: [...botProfileById.values()],
+    });
+    console.log("[post] wrote cache at", Date.now(), "for post", postId);
+  }
+
+  // cheap check: has anything actually changed since we cached this post?
+  // "changed" means a new reply landed, or the post's own reaction counts
+  // moved. this is two small single-row queries, not the full post + replies
+  // + reactions + profiles + bot-profiles fetch.
+  async function postHasNewActivity(postId, cachedPost, cachedReplies) {
+    const [{ data: freshCounts, error: countsError }, { data: latestReply, error: replyError }] =
+      await Promise.all([
+        supabaseClient
+          .from("posts")
+          .select("like_count, dislike_count, repost_count")
+          .eq("id", postId)
+          .maybeSingle(),
+        supabaseClient
+          .from("post_replies")
+          .select("id, created_at")
+          .eq("post_id", postId)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+    if (countsError || replyError) {
+      console.error(
+        "Could not check post for new activity, falling back to full fetch:",
+        countsError || replyError,
+      );
+      return true; // don't know, so err on the side of refetching
+    }
+
+    const countsMatch =
+      !!freshCounts &&
+      freshCounts.like_count === (cachedPost.like_count || 0) &&
+      freshCounts.dislike_count === (cachedPost.dislike_count || 0) &&
+      freshCounts.repost_count === (cachedPost.repost_count || 0);
+
+    // post_replies is fetched ascending by created_at, so the newest cached
+    // reply is the last one in the array
+    const newestCachedReply = cachedReplies[cachedReplies.length - 1];
+    const repliesMatch = !latestReply
+      ? !newestCachedReply
+      : !!newestCachedReply &&
+        latestReply.id === newestCachedReply.id &&
+        latestReply.created_at === newestCachedReply.created_at;
+
+    return !(countsMatch && repliesMatch);
+  }
+
   // notifications list cache (keyed by user)
 
   function readNotifications(userId) {
@@ -103,6 +185,10 @@
     writeFeed,
     readPost,
     writePost,
+    isPostCacheRecent,
+    unpackPost,
+    savePostSnapshot,
+    postHasNewActivity,
     readNotifications,
     writeNotifications,
   };

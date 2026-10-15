@@ -70,6 +70,8 @@ function getPostIdFromUrl() {
   return new URLSearchParams(window.location.search).get("id");
 }
 
+// grabs reactions from post_reactions (supabase)
+// also used for updating reactions & having it same
 async function toggleReaction(postId, type, button, currentUser, container) {
   if (!currentUser) return;
   const countSpan = button.querySelector(".reactionCount");
@@ -122,6 +124,7 @@ async function toggleReaction(postId, type, button, currentUser, container) {
   }
 }
 
+// used for threading
 function buildReplyTree(flatReplies) {
   const byId = new Map(flatReplies.map((r) => [r.id, { ...r, children: [] }]));
   const roots = [];
@@ -135,12 +138,12 @@ function buildReplyTree(flatReplies) {
   return roots;
 }
 
-// where clicking an author should go. bots -> bot-profile.html (same page the inner circle uses).
-// ASSUMES real users live at profile.html?id=<user id>; change if your page is named differently.
+// where clicking an author should go. everyone (bots, npcs, real users) goes
+// to bot-profile.html?id=[id]
 function profileUrlFor(row) {
-  if (row.bot_user_id) return `bot-profile.html?id=${encodeURIComponent(row.bot_user_id)}`;
-  if (row.user_id) return `profile.html?id=${encodeURIComponent(row.user_id)}`;
-  return null;
+  const id = row.bot_user_id || row.user_id;
+  if (!id) return null;
+  return `bot-profile.html?id=${encodeURIComponent(id)}`;
 }
 
 function makeProfileLink(el, row) {
@@ -158,61 +161,14 @@ function authorFor(row, profileById, botProfileById) {
   return row.bot_user_id ? botProfileById.get(row.bot_user_id) : profileById.get(row.user_id);
 }
 
-// re-check for new activity at most this often. if the cache is younger
-// than this, we skip even the cheap query below and just trust it.
-const POST_STALE_CHECK_TTL_MS = 10 * 1000;
-
-// cheap check: has anything actually changed since we cached this post?
-// "changed" means a new reply landed, or the post's own reaction counts
-// moved. this is two small single-row queries, not the full
-// post + replies + reactions + profiles + bot-profiles fetch.
-async function postHasNewActivity(postId, cachedPost, cachedReplies) {
-  const [{ data: freshCounts, error: countsError }, { data: latestReply, error: replyError }] =
-    await Promise.all([
-      supabaseClient
-        .from("posts")
-        .select("like_count, dislike_count, repost_count")
-        .eq("id", postId)
-        .maybeSingle(),
-      supabaseClient
-        .from("post_replies")
-        .select("id, created_at")
-        .eq("post_id", postId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]);
-
-  if (countsError || replyError) {
-    console.error(
-      "Could not check post for new activity, falling back to full fetch:",
-      countsError || replyError,
-    );
-    return true; // don't know, so err on the side of refetching
-  }
-
-  const countsMatch =
-    !!freshCounts &&
-    freshCounts.like_count === (cachedPost.like_count || 0) &&
-    freshCounts.dislike_count === (cachedPost.dislike_count || 0) &&
-    freshCounts.repost_count === (cachedPost.repost_count || 0);
-
-  // post_replies is fetched ascending by created_at, so the newest cached
-  // reply is the last one in the array
-  const newestCachedReply = cachedReplies[cachedReplies.length - 1];
-  const repliesMatch = !latestReply
-    ? !newestCachedReply
-    : !!newestCachedReply &&
-      latestReply.id === newestCachedReply.id &&
-      latestReply.created_at === newestCachedReply.created_at;
-
-  return !(countsMatch && repliesMatch);
-}
-
 async function main() {
   const postId = getPostIdFromUrl();
   const wrap = document.getElementById("wrap");
-  document.getElementById("backBtn").addEventListener("click", () => history.back());
+  // always go to the feed, not history.back() - after posting, back would
+  // land on tweet-tab which makes no sense
+  document.getElementById("backBtn").addEventListener("click", () => {
+    window.location.href = "Feed.html";
+  });
 
   if (!postId) {
     wrap.innerHTML = '<div class="postNotFound">No post specified.</div>';
@@ -226,7 +182,7 @@ async function main() {
 
   // best-effort guess before real auth resolves below, so reply boxes
   // rendered from cache aren't permanently broken while we wait on the network
-  currentUser = window.__cachedProfile?.id ? { id: window.__cachedProfile.id } : null;
+  currentUser = currentUserProfile?.id ? { id: currentUserProfile.id } : null;
 
   // if we've viewed this post before this session, render it
   // immediately from cache instead of showing the loader/blank page.
@@ -241,11 +197,8 @@ async function main() {
   );
   let skipNetworkFetch = false;
   if (cached?.post) {
-    post = cached.post;
-    replyRows = cached.replies || [];
-    myReactions = new Set(cached.myReactions || []);
-    profileById = new Map((cached.profiles || []).map((p) => [p.id, p]));
-    botProfileById = new Map((cached.botProfiles || []).map((p) => [p.id, p]));
+    ({ post, replyRows, myReactions, profileById, botProfileById } =
+      window.SpotlightPostCache.unpackPost(cached));
     replyTree = buildReplyTree(replyRows);
     renderMainPost(
       post,
@@ -255,19 +208,11 @@ async function main() {
     renderThreadsSection(replyTree, profileById, botProfileById);
     pageLoader?.classList.add("hidden");
 
-    const cacheAgeMs = Date.now() - (cached.cachedAt || 0);
-    console.log(
-      "[post] cache age ms:",
-      cacheAgeMs,
-      "cachedAt:",
-      cached.cachedAt,
-    );
-    const isRecent = cacheAgeMs < POST_STALE_CHECK_TTL_MS;
-    if (isRecent) {
+    if (window.SpotlightPostCache.isPostCacheRecent(cached)) {
       console.log("[post] trust-cache path: 0 network calls");
       skipNetworkFetch = true;
     } else {
-      skipNetworkFetch = !(await postHasNewActivity(postId, post, replyRows));
+      skipNetworkFetch = !(await window.SpotlightPostCache.postHasNewActivity(postId, post, replyRows));
       console.log(
         "[post] freshness check ran, nothing new:",
         skipNetworkFetch,
@@ -276,6 +221,21 @@ async function main() {
 
     if (skipNetworkFetch) {
       console.log("[post] skipped full fetch");
+      // the cache path never resolves real auth, so if the guess above came
+      // up empty the reply boxes would stay stuck on "Log in to reply".
+      // getSession() reads local storage, so this is still 0 network calls.
+      if (!currentUser) {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) {
+          currentUser = session.user;
+          renderMainPost(
+            post,
+            authorFor(post, profileById, botProfileById),
+            currentUser,
+          );
+          renderThreadsSection(replyTree, profileById, botProfileById);
+        }
+      }
       // still seed bot replies for a thread that's empty, same
       // as the full-fetch path does below
       if (replyRows.length === 0) triggerBotReplies(postId, "reply_opened");
@@ -384,17 +344,15 @@ async function main() {
     pageLoader?.classList.add("hidden");
   }
 
-  // saves the current post/replies/profiles snapshot
-  // revisiting this post later renders instantly from cache
+  // actual cache logic lives in post-cache.js, this just hands it the current state
   function persistCache() {
-    window.SpotlightPostCache?.writePost(postId, {
+    window.SpotlightPostCache?.savePostSnapshot(postId, {
       post,
-      replies: replyRows,
-      myReactions: [...myReactions],
-      profiles: [...profileById.values()],
-      botProfiles: [...botProfileById.values()],
+      replyRows,
+      myReactions,
+      profileById,
+      botProfileById,
     });
-    console.log("[post] wrote cache at", Date.now(), "for post", postId);
   }
 
   // parentReplyId tells the edge function which reply the bots should
