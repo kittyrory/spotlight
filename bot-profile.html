@@ -1597,7 +1597,42 @@
 </script>
 <script>
   /* ---------- back button: return to whichever page the user came from ---------- */
+  // profile -> messages -> profile adds 2 extra history entries; count them so back can skip them.
+  // this was to fix an error where you were stuck in a loop if you pressed X when taking that route
+  // arriving anywhere else uses the old back button handling
+  const DETOUR_KEY = 'spotlight-profile-detour';
+  (function trackDetour() {
+    let navType = 'navigate';
+    try {
+      const entry = performance.getEntriesByType('navigation')[0];
+      if (entry && entry.type) navType = entry.type;
+    } catch (e) { /* keep default */ }
+
+    // back / forward / reload: entry already existed, keep the saved count
+    if (navType === 'back_forward' || navType === 'reload') return;
+
+    let cameFromMessages = false;
+    try {
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      cameFromMessages = !!ref && ref.origin === window.location.origin && /\/messages\.html$/i.test(ref.pathname);
+    } catch (e) { /* ignore */ }
+
+    let depth = 0;
+    if (cameFromMessages) {
+      const prev = parseInt(sessionStorage.getItem(DETOUR_KEY), 10);
+      depth = (Number.isFinite(prev) ? prev : 0) + 2;
+    }
+    sessionStorage.setItem(DETOUR_KEY, String(depth));
+  })();
+
   document.getElementById('backBtn').addEventListener('click', () => {
+    const detour = parseInt(sessionStorage.getItem(DETOUR_KEY), 10) || 0;
+    // came back from messages: skip the detour entries
+    if (detour > 0) {
+      sessionStorage.setItem(DETOUR_KEY, '0');
+      history.go(-(detour + 1));
+      return;
+    }
     // history.back() so a post opened from post.html?id=... comes back to that exact post
     if (document.referrer && new URL(document.referrer).origin === window.location.origin) {
       history.back();
@@ -1704,7 +1739,8 @@
     const botId = currentBot.id;
     const wasFollowing = isFollowing;
 
-    // optimistic ui, rolled back if supabase says no
+    // updated immediately as if the action already succeeded, 
+    // if supabase later says no, we undo the change.
     isFollowing = !wasFollowing;
     updateFollowBtn();
     showCount($('statFollowers'), baseFollowers + (isFollowing ? 1 : 0));
